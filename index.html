@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -13,7 +13,7 @@
     --text: #e8edf5; --muted: #4a5568; --live: #ff3d71; --radius: 6px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; display: flex; flex-direction: column; overflow-y: auto; }
 
   #gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; gap: 24px; }
   .gate-logo { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
@@ -26,7 +26,7 @@
   #gate-error { color: var(--accent2); font-family: 'Space Mono', monospace; font-size: 11px; text-align: center; display: none; }
   #gate-hint { color: var(--muted); font-family: 'Space Mono', monospace; font-size: 10px; text-align: center; }
 
-  #app { display: none; flex-direction: column; height: 100vh; }
+  #app { display: none; flex-direction: column; min-height: 100vh; }
   header { display: flex; align-items: center; gap: 20px; padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; }
   .logo { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; color: var(--text); white-space: nowrap; }
   .logo span { color: var(--accent); }
@@ -45,7 +45,7 @@
   .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--live); animation: pulse 1.5s ease-in-out infinite; display: inline-block; }
   @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.4; transform:scale(.7); } }
 
-  #grid-wrapper { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px; }
+  #grid-wrapper { flex: 1; overflow: visible; padding: 10px; }
   #grid-wrapper::-webkit-scrollbar { width: 5px; }
   #grid-wrapper::-webkit-scrollbar-track { background: var(--bg); }
   #grid-wrapper::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -63,7 +63,7 @@
   .tile-bottom { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 8px; background: linear-gradient(to top, rgba(0,0,0,.8), transparent); z-index: 2; }
   .tile-username { font-size: 12px; font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; }
   .tile-viewers { font-family: 'Space Mono', monospace; font-size: 10px; color: rgba(255,255,255,.7); }
-  .tile-viewers::before { content: '👁 '; }
+  .tile-viewers::before { content: 'ðŸ‘ '; }
   .tile-controls { display: flex; gap: 4px; pointer-events: all; }
   .tile-btn { width: 26px; height: 26px; border-radius: 4px; background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.15); color: #fff; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s; backdrop-filter: blur(4px); }
   .tile-btn:hover { background: rgba(255,255,255,.2); }
@@ -108,6 +108,9 @@
           <option value="9">3x3</option>
           <option value="16">4x4</option>
           <option value="25">5x5</option>
+          <option value="36">6x6</option>
+          <option value="49">7x7</option>
+          <option value="64">8x8</option>
         </select>
       </div>
       <div style="display:flex;align-items:center;gap:6px;">
@@ -244,7 +247,7 @@ async function loadStreams() {
 
   if (!models.length) {
     empty.style.display = 'flex';
-    empty.innerHTML = '<div class="icon">📡</div><div>No public streams found.</div>';
+    empty.innerHTML = '<div class="icon">ðŸ“¡</div><div>No public streams found.</div>';
     return;
   }
   empty.style.display = 'none';
@@ -368,3 +371,4 @@ document.getElementById('tagInput').addEventListener('keydown', function(e) {
 </script>
 </body>
 </html>
+
