@@ -189,6 +189,7 @@ document.getElementById('gate-input').addEventListener('keydown', e => {
 if (sessionStorage.getItem('lg_auth') === '1') {
   document.getElementById('gate').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
+  loadStreams();
 }
 
 const hlsInstances = [];
@@ -371,4 +372,5 @@ document.getElementById('tagInput').addEventListener('keydown', function(e) {
 </script>
 </body>
 </html>
+
 
