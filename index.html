@@ -1,191 +1,73 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LiveGrid â€” Multi-Stream Viewer</title>
+<title>LiveGrid - Multi-Stream Viewer</title>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #080a0e;
-    --surface: #0f1218;
-    --surface2: #161b24;
-    --border: #1e2533;
-    --accent: #00e5ff;
-    --accent2: #ff3d71;
-    --text: #e8edf5;
-    --muted: #4a5568;
-    --live: #ff3d71;
-    --radius: 6px;
+    --bg: #080a0e; --surface: #0f1218; --surface2: #161b24;
+    --border: #1e2533; --accent: #00e5ff; --accent2: #ff3d71;
+    --text: #e8edf5; --muted: #4a5568; --live: #ff3d71; --radius: 6px;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  /* â”€â”€ PASSWORD GATE â”€â”€ */
-  #gate {
-    position: fixed;
-    inset: 0;
-    background: var(--bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    flex-direction: column;
-    gap: 24px;
-  }
-  #gate .gate-logo {
-    font-size: 32px;
-    font-weight: 800;
-    letter-spacing: -1px;
-  }
-  #gate .gate-logo span { color: var(--accent); }
-  #gate-form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 280px;
-  }
-  #gate-input {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 10px 14px;
-    border-radius: var(--radius);
-    font-family: 'Space Mono', monospace;
-    font-size: 14px;
-    outline: none;
-    width: 100%;
-    text-align: center;
-    letter-spacing: 2px;
-  }
+  #gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; gap: 24px; }
+  .gate-logo { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
+  .gate-logo span { color: var(--accent); }
+  #gate-form { display: flex; flex-direction: column; gap: 12px; width: 280px; }
+  #gate-input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: var(--radius); font-family: 'Space Mono', monospace; font-size: 14px; outline: none; width: 100%; text-align: center; letter-spacing: 2px; }
   #gate-input:focus { border-color: var(--accent); }
-  #gate-submit {
-    background: var(--accent);
-    color: #000;
-    border: none;
-    padding: 10px;
-    border-radius: var(--radius);
-    font-family: 'Space Mono', monospace;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: background .2s;
-  }
+  #gate-submit { background: var(--accent); color: #000; border: none; padding: 10px; border-radius: var(--radius); font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; }
   #gate-submit:hover { background: #33ecff; }
-  #gate-error {
-    color: var(--accent2);
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    text-align: center;
-    display: none;
-  }
-  #gate-hint {
-    color: var(--muted);
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    text-align: center;
-  }
+  #gate-error { color: var(--accent2); font-family: 'Space Mono', monospace; font-size: 11px; text-align: center; display: none; }
+  #gate-hint { color: var(--muted); font-family: 'Space Mono', monospace; font-size: 10px; text-align: center; }
 
-  /* â”€â”€ MAIN APP (hidden until auth) â”€â”€ */
   #app { display: none; flex-direction: column; height: 100vh; }
-
-  header {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    padding: 10px 16px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    flex-shrink: 0;
-    flex-wrap: wrap;
-  }
+  header { display: flex; align-items: center; gap: 20px; padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; }
   .logo { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; color: var(--text); white-space: nowrap; }
   .logo span { color: var(--accent); }
   .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: 1; }
   label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-
-  select, input[type="text"] {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 6px 10px;
-    border-radius: var(--radius);
-    font-family: 'Space Mono', monospace;
-    font-size: 12px;
-    outline: none;
-    cursor: pointer;
-    transition: border-color .2s;
-  }
-  select:hover, input:hover { border-color: var(--accent); }
-  select:focus, input:focus { border-color: var(--accent); }
+  select, input[type="text"] { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: var(--radius); font-family: 'Space Mono', monospace; font-size: 12px; outline: none; cursor: pointer; transition: border-color .2s; }
+  select:hover, input:hover, select:focus, input:focus { border-color: var(--accent); }
   input[type="text"] { width: 130px; }
-
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 14px; border-radius: var(--radius);
-    font-family: 'Space Mono', monospace; font-size: 11px;
-    font-weight: 700; letter-spacing: .5px; cursor: pointer;
-    border: none; transition: all .2s; text-transform: uppercase;
-  }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius); font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: .5px; cursor: pointer; border: none; transition: all .2s; text-transform: uppercase; }
   .btn-primary { background: var(--accent); color: #000; }
   .btn-primary:hover { background: #33ecff; transform: translateY(-1px); }
   .btn-danger { background: transparent; border: 1px solid var(--accent2); color: var(--accent2); }
   .btn-danger:hover { background: var(--accent2); color: #fff; }
-
   .status-bar { margin-left: auto; display: flex; align-items: center; gap: 12px; }
   .status-text { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; }
-  .live-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--live); animation: pulse 1.5s ease-in-out infinite; display: inline-block;
-  }
+  .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--live); animation: pulse 1.5s ease-in-out infinite; display: inline-block; }
   @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.4; transform:scale(.7); } }
 
   #grid-wrapper { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px; }
   #grid-wrapper::-webkit-scrollbar { width: 5px; }
   #grid-wrapper::-webkit-scrollbar-track { background: var(--bg); }
   #grid-wrapper::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-  #grid-wrapper::-webkit-scrollbar-thumb:hover { background: var(--muted); }
   #grid { display: grid; gap: 8px; }
 
-  .tile {
-    position: relative; background: #000; border-radius: var(--radius);
-    overflow: hidden; border: 1px solid var(--border);
-    transition: border-color .2s, box-shadow .2s; aspect-ratio: 16/9; min-height: 0;
-  }
+  .tile { position: relative; background: #000; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); transition: border-color .2s, box-shadow .2s; aspect-ratio: 16/9; min-height: 0; }
   .tile:hover { border-color: var(--accent); }
   .tile.active-audio { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,229,255,.2); }
   .tile video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; background: #000; }
-
   .tile-snapshot { position: absolute; inset: 0; background-size: cover; background-position: center; transition: opacity .5s; z-index: 1; }
   .tile-snapshot.hidden { opacity: 0; pointer-events: none; }
-
   .tile-top { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 8px; background: linear-gradient(to bottom, rgba(0,0,0,.7), transparent); pointer-events: none; z-index: 2; }
   .badge-live { font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 2px 6px; border-radius: 3px; background: var(--live); color: #fff; }
   .badge-hd { font-family: 'Space Mono', monospace; font-size: 9px; padding: 2px 5px; border-radius: 3px; background: rgba(0,229,255,.2); border: 1px solid rgba(0,229,255,.4); color: var(--accent); }
-
   .tile-bottom { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 8px; background: linear-gradient(to top, rgba(0,0,0,.8), transparent); z-index: 2; }
   .tile-username { font-size: 12px; font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; }
   .tile-viewers { font-family: 'Space Mono', monospace; font-size: 10px; color: rgba(255,255,255,.7); }
-  .tile-viewers::before { content: 'ðŸ‘ '; }
+  .tile-viewers::before { content: '👁 '; }
   .tile-controls { display: flex; gap: 4px; pointer-events: all; }
-
   .tile-btn { width: 26px; height: 26px; border-radius: 4px; background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.15); color: #fff; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s; backdrop-filter: blur(4px); }
   .tile-btn:hover { background: rgba(255,255,255,.2); }
   .tile-btn.unmuted { background: rgba(0,229,255,.3); border-color: var(--accent); }
-
   .tile-cta { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 3; }
   .tile:hover .tile-cta { opacity: 1; pointer-events: all; }
   .cta-link { display: block; padding: 7px 14px; background: var(--accent2); color: #fff; text-decoration: none; border-radius: var(--radius); font-size: 11px; font-weight: 700; text-align: center; font-family: 'Space Mono', monospace; letter-spacing: .5px; box-shadow: 0 4px 20px rgba(255,61,113,.4); transition: transform .15s, box-shadow .15s; white-space: nowrap; }
@@ -195,7 +77,6 @@
   #empty-state .icon { font-size: 40px; opacity: .4; }
   .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-
   .tile-error { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.7); font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; z-index: 4; }
   .aff-input { width: 150px !important; }
   .refresh-progress { width: 60px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
@@ -205,18 +86,16 @@
 </head>
 <body>
 
-<!-- PASSWORD GATE -->
 <div id="gate">
   <div class="gate-logo">LIVE<span>GRID</span></div>
   <div id="gate-form">
-    <input type="password" id="gate-input" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" autocomplete="off" autofocus>
+    <input type="password" id="gate-input" placeholder="password" autocomplete="off" autofocus>
     <button id="gate-submit" onclick="checkPassword()">Enter</button>
     <div id="gate-error">Incorrect password</div>
     <div id="gate-hint">Private access only</div>
   </div>
 </div>
 
-<!-- MAIN APP -->
 <div id="app">
   <header>
     <div class="logo">LIVE<span>GRID</span></div>
@@ -224,11 +103,11 @@
       <div style="display:flex;align-items:center;gap:6px;">
         <label>Grid</label>
         <select id="gridSelect">
-          <option value="1">1Ã—1</option>
-          <option value="4" selected>2Ã—2</option>
-          <option value="9">3Ã—3</option>
-          <option value="16">4Ã—4</option>
-          <option value="25">5Ã—5</option>
+          <option value="1">1x1</option>
+          <option value="4" selected>2x2</option>
+          <option value="9">3x3</option>
+          <option value="16">4x4</option>
+          <option value="25">5x5</option>
         </select>
       </div>
       <div style="display:flex;align-items:center;gap:6px;">
@@ -251,7 +130,7 @@
       </div>
       <div style="display:flex;align-items:center;gap:6px;">
         <label>Tag</label>
-        <input type="text" id="tagInput" placeholder="e.g. latina, bbwâ€¦">
+        <input type="text" id="tagInput" placeholder="latina, bbw...">
       </div>
       <div style="display:flex;align-items:center;gap:6px;">
         <label>Quality</label>
@@ -266,28 +145,22 @@
         <label>Aff. ID</label>
         <input type="text" id="affId" class="aff-input" placeholder="your-campaign-id">
       </div>
-      <button class="btn btn-primary" onclick="loadStreams()">âŸ³ Refresh</button>
+      <button class="btn btn-primary" onclick="loadStreams()">Refresh</button>
       <button class="btn btn-danger" onclick="muteAll()">Mute All</button>
     </div>
     <div class="status-bar">
       <span class="live-dot"></span>
-      <span class="status-text" id="statusText">â€”</span>
+      <span class="status-text" id="statusText">-</span>
       <div class="refresh-progress"><div class="refresh-bar" id="refreshBar"></div></div>
     </div>
   </header>
-
   <div id="grid-wrapper">
     <div id="grid"></div>
-    <div id="empty-state">
-      <div class="spinner"></div>
-      <div>Loading live streamsâ€¦</div>
-    </div>
+    <div id="empty-state"><div class="spinner"></div><div>Loading live streams...</div></div>
   </div>
 </div>
 
 <script>
-// â”€â”€ PASSWORD GATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Change this to your desired password
 const PASSWORD = 'livegrid2026';
 
 function checkPassword() {
@@ -306,25 +179,22 @@ function checkPassword() {
   }
 }
 
-// Allow Enter key on password field
 document.getElementById('gate-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') checkPassword();
 });
 
-// Skip gate if already authed this session
 if (sessionStorage.getItem('lg_auth') === '1') {
   document.getElementById('gate').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
 }
 
-// â”€â”€ STREAM APP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const hlsInstances = [];
 let refreshTimer = null;
 const API = 'https://go.stripchat.com/api/models';
 
 function muteAll() {
   document.querySelectorAll('video').forEach(v => v.muted = true);
-  document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = 'ðŸ”‡'; });
+  document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = 'M'; });
   document.querySelectorAll('.tile').forEach(t => t.classList.remove('active-audio'));
 }
 
@@ -332,8 +202,8 @@ function fmtViewers(n) { return n >= 1000 ? (n/1000).toFixed(1) + 'K' : n; }
 
 function buildAffUrl(username) {
   const aff = document.getElementById('affId').value.trim();
-  const base = `https://stripchat.com/${username}`;
-  return aff ? `${base}?campaign=${encodeURIComponent(aff)}` : base;
+  const base = 'https://stripchat.com/' + username;
+  return aff ? base + '?campaign=' + encodeURIComponent(aff) : base;
 }
 
 function destroyAll() {
@@ -342,31 +212,28 @@ function destroyAll() {
   document.querySelectorAll('video').forEach(v => { v.pause(); v.src = ''; v.removeAttribute('src'); });
 }
 
-);
-    return URL.createObjectURL(blob);
-  } catch(e) { return rawUrl; }
-}
-
 async function loadStreams() {
-  const count   = parseInt(document.getElementById('gridSelect').value);
-  const gender  = document.getElementById('genderSelect').value;
-  const sort    = document.getElementById('sortSelect').value;
-  const tag     = document.getElementById('tagInput').value.trim();
-  const quality = document.getElementById('qualitySelect').value;
-  const cols    = Math.sqrt(count);
+  const count  = parseInt(document.getElementById('gridSelect').value);
+  const gender = document.getElementById('genderSelect').value;
+  const sort   = document.getElementById('sortSelect').value;
+  const tag    = document.getElementById('tagInput').value.trim();
+  const quality= document.getElementById('qualitySelect').value;
+  const cols   = Math.sqrt(count);
 
-  document.getElementById('statusText').textContent = 'Loadingâ€¦';
+  document.getElementById('statusText').textContent = 'Loading...';
 
-  const params = new URLSearchParams({ limit: count + 10, sortBy: sort, ...(gender && { gender }), ...(tag && { tag }) });
+  const params = new URLSearchParams({ limit: count + 10, sortBy: sort });
+  if (gender) params.set('gender', gender);
+  if (tag) params.set('tag', tag);
 
   let models = [];
   try {
-    const res = await fetch(`${API}?${params}`, { headers: { 'Accept': 'application/json' } });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const res = await fetch(API + '?' + params, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    models = (data.models || []).filter(m => m.status === 'public' && m.stream?.urls).slice(0, count);
+    models = (data.models || []).filter(m => m.status === 'public' && m.stream && m.stream.urls).slice(0, count);
   } catch(e) {
-    document.getElementById('statusText').textContent = 'API error â€” retry';
+    document.getElementById('statusText').textContent = 'API error - retry';
     console.error(e); return;
   }
 
@@ -377,18 +244,18 @@ async function loadStreams() {
 
   if (!models.length) {
     empty.style.display = 'flex';
-    empty.innerHTML = '<div class="icon">ðŸ“¡</div><div>No public streams found.</div>';
+    empty.innerHTML = '<div class="icon">📡</div><div>No public streams found.</div>';
     return;
   }
   empty.style.display = 'none';
-  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  grid.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
 
   models.forEach(model => {
-    const streamUrl = model.stream.urls[quality] || model.stream.urls['original'] || model.stream.url;
-    const tile = buildTile(model, streamUrl);
-    grid.appendChild(tile);
+    const streamUrl = (model.stream.urls[quality] || model.stream.urls['original'] || model.stream.url);
+    grid.appendChild(buildTile(model, streamUrl));
   });
-  document.getElementById('statusText').textContent = `${models.length} streams Â· ${new Date().toLocaleTimeString()}`;
+
+  document.getElementById('statusText').textContent = models.length + ' streams - ' + new Date().toLocaleTimeString();
   const bar = document.getElementById('refreshBar');
   bar.style.animation = 'none'; bar.offsetHeight;
   bar.style.animation = 'drain 60s linear forwards';
@@ -397,81 +264,107 @@ async function loadStreams() {
 }
 
 function buildTile(model, streamUrl) {
-  const cleanUrl = streamUrl;
   const tile = document.createElement('div');
   tile.className = 'tile';
 
   const snap = document.createElement('div');
   snap.className = 'tile-snapshot';
-  snap.style.backgroundImage = `url(${model.snapshotUrl || model.widgetPreviewUrl})`;
+  snap.style.backgroundImage = 'url(' + (model.snapshotUrl || model.widgetPreviewUrl) + ')';
 
   const video = document.createElement('video');
-  video.muted = true; video.autoplay = true; video.playsInline = true;
-  video.setAttribute('playsinline', ''); video.setAttribute('webkit-playsinline', '');
+  video.muted = true;
+  video.autoplay = true;
+  video.playsInline = true;
 
   if (Hls.isSupported()) {
-    const hls = new Hls({ maxBufferLength: 15, maxMaxBufferLength: 30, enableWorker: true, strictManifestParsing: false, manifestLoadingMaxRetry: 4, manifestLoadingRetryDelay: 1000, levelLoadingMaxRetry: 4, fragLoadingMaxRetry: 4 });
-    hls.loadSource(cleanUrl);
+    const hls = new Hls({
+      maxBufferLength: 15,
+      maxMaxBufferLength: 30,
+      enableWorker: true,
+      strictManifestParsing: false,
+      manifestLoadingMaxRetry: 4,
+      manifestLoadingRetryDelay: 1000,
+      levelLoadingMaxRetry: 4,
+      fragLoadingMaxRetry: 4
+    });
+    hls.loadSource(streamUrl);
     hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, () => { hls.startLevel = hls.levels.length - 1; video.play().catch(() => {}); snap.classList.add('hidden'); });
-    hls.on(Hls.Events.LEVEL_LOADED, () => snap.classList.add('hidden'));
-    let errCount = 0;
-    hls.on(Hls.Events.ERROR, (_, data) => {
-      if (!data.fatal) return; errCount++;
+    hls.on(Hls.Events.MANIFEST_PARSED, function() {
+      hls.startLevel = hls.levels.length - 1;
+      video.play().catch(function(){});
+      snap.classList.add('hidden');
+    });
+    hls.on(Hls.Events.LEVEL_LOADED, function() { snap.classList.add('hidden'); });
+    var errCount = 0;
+    hls.on(Hls.Events.ERROR, function(event, data) {
+      if (!data.fatal) return;
+      errCount++;
       if (data.type === Hls.ErrorTypes.NETWORK_ERROR && errCount < 3) { hls.startLoad(); }
       else if (data.type === Hls.ErrorTypes.MEDIA_ERROR && errCount < 3) { hls.recoverMediaError(); }
-      else { const e = document.createElement('div'); e.className = 'tile-error'; e.textContent = 'Stream offline'; tile.appendChild(e); }
+      else {
+        var errDiv = document.createElement('div');
+        errDiv.className = 'tile-error';
+        errDiv.textContent = 'Stream offline';
+        tile.appendChild(errDiv);
+      }
     });
     hlsInstances.push(hls);
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = cleanUrl;
-    video.addEventListener('loadeddata', () => snap.classList.add('hidden'));
-    video.play().catch(() => {});
+    video.src = streamUrl;
+    video.addEventListener('loadeddata', function() { snap.classList.add('hidden'); });
+    video.play().catch(function(){});
   }
 
-  const top = document.createElement('div'); top.className = 'tile-top';
-  const liveTag = document.createElement('span'); liveTag.className = 'badge-live'; liveTag.textContent = 'LIVE';
+  var top = document.createElement('div'); top.className = 'tile-top';
+  var liveTag = document.createElement('span'); liveTag.className = 'badge-live'; liveTag.textContent = 'LIVE';
   top.appendChild(liveTag);
-  if (model.broadcastHD) { const hd = document.createElement('span'); hd.className = 'badge-hd'; hd.textContent = 'HD'; top.appendChild(hd); }
+  if (model.broadcastHD) {
+    var hd = document.createElement('span'); hd.className = 'badge-hd'; hd.textContent = 'HD';
+    top.appendChild(hd);
+  }
 
-  const bot = document.createElement('div'); bot.className = 'tile-bottom';
-  const nameEl = document.createElement('div'); nameEl.className = 'tile-username'; nameEl.textContent = model.username;
-  const viewEl = document.createElement('div'); viewEl.className = 'tile-viewers'; viewEl.textContent = fmtViewers(model.viewersCount);
-  const ctrlEl = document.createElement('div'); ctrlEl.className = 'tile-controls';
+  var bot = document.createElement('div'); bot.className = 'tile-bottom';
+  var nameEl = document.createElement('div'); nameEl.className = 'tile-username'; nameEl.textContent = model.username;
+  var viewEl = document.createElement('div'); viewEl.className = 'tile-viewers'; viewEl.textContent = fmtViewers(model.viewersCount);
+  var ctrlEl = document.createElement('div'); ctrlEl.className = 'tile-controls';
 
-  const muteBtn = document.createElement('button'); muteBtn.className = 'tile-btn'; muteBtn.textContent = 'ðŸ”‡'; muteBtn.title = 'Toggle audio';
-  muteBtn.onclick = (e) => {
+  var muteBtn = document.createElement('button'); muteBtn.className = 'tile-btn'; muteBtn.textContent = 'M'; muteBtn.title = 'Toggle audio';
+  muteBtn.onclick = function(e) {
     e.stopPropagation();
     if (video.muted) {
-      document.querySelectorAll('video').forEach(v => v.muted = true);
-      document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = 'ðŸ”‡'; });
-      document.querySelectorAll('.tile').forEach(t => t.classList.remove('active-audio'));
-      video.muted = false; muteBtn.classList.add('unmuted'); muteBtn.textContent = 'ðŸ”Š'; tile.classList.add('active-audio');
-    } else { video.muted = true; muteBtn.classList.remove('unmuted'); muteBtn.textContent = 'ðŸ”‡'; tile.classList.remove('active-audio'); }
+      document.querySelectorAll('video').forEach(function(v) { v.muted = true; });
+      document.querySelectorAll('.tile-btn.unmuted').forEach(function(b) { b.classList.remove('unmuted'); b.textContent = 'M'; });
+      document.querySelectorAll('.tile').forEach(function(t) { t.classList.remove('active-audio'); });
+      video.muted = false; muteBtn.classList.add('unmuted'); muteBtn.textContent = 'U'; tile.classList.add('active-audio');
+    } else { video.muted = true; muteBtn.classList.remove('unmuted'); muteBtn.textContent = 'M'; tile.classList.remove('active-audio'); }
   };
 
-  const fsBtn = document.createElement('button'); fsBtn.className = 'tile-btn'; fsBtn.textContent = 'â›¶'; fsBtn.title = 'Fullscreen';
-  fsBtn.onclick = (e) => { e.stopPropagation(); if (video.requestFullscreen) video.requestFullscreen(); else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen(); };
+  var fsBtn = document.createElement('button'); fsBtn.className = 'tile-btn'; fsBtn.textContent = '[]'; fsBtn.title = 'Fullscreen';
+  fsBtn.onclick = function(e) {
+    e.stopPropagation();
+    if (video.requestFullscreen) video.requestFullscreen();
+    else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
+  };
 
   ctrlEl.appendChild(muteBtn); ctrlEl.appendChild(fsBtn);
   bot.appendChild(nameEl); bot.appendChild(viewEl); bot.appendChild(ctrlEl);
 
-  const cta = document.createElement('div'); cta.className = 'tile-cta';
-  const ctaLink = document.createElement('a'); ctaLink.className = 'cta-link';
+  var cta = document.createElement('div'); cta.className = 'tile-cta';
+  var ctaLink = document.createElement('a'); ctaLink.className = 'cta-link';
   ctaLink.href = buildAffUrl(model.username); ctaLink.target = '_blank'; ctaLink.rel = 'noopener noreferrer';
-  ctaLink.textContent = `â–¶ Join ${model.username}'s Room`; cta.appendChild(ctaLink);
+  ctaLink.textContent = 'Join ' + model.username + "'s Room";
+  cta.appendChild(ctaLink);
 
   tile.appendChild(snap); tile.appendChild(video); tile.appendChild(top); tile.appendChild(bot); tile.appendChild(cta);
   return tile;
 }
 
-['gridSelect','genderSelect','sortSelect','qualitySelect'].forEach(id => {
+['gridSelect','genderSelect','sortSelect','qualitySelect'].forEach(function(id) {
   document.getElementById(id).addEventListener('change', loadStreams);
 });
-document.getElementById('tagInput').addEventListener('keydown', e => { if (e.key === 'Enter') loadStreams(); });
-
-// Don't auto-load â€” wait for password
+document.getElementById('tagInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') loadStreams();
+});
 </script>
 </body>
 </html>
-
