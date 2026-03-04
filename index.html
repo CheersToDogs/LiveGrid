@@ -1,380 +1,1048 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LiveGrid - Multi-Stream Viewer</title>
+<title>LiveGrid — Multi-Stream Viewer</title>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #080a0e; --surface: #0f1218; --surface2: #161b24;
-    --border: #1e2533; --accent: #00e5ff; --accent2: #ff3d71;
-    --text: #e8edf5; --muted: #4a5568; --live: #ff3d71; --radius: 6px;
+    --bg: #080a0e;
+    --surface: #0f1218;
+    --surface2: #161b24;
+    --border: #1e2533;
+    --accent: #00e5ff;
+    --accent2: #ff3d71;
+    --text: #e8edf5;
+    --muted: #4a5568;
+    --live: #ff3d71;
+    --radius: 6px;
   }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-  #gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; gap: 24px; }
-  .gate-logo { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
-  .gate-logo span { color: var(--accent); }
-  #gate-form { display: flex; flex-direction: column; gap: 12px; width: 280px; }
-  #gate-input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: var(--radius); font-family: 'Space Mono', monospace; font-size: 14px; outline: none; width: 100%; text-align: center; letter-spacing: 2px; }
-  #gate-input:focus { border-color: var(--accent); }
-  #gate-submit { background: var(--accent); color: #000; border: none; padding: 10px; border-radius: var(--radius); font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; }
-  #gate-submit:hover { background: #33ecff; }
-  #gate-error { color: var(--accent2); font-family: 'Space Mono', monospace; font-size: 11px; text-align: center; display: none; }
-  #gate-hint { color: var(--muted); font-family: 'Space Mono', monospace; font-size: 10px; text-align: center; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
 
-  #app { display: none; flex-direction: column; height: 100vh; }
-  header { display: flex; align-items: center; gap: 20px; padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; }
-  .logo { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; color: var(--text); white-space: nowrap; }
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+
+  .logo {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    white-space: nowrap;
+  }
   .logo span { color: var(--accent); }
-  .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: 1; }
-  label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-  select, input[type="text"] { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: var(--radius); font-family: 'Space Mono', monospace; font-size: 12px; outline: none; cursor: pointer; transition: border-color .2s; }
-  select:hover, input:hover, select:focus, input:focus { border-color: var(--accent); }
-  input[type="text"] { width: 130px; }
-  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius); font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: .5px; cursor: pointer; border: none; transition: all .2s; text-transform: uppercase; }
-  .btn-primary { background: var(--accent); color: #000; }
-  .btn-primary:hover { background: #33ecff; transform: translateY(-1px); }
-  .btn-danger { background: transparent; border: 1px solid var(--accent2); color: var(--accent2); }
-  .btn-danger:hover { background: var(--accent2); color: #fff; }
-  .status-bar { margin-left: auto; display: flex; align-items: center; gap: 12px; }
-  .status-text { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; }
-  .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--live); animation: pulse 1.5s ease-in-out infinite; display: inline-block; }
-  @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.4; transform:scale(.7); } }
 
-  #grid-wrapper { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px; }
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    flex: 1;
+  }
+
+  label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  select, input[type="text"] {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: var(--radius);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color .2s;
+  }
+  select:hover, input:hover { border-color: var(--accent); }
+  select:focus, input:focus { border-color: var(--accent); }
+
+  input[type="text"] { width: 130px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--radius);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    cursor: pointer;
+    border: none;
+    transition: all .2s;
+    text-transform: uppercase;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+  }
+  .btn-primary:hover { background: #33ecff; transform: translateY(-1px); }
+
+  .btn-danger {
+    background: transparent;
+    border: 1px solid var(--accent2);
+    color: var(--accent2);
+  }
+  .btn-danger:hover { background: var(--accent2); color: #fff; }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .btn-ghost:hover { border-color: var(--text); color: var(--text); }
+
+  .btn-pause {
+    background: transparent;
+    border: 1px solid #f6c90e;
+    color: #f6c90e;
+  }
+  .btn-pause:hover { background: rgba(246,201,14,.15); }
+
+  .status-bar {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .status-text { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; }
+  .live-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--live);
+    animation: pulse 1.5s ease-in-out infinite;
+    display: inline-block;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50% { opacity:.4; transform:scale(.7); }
+  }
+
+  /* ── GRID AREA ── */
+  #grid-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px;
+    transition: box-shadow .3s;
+  }
+
   #grid-wrapper::-webkit-scrollbar { width: 5px; }
   #grid-wrapper::-webkit-scrollbar-track { background: var(--bg); }
   #grid-wrapper::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-  #grid { display: grid; gap: 8px; }
+  #grid-wrapper::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 
-  .tile { position: relative; background: #000; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); transition: border-color .2s, box-shadow .2s; aspect-ratio: 16/9; min-height: 0; }
-  .tile:hover { border-color: var(--accent); }
-  .tile.active-audio { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,229,255,.2); }
-  .tile video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; background: #000; }
-  .tile-snapshot { position: absolute; inset: 0; background-size: cover; background-position: center; transition: opacity .5s; z-index: 1; }
+  /* Glow border when audio active */
+  #grid-wrapper.has-active-audio {
+    box-shadow: inset 0 0 0 2px rgba(0,229,255,.2), inset 0 0 40px rgba(0,229,255,.04);
+  }
+
+  #grid {
+    display: grid;
+    gap: 8px;
+  }
+
+  /* ── STREAM TILE ── */
+  .tile {
+    position: relative;
+    background: #000;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: border-color .2s, box-shadow .2s;
+    aspect-ratio: 16/9;
+  }
+  .tile:hover { border-color: rgba(0,229,255,.5); }
+
+  /* Active audio tile: cyan glow + pushed to grid start via order */
+  .tile.active-audio {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 2px rgba(0,229,255,.4), 0 0 30px rgba(0,229,255,.2);
+    order: -9999;
+  }
+
+  .tile video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    background: #000;
+  }
+
+  /* Snapshot fallback */
+  .tile-snapshot {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    transition: opacity .5s;
+  }
   .tile-snapshot.hidden { opacity: 0; pointer-events: none; }
-  .tile-top { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 8px; background: linear-gradient(to bottom, rgba(0,0,0,.7), transparent); pointer-events: none; z-index: 2; }
-  .badge-live { font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 2px 6px; border-radius: 3px; background: var(--live); color: #fff; }
-  .badge-hd { font-family: 'Space Mono', monospace; font-size: 9px; padding: 2px 5px; border-radius: 3px; background: rgba(0,229,255,.2); border: 1px solid rgba(0,229,255,.4); color: var(--accent); }
-  .tile-bottom { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 8px; background: linear-gradient(to top, rgba(0,0,0,.8), transparent); z-index: 2; }
-  .tile-username { font-size: 12px; font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; }
-  .tile-viewers { font-family: 'Space Mono', monospace; font-size: 10px; color: rgba(255,255,255,.7); }
-  .tile-viewers::before { content: 'ðŸ‘ '; }
-  .tile-controls { display: flex; gap: 4px; pointer-events: all; }
-  .tile-btn { width: 26px; height: 26px; border-radius: 4px; background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.15); color: #fff; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s; backdrop-filter: blur(4px); }
+
+  /* Top bar */
+  .tile-top {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 6px 8px;
+    background: linear-gradient(to bottom, rgba(0,0,0,.75), transparent);
+    pointer-events: none;
+  }
+
+  .badge-live {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--live);
+    color: #fff;
+  }
+
+  .badge-hd {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    padding: 2px 5px;
+    border-radius: 3px;
+    background: rgba(0,229,255,.2);
+    border: 1px solid rgba(0,229,255,.4);
+    color: var(--accent);
+  }
+
+  .badge-country {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: rgba(0,0,0,.55);
+    color: rgba(255,255,255,.85);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,.1);
+  }
+
+  /* Bottom bar */
+  .tile-bottom {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 6px 8px;
+    background: linear-gradient(to top, rgba(0,0,0,.85), transparent);
+  }
+
+  .tile-username {
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,.8);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 65%;
+  }
+
+  .tile-viewers {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,.7);
+  }
+  .tile-viewers::before { content: '👁 '; }
+
+  .tile-controls {
+    display: flex;
+    gap: 4px;
+    pointer-events: all;
+  }
+
+  .tile-btn {
+    width: 26px; height: 26px;
+    border-radius: 4px;
+    background: rgba(0,0,0,.6);
+    border: 1px solid rgba(255,255,255,.15);
+    color: #fff;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s;
+    backdrop-filter: blur(4px);
+  }
   .tile-btn:hover { background: rgba(255,255,255,.2); }
   .tile-btn.unmuted { background: rgba(0,229,255,.3); border-color: var(--accent); }
-  .tile-cta { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 3; }
-  .tile:hover .tile-cta { opacity: 1; pointer-events: all; }
-  .cta-link { display: block; padding: 7px 14px; background: var(--accent2); color: #fff; text-decoration: none; border-radius: var(--radius); font-size: 11px; font-weight: 700; text-align: center; font-family: 'Space Mono', monospace; letter-spacing: .5px; box-shadow: 0 4px 20px rgba(255,61,113,.4); transition: transform .15s, box-shadow .15s; white-space: nowrap; }
-  .cta-link:hover { transform: scale(1.05); box-shadow: 0 6px 24px rgba(255,61,113,.6); }
 
-  #empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 12px; color: var(--muted); font-size: 14px; }
+  /* ── METADATA OVERLAY ── */
+  .tile-meta {
+    position: absolute;
+    inset: 0;
+    background: rgba(4,6,12,.92);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 10px 8px;
+    gap: 5px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 20;
+    /* Keep bottom controls accessible */
+  }
+  .tile-meta::-webkit-scrollbar { width: 3px; }
+  .tile-meta::-webkit-scrollbar-track { background: transparent; }
+  .tile-meta::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Show on hover, but not if mute/fs buttons are being used */
+  .tile:hover .tile-meta { opacity: 1; pointer-events: all; }
+
+  .meta-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+    padding-bottom: 4px;
+  }
+  .meta-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    color: #fff;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .meta-divider {
+    height: 1px;
+    background: var(--border);
+    flex-shrink: 0;
+    margin: 1px 0;
+  }
+
+  .meta-row {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    line-height: 1.5;
+    flex-shrink: 0;
+  }
+  .meta-icon { flex-shrink: 0; font-size: 10px; }
+  .meta-label { color: var(--muted); white-space: nowrap; }
+  .meta-val { color: var(--text); word-break: break-word; }
+
+  .meta-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    flex-shrink: 0;
+    padding-top: 1px;
+  }
+  .meta-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .meta-spacer { flex: 1; min-height: 6px; }
+
+  .meta-cta { flex-shrink: 0; }
+  .cta-link {
+    display: block;
+    padding: 7px 12px;
+    background: var(--accent2);
+    color: #fff;
+    text-decoration: none;
+    border-radius: var(--radius);
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: .5px;
+    box-shadow: 0 3px 16px rgba(255,61,113,.4);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .cta-link:hover { transform: scale(1.03); box-shadow: 0 5px 22px rgba(255,61,113,.6); }
+
+  /* Loading/empty states */
+  #empty-state {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    gap: 12px;
+    color: var(--muted);
+    font-size: 14px;
+  }
   #empty-state .icon { font-size: 40px; opacity: .4; }
-  .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .tile-error { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.7); font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; z-index: 4; }
+
+  /* Infinite scroll sentinel */
+  #scroll-sentinel {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    margin-top: 4px;
+  }
+  .load-spinner {
+    display: none;
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  #scroll-sentinel.loading .load-spinner { display: inline-block; }
+
+  /* Error overlay on tile */
+  .tile-error {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.7);
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    z-index: 5;
+  }
+
   .aff-input { width: 150px !important; }
-  .refresh-progress { width: 60px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
-  .refresh-bar { height: 100%; background: var(--accent); width: 100%; transform-origin: left; animation: drain 60s linear forwards; }
+
+  .refresh-progress {
+    width: 60px;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .refresh-bar {
+    height: 100%;
+    background: var(--accent);
+    width: 100%;
+    transform-origin: left;
+    animation: drain 60s linear forwards;
+  }
   @keyframes drain { to { transform: scaleX(0); } }
 </style>
 </head>
 <body>
 
-<div id="gate">
-  <div class="gate-logo">LIVE<span>GRID</span></div>
-  <div id="gate-form">
-    <input type="password" id="gate-input" placeholder="password" autocomplete="off" autofocus>
-    <button id="gate-submit" onclick="checkPassword()">Enter</button>
-    <div id="gate-error">Incorrect password</div>
-    <div id="gate-hint">Private access only</div>
-  </div>
-</div>
+<header>
+  <div class="logo">LIVE<span>GRID</span></div>
 
-<div id="app">
-  <header>
-    <div class="logo">LIVE<span>GRID</span></div>
-    <div class="controls">
-      <div style="display:flex;align-items:center;gap:6px;">
-        <label>Grid</label>
-        <select id="gridSelect">
-          <option value="1">1x1</option>
-          <option value="4" selected>2x2</option>
-          <option value="9">3x3</option>
-          <option value="16">4x4</option>
-          <option value="25">5x5</option>
-          <option value="36">6x6</option>
-          <option value="49">7x7</option>
-          <option value="64">8x8</option>
-        </select>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <label>Gender</label>
-        <select id="genderSelect">
-          <option value="">All</option>
-          <option value="female" selected>Female</option>
-          <option value="male">Male</option>
-          <option value="couple">Couple</option>
-          <option value="trans">Trans</option>
-        </select>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <label>Sort</label>
-        <select id="sortSelect">
-          <option value="viewersCount" selected>Most Viewers</option>
-          <option value="onlineTime">Longest Online</option>
-          <option value="new">Newest</option>
-        </select>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <label>Tag</label>
-        <input type="text" id="tagInput" placeholder="latina, bbw...">
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <label>Quality</label>
-        <select id="qualitySelect">
-          <option value="original">Auto</option>
-          <option value="480p">480p</option>
-          <option value="240p">240p</option>
-          <option value="160p">160p</option>
-        </select>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <label>Aff. ID</label>
-        <input type="text" id="affId" class="aff-input" placeholder="your-campaign-id">
-      </div>
-      <button class="btn btn-primary" onclick="loadStreams()">Refresh</button>
-      <button class="btn btn-danger" onclick="muteAll()">Mute All</button>
+  <div class="controls">
+    <div style="display:flex;align-items:center;gap:6px;">
+      <label>Grid</label>
+      <select id="gridSelect">
+        <option value="1">1×1</option>
+        <option value="4" selected>2×2</option>
+        <option value="9">3×3</option>
+        <option value="16">4×4</option>
+        <option value="25">5×5</option>
+      </select>
     </div>
-    <div class="status-bar">
-      <span class="live-dot"></span>
-      <span class="status-text" id="statusText">-</span>
-      <div class="refresh-progress"><div class="refresh-bar" id="refreshBar"></div></div>
+
+    <div style="display:flex;align-items:center;gap:6px;">
+      <label>Gender</label>
+      <select id="genderSelect">
+        <option value="">All</option>
+        <option value="female" selected>Female</option>
+        <option value="male">Male</option>
+        <option value="couple">Couple</option>
+        <option value="trans">Trans</option>
+      </select>
     </div>
-  </header>
-  <div id="grid-wrapper">
-    <div id="grid"></div>
-    <div id="empty-state"><div class="spinner"></div><div>Loading live streams...</div></div>
+
+    <div style="display:flex;align-items:center;gap:6px;">
+      <label>Sort</label>
+      <select id="sortSelect">
+        <option value="viewersCount" selected>Most Viewers</option>
+        <option value="onlineTime">Longest Online</option>
+        <option value="new">Newest</option>
+      </select>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:6px;">
+      <label>Tag</label>
+      <input type="text" id="tagInput" placeholder="e.g. latina, bbw…">
+    </div>
+
+    <div style="display:flex;align-items:center;gap:6px;">
+      <label>Country</label>
+      <select id="countrySelect">
+        <option value="">All</option>
+      </select>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:6px;">
+      <label>Quality</label>
+      <select id="qualitySelect">
+        <option value="original">Auto</option>
+        <option value="480p">480p</option>
+        <option value="240p">240p</option>
+        <option value="160p">160p</option>
+      </select>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:6px;">
+      <label>Aff. ID</label>
+      <input type="text" id="affId" class="aff-input" placeholder="your-campaign-id">
+    </div>
+
+    <button class="btn btn-primary" onclick="loadStreams()">⟳ Refresh</button>
+    <button class="btn btn-pause" id="pauseAllBtn" onclick="togglePauseAll()">⏸ Pause All</button>
+    <button class="btn btn-danger" onclick="muteAll()">🔇 Mute All</button>
+  </div>
+
+  <div class="status-bar">
+    <span class="live-dot"></span>
+    <span class="status-text" id="statusText">—</span>
+    <div class="refresh-progress"><div class="refresh-bar" id="refreshBar"></div></div>
+  </div>
+</header>
+
+<div id="grid-wrapper">
+  <div id="grid"></div>
+  <div id="empty-state">
+    <div class="icon">📡</div>
+    <div>Loading live streams…</div>
+  </div>
+  <div id="scroll-sentinel">
+    <span class="load-spinner"></span>
+    <span class="sentinel-text"></span>
   </div>
 </div>
 
 <script>
-const PASSWORD = 'livegrid2026';
+// ── STATE ──────────────────────────────────────────────────────────────────
+const hlsInstances = new Map(); // username -> hls
+let refreshTimer   = null;
+let allPaused      = false;
+let currentOffset  = 0;
+let isLoadingMore  = false;
+let hasMore        = true;
+let allModels      = [];       // full fetched list, for country re-filter
+let currentFiltered = [];      // post-country-filter list used for scroll
+let infiniteObserver = null;
+const BATCH = 16;
+const API   = 'https://go.stripchat.com/api/models';
 
-function checkPassword() {
-  const val = document.getElementById('gate-input').value;
-  if (val === PASSWORD) {
-    sessionStorage.setItem('lg_auth', '1');
-    document.getElementById('gate').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
-    loadStreams();
-  } else {
-    const err = document.getElementById('gate-error');
-    err.style.display = 'block';
-    document.getElementById('gate-input').value = '';
-    document.getElementById('gate-input').focus();
-    setTimeout(() => err.style.display = 'none', 2000);
-  }
-}
-
-document.getElementById('gate-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') checkPassword();
-});
-
-if (sessionStorage.getItem('lg_auth') === '1') {
-  document.getElementById('gate').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-}
-
-const hlsInstances = [];
-let refreshTimer = null;
-const API = 'https://go.stripchat.com/api/models';
-
+// ── HELPERS ────────────────────────────────────────────────────────────────
 function muteAll() {
   document.querySelectorAll('video').forEach(v => v.muted = true);
-  document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = 'M'; });
-  document.querySelectorAll('.tile').forEach(t => t.classList.remove('active-audio'));
+  document.querySelectorAll('.tile-btn.unmuted').forEach(b => {
+    b.classList.remove('unmuted');
+    b.textContent = '🔇';
+  });
+  document.querySelectorAll('.tile').forEach(t => {
+    t.classList.remove('active-audio');
+    t.style.order = '';
+  });
+  document.getElementById('grid-wrapper').classList.remove('has-active-audio');
 }
 
-function fmtViewers(n) { return n >= 1000 ? (n/1000).toFixed(1) + 'K' : n; }
+function togglePauseAll() {
+  allPaused = !allPaused;
+  const btn = document.getElementById('pauseAllBtn');
+  document.querySelectorAll('video').forEach(v => {
+    if (allPaused) v.pause();
+    else           v.play().catch(() => {});
+  });
+  btn.textContent = allPaused ? '▶ Play All' : '⏸ Pause All';
+}
+
+function fmtViewers(n) {
+  if (!n) return '0';
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+  return String(n);
+}
+
+function fmtTime(seconds) {
+  if (!seconds || seconds < 0) return null;
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m`;
+  return '<1m';
+}
 
 function buildAffUrl(username) {
-  const aff = document.getElementById('affId').value.trim();
-  const base = 'https://stripchat.com/' + username;
-  return aff ? base + '?campaign=' + encodeURIComponent(aff) : base;
+  const aff  = document.getElementById('affId').value.trim();
+  const base = `https://stripchat.com/${username}`;
+  return aff ? `${base}?campaign=${encodeURIComponent(aff)}` : base;
+}
+
+function getCountryFlag(code) {
+  if (!code || code.length !== 2) return '';
+  const offset = 127397;
+  return [...code.toUpperCase()].map(c => String.fromCodePoint(c.charCodeAt(0) + offset)).join('');
 }
 
 function destroyAll() {
   hlsInstances.forEach(h => { try { h.destroy(); } catch(e){} });
-  hlsInstances.length = 0;
-  document.querySelectorAll('video').forEach(v => { v.pause(); v.src = ''; v.removeAttribute('src'); });
+  hlsInstances.clear();
+  document.querySelectorAll('video').forEach(v => {
+    v.pause(); v.src = ''; v.removeAttribute('src');
+  });
+  document.getElementById('grid-wrapper').classList.remove('has-active-audio');
 }
 
+// ── COUNTRY DROPDOWN ────────────────────────────────────────────────────────
+function populateCountryFilter(models) {
+  const sel     = document.getElementById('countrySelect');
+  const current = sel.value;
+
+  const counts = {};
+  models.forEach(m => { if (m.country) counts[m.country] = (counts[m.country] || 0) + 1; });
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+  while (sel.options.length > 1) sel.remove(1);
+  sorted.forEach(([code, cnt]) => {
+    const opt    = document.createElement('option');
+    opt.value    = code;
+    opt.textContent = `${getCountryFlag(code)} ${code.toUpperCase()} (${cnt})`;
+    sel.appendChild(opt);
+  });
+  if (current) sel.value = current;
+}
+
+function applyCountryFilter(models) {
+  const country = document.getElementById('countrySelect').value;
+  return country ? models.filter(m => m.country === country) : models;
+}
+
+// ── FETCH + RENDER ─────────────────────────────────────────────────────────
 async function loadStreams() {
-  const count  = parseInt(document.getElementById('gridSelect').value);
-  const gender = document.getElementById('genderSelect').value;
-  const sort   = document.getElementById('sortSelect').value;
-  const tag    = document.getElementById('tagInput').value.trim();
-  const quality= document.getElementById('qualitySelect').value;
-  const cols   = Math.sqrt(count);
+  const gender  = document.getElementById('genderSelect').value;
+  const sort    = document.getElementById('sortSelect').value;
+  const tag     = document.getElementById('tagInput').value.trim();
 
-  document.getElementById('statusText').textContent = 'Loading...';
+  document.getElementById('statusText').textContent = 'Loading…';
 
-  const params = new URLSearchParams({ limit: count + 10, sortBy: sort });
-  if (gender) params.set('gender', gender);
-  if (tag) params.set('tag', tag);
-
-  let models = [];
-  try {
-    const res = await fetch(API + '?' + params, { headers: { 'Accept': 'application/json' } });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    models = (data.models || []).filter(m => m.status === 'public' && m.stream && m.stream.urls).slice(0, count);
-  } catch(e) {
-    document.getElementById('statusText').textContent = 'API error - retry';
-    console.error(e); return;
-  }
-
-  destroyAll();
-  const grid = document.getElementById('grid');
-  const empty = document.getElementById('empty-state');
-  grid.innerHTML = '';
-
-  if (!models.length) {
-    empty.style.display = 'flex';
-    empty.innerHTML = '<div class="icon">ðŸ“¡</div><div>No public streams found.</div>';
-    return;
-  }
-  empty.style.display = 'none';
-  grid.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
-
-  models.forEach(model => {
-    const streamUrl = (model.stream.urls[quality] || model.stream.urls['original'] || model.stream.url);
-    grid.appendChild(buildTile(model, streamUrl));
+  const params = new URLSearchParams({
+    limit: 200,
+    sortBy: sort,
+    ...(gender && { gender }),
+    ...(tag    && { tag }),
   });
 
-  document.getElementById('statusText').textContent = models.length + ' streams - ' + new Date().toLocaleTimeString();
+  try {
+    const res  = await fetch(`${API}?${params}`, { headers: { Accept: 'application/json' } });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    allModels  = (data.models || []).filter(m => m.status === 'public' && m.stream?.urls);
+  } catch(e) {
+    document.getElementById('statusText').textContent = 'API error — retry';
+    console.error(e);
+    return;
+  }
+
+  populateCountryFilter(allModels);
+  renderGrid();
+
+  // Reset refresh bar
   const bar = document.getElementById('refreshBar');
-  bar.style.animation = 'none'; bar.offsetHeight;
+  bar.style.animation = 'none';
+  bar.offsetHeight;
   bar.style.animation = 'drain 60s linear forwards';
+
   clearTimeout(refreshTimer);
   refreshTimer = setTimeout(loadStreams, 60000);
 }
 
-function buildTile(model, streamUrl) {
+function renderGrid() {
+  destroyAll();
+
+  const count   = parseInt(document.getElementById('gridSelect').value);
+  const cols    = Math.sqrt(count);
+  const quality = document.getElementById('qualitySelect').value;
+  const grid    = document.getElementById('grid');
+  const empty   = document.getElementById('empty-state');
+  const sentinel = document.getElementById('scroll-sentinel');
+
+  grid.innerHTML = '';
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  allPaused = false;
+  document.getElementById('pauseAllBtn').textContent = '⏸ Pause All';
+
+  currentFiltered = applyCountryFilter(allModels);
+
+  if (!currentFiltered.length) {
+    empty.style.display = 'flex';
+    sentinel.style.display = 'none';
+    document.getElementById('statusText').textContent = 'No streams found';
+    return;
+  }
+  empty.style.display = 'none';
+
+  // First batch = gridSelect count
+  const firstBatch = currentFiltered.slice(0, count);
+  currentOffset = firstBatch.length;
+  firstBatch.forEach(m => grid.appendChild(buildTile(m, quality)));
+
+  hasMore = currentOffset < currentFiltered.length;
+  sentinel.style.display = 'flex';
+  sentinel.classList.remove('loading');
+  sentinel.querySelector('.sentinel-text').textContent = hasMore ? 'Scroll for more' : '';
+
+  document.getElementById('statusText').textContent =
+    `${currentFiltered.length} streams · ${new Date().toLocaleTimeString()}`;
+
+  setupInfiniteScroll();
+}
+
+// ── INFINITE SCROLL ────────────────────────────────────────────────────────
+function setupInfiniteScroll() {
+  if (infiniteObserver) infiniteObserver.disconnect();
+  const sentinel = document.getElementById('scroll-sentinel');
+  infiniteObserver = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting && !isLoadingMore && hasMore) loadMoreTiles();
+  }, { root: document.getElementById('grid-wrapper'), rootMargin: '200px', threshold: 0.1 });
+  infiniteObserver.observe(sentinel);
+}
+
+async function loadMoreTiles() {
+  if (isLoadingMore || !hasMore) return;
+  isLoadingMore = true;
+
+  const sentinel = document.getElementById('scroll-sentinel');
+  sentinel.classList.add('loading');
+  sentinel.querySelector('.sentinel-text').textContent = 'Loading…';
+
+  await new Promise(r => setTimeout(r, 250));
+
+  const quality = document.getElementById('qualitySelect').value;
+  const grid    = document.getElementById('grid');
+  const batch   = currentFiltered.slice(currentOffset, currentOffset + BATCH);
+
+  batch.forEach(m => grid.appendChild(buildTile(m, quality)));
+  currentOffset += batch.length;
+  hasMore = currentOffset < currentFiltered.length;
+
+  sentinel.classList.remove('loading');
+  if (hasMore) {
+    sentinel.querySelector('.sentinel-text').textContent = 'Scroll for more';
+  } else {
+    sentinel.querySelector('.sentinel-text').textContent = `All ${currentFiltered.length} streams loaded`;
+    setTimeout(() => { sentinel.style.display = 'none'; }, 3000);
+  }
+
+  isLoadingMore = false;
+}
+
+// ── BUILD TILE ─────────────────────────────────────────────────────────────
+function buildTile(model, quality) {
+  const streamUrl = model.stream.urls[quality] || model.stream.urls['original'] || model.stream.url;
+
   const tile = document.createElement('div');
   tile.className = 'tile';
+  tile.dataset.username = model.username;
 
+  // Snapshot
   const snap = document.createElement('div');
   snap.className = 'tile-snapshot';
-  snap.style.backgroundImage = 'url(' + (model.snapshotUrl || model.widgetPreviewUrl) + ')';
+  const snapUrl = model.snapshotUrl || model.widgetPreviewUrl;
+  if (snapUrl) snap.style.backgroundImage = `url(${snapUrl})`;
 
+  // Video
   const video = document.createElement('video');
-  video.muted = true;
-  video.autoplay = true;
+  video.muted      = true;
+  video.autoplay   = true;
   video.playsInline = true;
 
   if (Hls.isSupported()) {
-    const hls = new Hls({
-      maxBufferLength: 15,
-      maxMaxBufferLength: 30,
-      enableWorker: true,
-      strictManifestParsing: false,
-      manifestLoadingMaxRetry: 4,
-      manifestLoadingRetryDelay: 1000,
-      levelLoadingMaxRetry: 4,
-      fragLoadingMaxRetry: 4
-    });
+    const hls = new Hls({ maxBufferLength: 10, maxMaxBufferLength: 20, enableWorker: true, strictManifestParsing: false });
     hls.loadSource(streamUrl);
     hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, function() {
-      hls.startLevel = hls.levels.length - 1;
-      video.play().catch(function(){});
-      snap.classList.add('hidden');
-    });
-    hls.on(Hls.Events.LEVEL_LOADED, function() { snap.classList.add('hidden'); });
-    var errCount = 0;
-    hls.on(Hls.Events.ERROR, function(event, data) {
-      if (!data.fatal) return;
-      errCount++;
-      if (data.type === Hls.ErrorTypes.NETWORK_ERROR && errCount < 3) { hls.startLoad(); }
-      else if (data.type === Hls.ErrorTypes.MEDIA_ERROR && errCount < 3) { hls.recoverMediaError(); }
-      else {
-        var errDiv = document.createElement('div');
-        errDiv.className = 'tile-error';
-        errDiv.textContent = 'Stream offline';
-        tile.appendChild(errDiv);
+    hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); snap.classList.add('hidden'); });
+    hls.on(Hls.Events.ERROR, (_, data) => {
+      if (data.fatal) {
+        const err = document.createElement('div');
+        err.className = 'tile-error';
+        err.textContent = 'Stream unavailable';
+        tile.appendChild(err);
       }
     });
-    hlsInstances.push(hls);
+    hlsInstances.set(model.username, hls);
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
     video.src = streamUrl;
-    video.addEventListener('loadeddata', function() { snap.classList.add('hidden'); });
-    video.play().catch(function(){});
+    video.addEventListener('loadeddata', () => snap.classList.add('hidden'));
   }
 
-  var top = document.createElement('div'); top.className = 'tile-top';
-  var liveTag = document.createElement('span'); liveTag.className = 'badge-live'; liveTag.textContent = 'LIVE';
-  top.appendChild(liveTag);
+  // ── TOP BAR ──
+  const top = document.createElement('div');
+  top.className = 'tile-top';
+
+  const topLeft = document.createElement('div');
+  topLeft.style.cssText = 'display:flex;gap:4px;align-items:center;pointer-events:none;';
+  const liveBadge = document.createElement('span');
+  liveBadge.className = 'badge-live';
+  liveBadge.textContent = 'LIVE';
+  topLeft.appendChild(liveBadge);
   if (model.broadcastHD) {
-    var hd = document.createElement('span'); hd.className = 'badge-hd'; hd.textContent = 'HD';
-    top.appendChild(hd);
+    const hd = document.createElement('span');
+    hd.className = 'badge-hd';
+    hd.textContent = 'HD';
+    topLeft.appendChild(hd);
   }
 
-  var bot = document.createElement('div'); bot.className = 'tile-bottom';
-  var nameEl = document.createElement('div'); nameEl.className = 'tile-username'; nameEl.textContent = model.username;
-  var viewEl = document.createElement('div'); viewEl.className = 'tile-viewers'; viewEl.textContent = fmtViewers(model.viewersCount);
-  var ctrlEl = document.createElement('div'); ctrlEl.className = 'tile-controls';
+  const topRight = document.createElement('div');
+  topRight.style.cssText = 'display:flex;gap:4px;align-items:center;pointer-events:none;';
+  if (model.country) {
+    const ctry = document.createElement('span');
+    ctry.className = 'badge-country';
+    ctry.textContent = getCountryFlag(model.country) + ' ' + model.country.toUpperCase();
+    topRight.appendChild(ctry);
+  }
 
-  var muteBtn = document.createElement('button'); muteBtn.className = 'tile-btn'; muteBtn.textContent = 'M'; muteBtn.title = 'Toggle audio';
-  muteBtn.onclick = function(e) {
+  top.appendChild(topLeft);
+  top.appendChild(topRight);
+
+  // ── BOTTOM BAR ──
+  const bot = document.createElement('div');
+  bot.className = 'tile-bottom';
+
+  const nameEl = document.createElement('div');
+  nameEl.className = 'tile-username';
+  nameEl.textContent = model.username;
+
+  const viewEl = document.createElement('div');
+  viewEl.className = 'tile-viewers';
+  viewEl.textContent = fmtViewers(model.viewersCount);
+
+  const ctrlEl = document.createElement('div');
+  ctrlEl.className = 'tile-controls';
+
+  // Mute btn
+  const muteBtn = document.createElement('button');
+  muteBtn.className = 'tile-btn';
+  muteBtn.textContent = '🔇';
+  muteBtn.title = 'Toggle audio';
+  muteBtn.onclick = e => {
     e.stopPropagation();
     if (video.muted) {
-      document.querySelectorAll('video').forEach(function(v) { v.muted = true; });
-      document.querySelectorAll('.tile-btn.unmuted').forEach(function(b) { b.classList.remove('unmuted'); b.textContent = 'M'; });
-      document.querySelectorAll('.tile').forEach(function(t) { t.classList.remove('active-audio'); });
-      video.muted = false; muteBtn.classList.add('unmuted'); muteBtn.textContent = 'U'; tile.classList.add('active-audio');
-    } else { video.muted = true; muteBtn.classList.remove('unmuted'); muteBtn.textContent = 'M'; tile.classList.remove('active-audio'); }
+      // Mute all, then unmute this
+      document.querySelectorAll('video').forEach(v => v.muted = true);
+      document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = '🔇'; });
+      document.querySelectorAll('.tile').forEach(t => { t.classList.remove('active-audio'); t.style.order = ''; });
+      video.muted = false;
+      muteBtn.classList.add('unmuted');
+      muteBtn.textContent = '🔊';
+      tile.classList.add('active-audio');
+      tile.style.order = '-9999';
+      document.getElementById('grid-wrapper').classList.add('has-active-audio');
+    } else {
+      video.muted = true;
+      muteBtn.classList.remove('unmuted');
+      muteBtn.textContent = '🔇';
+      tile.classList.remove('active-audio');
+      tile.style.order = '';
+      document.getElementById('grid-wrapper').classList.remove('has-active-audio');
+    }
   };
 
-  var fsBtn = document.createElement('button'); fsBtn.className = 'tile-btn'; fsBtn.textContent = '[]'; fsBtn.title = 'Fullscreen';
-  fsBtn.onclick = function(e) {
+  // Fullscreen btn
+  const fsBtn = document.createElement('button');
+  fsBtn.className = 'tile-btn';
+  fsBtn.textContent = '⛶';
+  fsBtn.title = 'Fullscreen';
+  fsBtn.onclick = e => {
     e.stopPropagation();
-    if (video.requestFullscreen) video.requestFullscreen();
-    else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
+    document.querySelectorAll('video').forEach(v => { if (v !== video) v.pause(); });
+    const onExit = () => {
+      if (!document.fullscreenElement) {
+        document.querySelectorAll('video').forEach(v => { if (v !== video && !allPaused) v.play().catch(() => {}); });
+        document.removeEventListener('fullscreenchange', onExit);
+      }
+    };
+    document.addEventListener('fullscreenchange', onExit);
+    (video.requestFullscreen || video.webkitRequestFullscreen).call(video);
   };
 
-  ctrlEl.appendChild(muteBtn); ctrlEl.appendChild(fsBtn);
-  bot.appendChild(nameEl); bot.appendChild(viewEl); bot.appendChild(ctrlEl);
+  ctrlEl.appendChild(muteBtn);
+  ctrlEl.appendChild(fsBtn);
+  bot.appendChild(nameEl);
+  bot.appendChild(viewEl);
+  bot.appendChild(ctrlEl);
 
-  var cta = document.createElement('div'); cta.className = 'tile-cta';
-  var ctaLink = document.createElement('a'); ctaLink.className = 'cta-link';
-  ctaLink.href = buildAffUrl(model.username); ctaLink.target = '_blank'; ctaLink.rel = 'noopener noreferrer';
-  ctaLink.textContent = 'Join ' + model.username + "'s Room";
-  cta.appendChild(ctaLink);
+  // ── META OVERLAY ──
+  const meta = buildMetaPanel(model);
 
-  tile.appendChild(snap); tile.appendChild(video); tile.appendChild(top); tile.appendChild(bot); tile.appendChild(cta);
+  tile.appendChild(snap);
+  tile.appendChild(video);
+  tile.appendChild(top);
+  tile.appendChild(bot);
+  tile.appendChild(meta);
+
   return tile;
 }
 
-// Auto-start if already authenticated
-if (sessionStorage.getItem('lg_auth') === '1') { loadStreams(); }
+// ── META PANEL ─────────────────────────────────────────────────────────────
+function buildMetaPanel(model) {
+  const meta = document.createElement('div');
+  meta.className = 'tile-meta';
 
-['gridSelect','genderSelect','sortSelect','qualitySelect'].forEach(function(id) {
+  // Stop hover from triggering mute/fs below
+  meta.addEventListener('mousedown', e => e.stopPropagation());
+
+  // Header: name + live badge
+  const hdr = document.createElement('div');
+  hdr.className = 'meta-header';
+  const nameSpan = document.createElement('span');
+  nameSpan.className = 'meta-name';
+  nameSpan.textContent = model.username;
+  const liveBadge = document.createElement('span');
+  liveBadge.className = 'badge-live';
+  liveBadge.textContent = 'LIVE';
+  hdr.appendChild(nameSpan);
+  hdr.appendChild(liveBadge);
+  meta.appendChild(hdr);
+
+  // Divider
+  const divider = () => { const d = document.createElement('div'); d.className = 'meta-divider'; return d; };
+  meta.appendChild(divider());
+
+  // Data rows
+  const addRow = (icon, label, val) => {
+    if (!val && val !== 0) return;
+    const row = document.createElement('div');
+    row.className = 'meta-row';
+    row.innerHTML = `<span class="meta-icon">${icon}</span><span class="meta-label">${label}:&nbsp;</span><span class="meta-val">${val}</span>`;
+    meta.appendChild(row);
+  };
+
+  addRow('👁', 'Viewers', fmtViewers(model.viewersCount || 0));
+
+  // Online time: try onlineTime (seconds), then liveSince ISO string
+  let onlineStr = null;
+  if (model.onlineTime)   onlineStr = fmtTime(model.onlineTime);
+  else if (model.liveSince) {
+    const diff = Math.floor((Date.now() - new Date(model.liveSince).getTime()) / 1000);
+    onlineStr = fmtTime(diff);
+  }
+  if (onlineStr) addRow('⏱', 'Online', onlineStr);
+
+  if (model.country) {
+    addRow('📍', 'Country', `${getCountryFlag(model.country)} ${model.country.toUpperCase()}`);
+  }
+
+  // Try to get city / region from model (some API responses have these)
+  if (model.city)   addRow('🏙', 'City',   model.city);
+  if (model.region) addRow('🗺', 'Region', model.region);
+
+  if (model.age)    addRow('🎂', 'Age', `${model.age}`);
+
+  if (model.gender) {
+    const gMap = { female: '♀ Female', male: '♂ Male', couple: '⚤ Couple', trans: '⚧ Trans' };
+    addRow('✦', 'Gender', gMap[model.gender] || model.gender);
+  }
+
+  if (model.ethnicity)   addRow('🌐', 'Ethnicity', model.ethnicity);
+  if (model.bodyType)    addRow('⚡', 'Body', model.bodyType);
+  if (model.hairColor)   addRow('💇', 'Hair', model.hairColor);
+  if (model.eyeColor)    addRow('👁‍🗨', 'Eyes', model.eyeColor);
+  if (model.broadcastHD) addRow('📺', 'Quality', 'HD Stream');
+
+  // Language(s)
+  const langs = model.languages || (model.spokenLanguages && model.spokenLanguages.join(', '));
+  if (langs) addRow('🗣', 'Language', Array.isArray(langs) ? langs.join(', ') : langs);
+
+  // Tags
+  const tags = model.tags || model.categories || [];
+  if (tags.length > 0) {
+    meta.appendChild(divider());
+    const tagsEl = document.createElement('div');
+    tagsEl.className = 'meta-tags';
+    tags.slice(0, 14).forEach(t => {
+      const tag = document.createElement('span');
+      tag.className = 'meta-tag';
+      tag.textContent = typeof t === 'string' ? t : (t.tag || t.name || String(t));
+      tagsEl.appendChild(tag);
+    });
+    meta.appendChild(tagsEl);
+  }
+
+  // Spacer pushes CTA to bottom
+  const spacer = document.createElement('div');
+  spacer.className = 'meta-spacer';
+  meta.appendChild(spacer);
+
+  // CTA
+  const ctaWrap = document.createElement('div');
+  ctaWrap.className = 'meta-cta';
+  const ctaLink = document.createElement('a');
+  ctaLink.className = 'cta-link';
+  ctaLink.href      = buildAffUrl(model.username);
+  ctaLink.target    = '_blank';
+  ctaLink.rel       = 'noopener noreferrer';
+  ctaLink.textContent = `▶ Join ${model.username}'s Room`;
+  ctaLink.onclick   = e => e.stopPropagation();
+  ctaWrap.appendChild(ctaLink);
+  meta.appendChild(ctaWrap);
+
+  return meta;
+}
+
+// ── BOOT ──────────────────────────────────────────────────────────────────
+['gridSelect','genderSelect','sortSelect','qualitySelect'].forEach(id => {
   document.getElementById(id).addEventListener('change', loadStreams);
 });
-document.getElementById('tagInput').addEventListener('keydown', function(e) {
+
+document.getElementById('countrySelect').addEventListener('change', renderGrid);
+
+document.getElementById('tagInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') loadStreams();
 });
+
+loadStreams();
 </script>
 </body>
 </html>
-
-
-
-
