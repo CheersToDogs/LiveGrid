@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -63,7 +63,7 @@
   .tile-bottom { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 8px; background: linear-gradient(to top, rgba(0,0,0,.8), transparent); z-index: 2; }
   .tile-username { font-size: 12px; font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; }
   .tile-viewers { font-family: 'Space Mono', monospace; font-size: 10px; color: rgba(255,255,255,.7); }
-  .tile-viewers::before { content: '👁 '; }
+  .tile-viewers::before { content: 'ðŸ‘ '; }
   .tile-controls { display: flex; gap: 4px; pointer-events: all; }
   .tile-btn { width: 26px; height: 26px; border-radius: 4px; background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.15); color: #fff; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s; backdrop-filter: blur(4px); }
   .tile-btn:hover { background: rgba(255,255,255,.2); }
@@ -108,6 +108,9 @@
           <option value="9">3x3</option>
           <option value="16">4x4</option>
           <option value="25">5x5</option>
+          <option value="36">6x6</option>
+          <option value="49">7x7</option>
+          <option value="64">8x8</option>
         </select>
       </div>
       <div style="display:flex;align-items:center;gap:6px;">
@@ -244,7 +247,7 @@ async function loadStreams() {
 
   if (!models.length) {
     empty.style.display = 'flex';
-    empty.innerHTML = '<div class="icon">📡</div><div>No public streams found.</div>';
+    empty.innerHTML = '<div class="icon">ðŸ“¡</div><div>No public streams found.</div>';
     return;
   }
   empty.style.display = 'none';
@@ -368,3 +371,4 @@ document.getElementById('tagInput').addEventListener('keydown', function(e) {
 </script>
 </body>
 </html>
+
