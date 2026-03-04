@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LiveGrid — Multi-Stream Viewer</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080a0e;
+    --surface: #0f1218;
+    --surface2: #161b24;
+    --border: #1e2533;
+    --accent: #00e5ff;
+    --accent2: #ff3d71;
+    --text: #e8edf5;
+    --muted: #4a5568;
+    --live: #ff3d71;
+    --radius: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+
+  .logo {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .logo span { color: var(--accent); }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    flex: 1;
+  }
+
+  label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  select, input[type="text"] {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: var(--radius);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color .2s;
+  }
+  select:hover, input:hover { border-color: var(--accent); }
+  select:focus, input:focus { border-color: var(--accent); }
+  input[type="text"] { width: 130px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--radius);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    cursor: pointer;
+    border: none;
+    transition: all .2s;
+    text-transform: uppercase;
+  }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: #33ecff; transform: translateY(-1px); }
+  .btn-danger { background: transparent; border: 1px solid var(--accent2); color: var(--accent2); }
+  .btn-danger:hover { background: var(--accent2); color: #fff; }
+
+  .status-bar {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .status-text { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; }
+  .live-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--live);
+    animation: pulse 1.5s ease-in-out infinite;
+    display: inline-block;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50% { opacity:.4; transform:scale(.7); }
+  }
+
+  #grid-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px;
+  }
+  #grid-wrapper::-webkit-scrollbar { width: 5px; }
+  #grid-wrapper::-webkit-scrollbar-track { background: var(--bg); }
+  #grid-wrapper::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  #grid-wrapper::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  #grid { display: grid; gap: 8px; }
+
+  .tile {
+    position: relative;
+    background: #000;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: border-color .2s, box-shadow .2s;
+    aspect-ratio: 16/9;
+    min-height: 0;
+  }
+  .tile:hover { border-color: var(--accent); }
+  .tile.active-audio { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,229,255,.2); }
+
+  .tile video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    background: #000;
+  }
+
+  .tile-snapshot {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    transition: opacity .5s;
+    z-index: 1;
+  }
+  .tile-snapshot.hidden { opacity: 0; pointer-events: none; }
+
+  .tile-top {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 6px 8px;
+    background: linear-gradient(to bottom, rgba(0,0,0,.7), transparent);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .badge-live {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--live);
+    color: #fff;
+  }
+  .badge-hd {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    padding: 2px 5px;
+    border-radius: 3px;
+    background: rgba(0,229,255,.2);
+    border: 1px solid rgba(0,229,255,.4);
+    color: var(--accent);
+  }
+
+  .tile-bottom {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 6px 8px;
+    background: linear-gradient(to top, rgba(0,0,0,.8), transparent);
+    z-index: 2;
+  }
+
+  .tile-username {
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,.8);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 65%;
+  }
+  .tile-viewers {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,.7);
+  }
+  .tile-viewers::before { content: '👁 '; }
+
+  .tile-controls { display: flex; gap: 4px; pointer-events: all; }
+
+  .tile-btn {
+    width: 26px; height: 26px;
+    border-radius: 4px;
+    background: rgba(0,0,0,.6);
+    border: 1px solid rgba(255,255,255,.15);
+    color: #fff;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s;
+    backdrop-filter: blur(4px);
+  }
+  .tile-btn:hover { background: rgba(255,255,255,.2); }
+  .tile-btn.unmuted { background: rgba(0,229,255,.3); border-color: var(--accent); }
+
+  .tile-cta {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity .2s;
+    pointer-events: none;
+    z-index: 3;
+  }
+  .tile:hover .tile-cta { opacity: 1; pointer-events: all; }
+
+  .cta-link {
+    display: block;
+    padding: 7px 14px;
+    background: var(--accent2);
+    color: #fff;
+    text-decoration: none;
+    border-radius: var(--radius);
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: .5px;
+    box-shadow: 0 4px 20px rgba(255,61,113,.4);
+    transition: transform .15s, box-shadow .15s;
+    white-space: nowrap;
+  }
+  .cta-link:hover { transform: scale(1.05); box-shadow: 0 6px 24px rgba(255,61,113,.6); }
+
+  #empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 12px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  #empty-state .icon { font-size: 40px; opacity: .4; }
+
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .tile-error {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.7);
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    z-index: 4;
+  }
+
+  .aff-input { width: 150px !important; }
+
+  .refresh-progress { width: 60px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .refresh-bar {
+    height: 100%;
+    background: var(--accent);
+    width: 100%;
+    transform-origin: left;
+    animation: drain 60s linear forwards;
+  }
+  @keyframes drain { to { transform: scaleX(0); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">LIVE<span>GRID</span></div>
+  <div class="controls">
+    <div style="display:flex;align-items:center;gap:6px;">
+      <label>Grid</label>
+      <select id="gridSelect">
+        <option value="1">1×1</option>
+        <option value="4" selected>2×2</option>
+        <option value="9">3×3</option>
+        <option value="16">4×4</option>
+        <option value="25">5×5</option>
+      </select>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <label>Gender</label>
+      <select id="genderSelect">
+        <option value="">All</option>
+        <option value="female" selected>Female</option>
+        <option value="male">Male</option>
+        <option value="couple">Couple</option>
+        <option value="trans">Trans</option>
+      </select>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <label>Sort</label>
+      <select id="sortSelect">
+        <option value="viewersCount" selected>Most Viewers</option>
+        <option value="onlineTime">Longest Online</option>
+        <option value="new">Newest</option>
+      </select>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <label>Tag</label>
+      <input type="text" id="tagInput" placeholder="e.g. latina, bbw…">
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <label>Quality</label>
+      <select id="qualitySelect">
+        <option value="original">Auto</option>
+        <option value="480p">480p</option>
+        <option value="240p">240p</option>
+        <option value="160p">160p</option>
+      </select>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <label>Aff. ID</label>
+      <input type="text" id="affId" class="aff-input" placeholder="your-campaign-id">
+    </div>
+    <button class="btn btn-primary" onclick="loadStreams()">⟳ Refresh</button>
+    <button class="btn btn-danger" onclick="muteAll()">Mute All</button>
+  </div>
+  <div class="status-bar">
+    <span class="live-dot"></span>
+    <span class="status-text" id="statusText">—</span>
+    <div class="refresh-progress"><div class="refresh-bar" id="refreshBar"></div></div>
+  </div>
+</header>
+
+<div id="grid-wrapper">
+  <div id="grid"></div>
+  <div id="empty-state">
+    <div class="spinner"></div>
+    <div>Loading live streams…</div>
+  </div>
+</div>
+
+<script>
+const hlsInstances = [];
+let refreshTimer = null;
+const API = 'https://go.stripchat.com/api/models';
+
+function muteAll() {
+  document.querySelectorAll('video').forEach(v => v.muted = true);
+  document.querySelectorAll('.tile-btn.unmuted').forEach(b => {
+    b.classList.remove('unmuted'); b.textContent = '🔇';
+  });
+  document.querySelectorAll('.tile').forEach(t => t.classList.remove('active-audio'));
+}
+
+function fmtViewers(n) {
+  return n >= 1000 ? (n/1000).toFixed(1) + 'K' : n;
+}
+
+function buildAffUrl(username) {
+  const aff = document.getElementById('affId').value.trim();
+  const base = `https://stripchat.com/${username}`;
+  return aff ? `${base}?campaign=${encodeURIComponent(aff)}` : base;
+}
+
+function destroyAll() {
+  hlsInstances.forEach(h => { try { h.destroy(); } catch(e){} });
+  hlsInstances.length = 0;
+  document.querySelectorAll('video').forEach(v => {
+    v.pause(); v.src = ''; v.removeAttribute('src');
+  });
+}
+
+// Strip Stripchat's proprietary EXT-X-MOUFLON tag before HLS.js loads it
+async function getCleanStreamUrl(rawUrl) {
+  try {
+    const res = await fetch(rawUrl);
+    if (!res.ok) return rawUrl;
+    let text = await res.text();
+    text = text.split('\n').filter(l => !l.startsWith('#EXT-X-MOUFLON')).join('\n');
+    const blob = new Blob([text], { type: 'application/vnd.apple.mpegurl' });
+    return URL.createObjectURL(blob);
+  } catch(e) {
+    return rawUrl;
+  }
+}
+
+async function loadStreams() {
+  const count   = parseInt(document.getElementById('gridSelect').value);
+  const gender  = document.getElementById('genderSelect').value;
+  const sort    = document.getElementById('sortSelect').value;
+  const tag     = document.getElementById('tagInput').value.trim();
+  const quality = document.getElementById('qualitySelect').value;
+  const cols    = Math.sqrt(count);
+
+  document.getElementById('statusText').textContent = 'Loading…';
+
+  const params = new URLSearchParams({
+    limit: count + 10,
+    sortBy: sort,
+    ...(gender && { gender }),
+    ...(tag    && { tag }),
+  });
+
+  let models = [];
+  try {
+    const res = await fetch(`${API}?${params}`, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    models = (data.models || [])
+      .filter(m => m.status === 'public' && m.stream?.urls)
+      .slice(0, count);
+  } catch(e) {
+    document.getElementById('statusText').textContent = 'API error — retry';
+    console.error(e);
+    return;
+  }
+
+  destroyAll();
+  const grid  = document.getElementById('grid');
+  const empty = document.getElementById('empty-state');
+  grid.innerHTML = '';
+
+  if (!models.length) {
+    empty.style.display = 'flex';
+    empty.innerHTML = '<div class="icon">📡</div><div>No public streams found.</div>';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+  await Promise.all(models.map(async model => {
+    const streamUrl = model.stream.urls[quality] || model.stream.urls['original'] || model.stream.url;
+    const tile = await buildTile(model, streamUrl);
+    grid.appendChild(tile);
+  }));
+
+  document.getElementById('statusText').textContent = `${models.length} streams · ${new Date().toLocaleTimeString()}`;
+
+  const bar = document.getElementById('refreshBar');
+  bar.style.animation = 'none';
+  bar.offsetHeight;
+  bar.style.animation = 'drain 60s linear forwards';
+
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(loadStreams, 60000);
+}
+
+async function buildTile(model, streamUrl) {
+  const cleanUrl = await getCleanStreamUrl(streamUrl);
+  const tile = document.createElement('div');
+  tile.className = 'tile';
+
+  const snap = document.createElement('div');
+  snap.className = 'tile-snapshot';
+  snap.style.backgroundImage = `url(${model.snapshotUrl || model.widgetPreviewUrl})`;
+
+  const video = document.createElement('video');
+  video.muted = true;
+  video.autoplay = true;
+  video.playsInline = true;
+  video.setAttribute('playsinline', '');
+  video.setAttribute('webkit-playsinline', '');
+
+  if (Hls.isSupported()) {
+    const hls = new Hls({
+      maxBufferLength: 15,
+      maxMaxBufferLength: 30,
+      enableWorker: true,
+      strictManifestParsing: false,
+      manifestLoadingMaxRetry: 4,
+      manifestLoadingRetryDelay: 1000,
+      levelLoadingMaxRetry: 4,
+      fragLoadingMaxRetry: 4,
+    });
+    hls.loadSource(cleanUrl);
+    hls.attachMedia(video);
+
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      hls.startLevel = hls.levels.length - 1;
+      video.play().catch(() => {});
+      snap.classList.add('hidden');
+    });
+    hls.on(Hls.Events.LEVEL_LOADED, () => snap.classList.add('hidden'));
+
+    let errCount = 0;
+    hls.on(Hls.Events.ERROR, (_, data) => {
+      if (!data.fatal) return;
+      errCount++;
+      if (data.type === Hls.ErrorTypes.NETWORK_ERROR && errCount < 3) {
+        hls.startLoad();
+      } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR && errCount < 3) {
+        hls.recoverMediaError();
+      } else {
+        const errDiv = document.createElement('div');
+        errDiv.className = 'tile-error';
+        errDiv.textContent = 'Stream offline';
+        tile.appendChild(errDiv);
+      }
+    });
+    hlsInstances.push(hls);
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = cleanUrl;
+    video.addEventListener('loadeddata', () => snap.classList.add('hidden'));
+    video.play().catch(() => {});
+  }
+
+  // Top bar
+  const top = document.createElement('div');
+  top.className = 'tile-top';
+  const liveTag = document.createElement('span');
+  liveTag.className = 'badge-live';
+  liveTag.textContent = 'LIVE';
+  top.appendChild(liveTag);
+  if (model.broadcastHD) {
+    const hd = document.createElement('span');
+    hd.className = 'badge-hd';
+    hd.textContent = 'HD';
+    top.appendChild(hd);
+  }
+
+  // Bottom bar
+  const bot = document.createElement('div');
+  bot.className = 'tile-bottom';
+
+  const nameEl = document.createElement('div');
+  nameEl.className = 'tile-username';
+  nameEl.textContent = model.username;
+
+  const viewEl = document.createElement('div');
+  viewEl.className = 'tile-viewers';
+  viewEl.textContent = fmtViewers(model.viewersCount);
+
+  const ctrlEl = document.createElement('div');
+  ctrlEl.className = 'tile-controls';
+
+  const muteBtn = document.createElement('button');
+  muteBtn.className = 'tile-btn';
+  muteBtn.textContent = '🔇';
+  muteBtn.title = 'Toggle audio';
+  muteBtn.onclick = (e) => {
+    e.stopPropagation();
+    if (video.muted) {
+      document.querySelectorAll('video').forEach(v => v.muted = true);
+      document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = '🔇'; });
+      document.querySelectorAll('.tile').forEach(t => t.classList.remove('active-audio'));
+      video.muted = false;
+      muteBtn.classList.add('unmuted');
+      muteBtn.textContent = '🔊';
+      tile.classList.add('active-audio');
+    } else {
+      video.muted = true;
+      muteBtn.classList.remove('unmuted');
+      muteBtn.textContent = '🔇';
+      tile.classList.remove('active-audio');
+    }
+  };
+
+  const fsBtn = document.createElement('button');
+  fsBtn.className = 'tile-btn';
+  fsBtn.textContent = '⛶';
+  fsBtn.title = 'Fullscreen';
+  fsBtn.onclick = (e) => {
+    e.stopPropagation();
+    if (video.requestFullscreen) video.requestFullscreen();
+    else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
+  };
+
+  ctrlEl.appendChild(muteBtn);
+  ctrlEl.appendChild(fsBtn);
+  bot.appendChild(nameEl);
+  bot.appendChild(viewEl);
+  bot.appendChild(ctrlEl);
+
+  // Affiliate CTA on hover
+  const cta = document.createElement('div');
+  cta.className = 'tile-cta';
+  const ctaLink = document.createElement('a');
+  ctaLink.className = 'cta-link';
+  ctaLink.href = buildAffUrl(model.username);
+  ctaLink.target = '_blank';
+  ctaLink.rel = 'noopener noreferrer';
+  ctaLink.textContent = `▶ Join ${model.username}'s Room`;
+  cta.appendChild(ctaLink);
+
+  tile.appendChild(snap);
+  tile.appendChild(video);
+  tile.appendChild(top);
+  tile.appendChild(bot);
+  tile.appendChild(cta);
+
+  return tile;
+}
+
+['gridSelect','genderSelect','sortSelect','qualitySelect'].forEach(id => {
+  document.getElementById(id).addEventListener('change', loadStreams);
+});
+document.getElementById('tagInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') loadStreams();
+});
+
+loadStreams();
+</script>
+</body>
+</html>

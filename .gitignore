@@ -1,0 +1,7 @@
+# Dependencies (none — CDN only)
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.*
