@@ -189,7 +189,6 @@ document.getElementById('gate-input').addEventListener('keydown', e => {
 if (sessionStorage.getItem('lg_auth') === '1') {
   document.getElementById('gate').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
-  loadStreams();
 }
 
 const hlsInstances = [];
@@ -363,6 +362,9 @@ function buildTile(model, streamUrl) {
   return tile;
 }
 
+// Auto-start if already authenticated
+if (sessionStorage.getItem('lg_auth') === '1') { loadStreams(); }
+
 ['gridSelect','genderSelect','sortSelect','qualitySelect'].forEach(function(id) {
   document.getElementById(id).addEventListener('change', loadStreams);
 });
@@ -372,5 +374,6 @@ document.getElementById('tagInput').addEventListener('keydown', function(e) {
 </script>
 </body>
 </html>
+
 
 
