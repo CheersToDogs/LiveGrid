@@ -73,13 +73,13 @@
   .tile-snapshot.hidden { opacity: 0; pointer-events: none; }
 
   /* TOP BAR */
-  .tile-top { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 8px; background: linear-gradient(to bottom,rgba(0,0,0,.75),transparent); pointer-events: none; }
+  .tile-top { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 8px; background: linear-gradient(to bottom,rgba(0,0,0,.75),transparent); pointer-events: none; z-index: 20; }
   .badge-live { font-family: 'Space Mono',monospace; font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 2px 6px; border-radius: 3px; background: var(--live); color: #fff; }
   .badge-hd { font-family: 'Space Mono',monospace; font-size: 9px; padding: 2px 5px; border-radius: 3px; background: rgba(0,229,255,.2); border: 1px solid rgba(0,229,255,.4); color: var(--accent); }
   .badge-country { font-family: 'Space Mono',monospace; font-size: 10px; padding: 2px 6px; border-radius: 3px; background: rgba(0,0,0,.55); color: rgba(255,255,255,.85); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,.1); }
 
   /* BOTTOM BAR */
-  .tile-bottom { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 8px; background: linear-gradient(to top,rgba(0,0,0,.85),transparent); }
+  .tile-bottom { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 8px; background: linear-gradient(to top,rgba(0,0,0,.85),transparent); z-index: 20; }
   .tile-username { font-size: 12px; font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; }
   .tile-viewers { font-family: 'Space Mono',monospace; font-size: 10px; color: rgba(255,255,255,.7); }
   .tile-viewers::before { content: '👁 '; }
@@ -89,7 +89,7 @@
   .tile-btn.unmuted { background: rgba(0,229,255,.3); border-color: var(--accent); }
 
   /* META OVERLAY */
-  .tile-meta { position: absolute; left: 0; right: 0; bottom: 0; max-height: 55%; background: rgba(4,6,12,.95); backdrop-filter: blur(10px); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; display: flex; flex-direction: column; padding: 8px 10px 6px; gap: 4px; overflow-y: auto; overflow-x: hidden; z-index: 15; transform: translateY(6px); border-top: 1px solid rgba(255,255,255,.07); }
+  .tile-meta { position: absolute; left: 0; right: 0; bottom: 46px; max-height: calc(100% - 56px); background: rgba(4,6,12,.95); backdrop-filter: blur(10px); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; display: flex; flex-direction: column; padding: 8px 10px 6px; gap: 4px; overflow-y: auto; overflow-x: hidden; z-index: 14; transform: translateY(4px); border-top: 1px solid rgba(255,255,255,.07); }
   .tile-meta::-webkit-scrollbar { width: 3px; }
   .tile-meta::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
   .tile:hover .tile-meta { opacity: 1; pointer-events: all; transform: translateY(0); }
@@ -475,6 +475,7 @@ async function loadStreams() {
     // Client-side gender filter as safety net (API sometimes ignores param)
     if (gender) models = models.filter(m => m.gender === gender);
     allModels = models;
+    if (models.length) { console.log("[LiveGrid] Sample model fields:", JSON.stringify(models[0], null, 2)); }
   } catch(e) {
     document.getElementById('statusText').textContent = 'API error — retry';
     console.error(e);
