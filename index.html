@@ -89,10 +89,10 @@
   .tile-btn.unmuted { background: rgba(0,229,255,.3); border-color: var(--accent); }
 
   /* META OVERLAY */
-  .tile-meta { position: absolute; inset: 0; background: rgba(4,6,12,.92); backdrop-filter: blur(8px); opacity: 0; pointer-events: none; transition: opacity .18s; display: flex; flex-direction: column; padding: 10px 10px 8px; gap: 5px; overflow-y: auto; overflow-x: hidden; z-index: 20; }
+  .tile-meta { position: absolute; left: 0; right: 0; bottom: 0; max-height: 55%; background: rgba(4,6,12,.95); backdrop-filter: blur(10px); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; display: flex; flex-direction: column; padding: 8px 10px 6px; gap: 4px; overflow-y: auto; overflow-x: hidden; z-index: 15; transform: translateY(6px); border-top: 1px solid rgba(255,255,255,.07); }
   .tile-meta::-webkit-scrollbar { width: 3px; }
   .tile-meta::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-  .tile:hover .tile-meta { opacity: 1; pointer-events: all; }
+  .tile:hover .tile-meta { opacity: 1; pointer-events: all; transform: translateY(0); }
   .meta-header { display: flex; align-items: center; gap: 7px; flex-shrink: 0; padding-bottom: 4px; }
   .meta-name { font-family: 'Syne',sans-serif; font-weight: 800; font-size: 13px; color: #fff; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .meta-divider { height: 1px; background: var(--border); flex-shrink: 0; margin: 1px 0; }
@@ -347,7 +347,7 @@ function setTagFilter(tag) {
 }
 
 // ── UNMUTE TILE (shared logic) ─────────────────────────────────────────────
-function unmuteTile(tile) {
+function unmuteTile(tile, explicitBtn) {
   const video = tile.querySelector('video');
   if (!video) return;
   // Mute everything else first
@@ -356,7 +356,7 @@ function unmuteTile(tile) {
   document.querySelectorAll('.tile').forEach(t => { t.classList.remove('active-audio'); t.style.order = ''; });
   // Unmute this tile
   video.muted = false;
-  const muteBtn = tile.querySelector('.tile-btn');
+  const muteBtn = explicitBtn || tile.querySelector('.tile-btn');
   if (muteBtn) { muteBtn.classList.add('unmuted'); muteBtn.textContent = '🔊'; }
   tile.classList.add('active-audio');
   tile.style.order = '-9999';
@@ -611,8 +611,7 @@ function buildTile(model, quality) {
   muteBtn.onclick = e => {
     e.stopPropagation();
     if (video.muted) {
-      unmuteTile(tile);
-      muteBtn.classList.add('unmuted'); muteBtn.textContent = '🔊';
+      unmuteTile(tile, muteBtn);
     } else {
       video.muted = true; muteBtn.classList.remove('unmuted'); muteBtn.textContent = '🔇';
       tile.classList.remove('active-audio'); tile.style.order = '';
