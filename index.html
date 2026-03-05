@@ -804,7 +804,7 @@
   .nav-pill.active { background: var(--accent); color: #000; border-color: var(--accent); }
   .nav-pill:active { transform: scale(.95); }
   /* Hide nav row on desktop */
-  .header-top-row { display: flex; align-items: center; gap: 10px; padding: 10px 16px; flex: 1; flex-wrap: wrap; }
+  .header-top-row { display: contents; } /* desktop: transparent passthrough */
   @media (min-width: 601px) {
     .header-nav-row { display: none !important; }
   }
@@ -1009,8 +1009,11 @@
 
   /* ── MOBILE LANDSCAPE ── */
   @media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
-    header { padding: 4px 10px; }
+    header { padding: 0; height: auto; }
+    .header-top-row { padding: 4px 10px 2px !important; }
+    .header-nav-row { padding: 0 10px 4px !important; }
     #grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .tile { aspect-ratio: 16/10; }
   }
 
 </style>
@@ -4838,8 +4841,8 @@ renderFavPanel = function() {
 <!-- MOBILE FILTER DRAWER -->
 <div id="mobile-filter-drawer" class="mobile-drawer">
   <div class="mobile-drawer-header">
-    <span class="mobile-drawer-title">&#9881; Filters</span>
-    <button class="mobile-drawer-close" onclick="closeMobileFilters()">&#10005;</button>
+    <span class="mobile-drawer-title">⚙ Filters</span>
+    <button class="mobile-drawer-close" onclick="closeMobileFilters()">✕</button>
   </div>
   <div class="mobile-drawer-body">
     <div class="mf-row"><label>Grid</label>
@@ -4891,24 +4894,24 @@ renderFavPanel = function() {
 <div id="fs-overlay">
   <div id="fs-video-wrap">
     <video id="fs-video" muted autoplay playsinline></video>
-    <div class="fs-swipe-hint left">&#9664;</div>
-    <div class="fs-swipe-hint right">&#9654;</div>
+    <div class="fs-swipe-hint left">◀</div>
+    <div class="fs-swipe-hint right">▶</div>
   </div>
   <div id="fs-topbar">
     <div style="display:flex;align-items:center;">
       <span id="fs-counter">1 / 1</span>
-      <span id="fs-mode-badge" style="display:none;">&#9829; Favs</span>
+      <span id="fs-mode-badge" style="display:none;">♥ Favs</span>
     </div>
-    <button id="fs-close" onclick="closeFsOverlay()">&#10005;</button>
+    <button id="fs-close" onclick="closeFsOverlay()">✕</button>
   </div>
   <div id="fs-bottombar">
     <div id="fs-info">
       <div id="fs-username"></div>
       <div id="fs-meta"></div>
     </div>
-    <button class="fs-btn" id="fs-fav-btn" onclick="fsFavToggle()">&#9825;</button>
-    <button class="fs-btn" id="fs-grid-btn" onclick="closeFsOverlay()" title="Back to grid">&#8862;</button>
-    <button class="fs-btn" id="fs-mute-btn" onclick="fsMuteToggle()">&#128266;</button>
+    <button class="fs-btn" id="fs-fav-btn" onclick="fsFavToggle()">♡</button>
+    <button class="fs-btn" id="fs-grid-btn" onclick="closeFsOverlay()" title="Back to grid">⊞</button>
+    <button class="fs-btn" id="fs-mute-btn" onclick="fsMuteToggle()">🔊</button>
   </div>
 </div>
 
