@@ -232,7 +232,7 @@
   .tile.vp-paused video { opacity: 0.15; }
 
 
-  .tile.vp-paused::after { content: '&#9654;'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 28px; opacity: 0.5; pointer-events: none; }
+  .tile.vp-paused::after { content: '▶'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 28px; opacity: 0.5; pointer-events: none; }
 
 
   .tile video { width: 100%; height: 100%; object-fit: cover; display: block; background: #000; transition: opacity .4s; }
@@ -1037,15 +1037,15 @@
   </div>
   <!-- MOBILE NAV ROW (horizontal scroll, hidden on desktop) -->
   <div class="header-nav-row" id="mobileNavRow" style="display:none">
-    <button class="nav-pill active" onclick="switchSource('streams')">&#127909; Streams</button>
-    <button class="nav-pill" onclick="switchSource('cams')">&#128247; Cams</button>
-    <button class="nav-pill" onclick="loadStreams()">&#8635; Refresh</button>
-    <button class="nav-pill" onclick="loadAll()">&#9654; Load All</button>
-    <button class="nav-pill" onclick="togglePauseAll()">&#9646;&#9646; Pause</button>
-    <button class="nav-pill" onclick="muteAll()">&#128263; Mute</button>
-    <button class="nav-pill" onclick="toggleFavPanel()">&#9825; Favs</button>
-    <button class="nav-pill" onclick="openStats()">&#128202; Stats</button>
-    <button class="nav-pill" onclick="openMobileFilters()">&#9881; Filters</button>
+    <button class="nav-pill active" onclick="switchSource('streams')">🎥 Streams</button>
+    <button class="nav-pill" onclick="switchSource('cams')">📷 Cams</button>
+    <button class="nav-pill" onclick="loadStreams()">↻ Refresh</button>
+    <button class="nav-pill" onclick="loadAll()">▶ Load All</button>
+    <button class="nav-pill" onclick="togglePauseAll()">▮▮ Pause</button>
+    <button class="nav-pill" onclick="muteAll()">🔇 Mute</button>
+    <button class="nav-pill" onclick="toggleFavPanel()">♡ Favs</button>
+    <button class="nav-pill" onclick="openStats()">📊 Stats</button>
+    <button class="nav-pill" onclick="openMobileFilters()">⚙ Filters</button>
   </div>
   <div class="controls">
 
@@ -1238,7 +1238,7 @@
           <div class="dpad-center" title="Current position" id="dpad-pos">�</div>
 
 
-          <button class="dpad-btn" id="dpad-right" title="Right (→)">&#9654;</button>
+          <button class="dpad-btn" id="dpad-right" title="Right (→)">▶</button>
 
 
           <div></div>
@@ -1265,16 +1265,16 @@
     <button class="btn btn-primary" onclick="loadStreams()">⟳ Refresh</button>
 
 
-    <button class="btn btn-loadall" id="loadAllBtn" onclick="loadAll()">&#9654; Load All</button>
+    <button class="btn btn-loadall" id="loadAllBtn" onclick="loadAll()">▶ Load All</button>
 
 
-    <button class="btn btn-pause" id="pauseAllBtn" onclick="togglePauseAll()">&#9646;&#9646; Pause All</button>
+    <button class="btn btn-pause" id="pauseAllBtn" onclick="togglePauseAll()">▮▮ Pause All</button>
 
 
-    <button class="btn btn-danger" onclick="muteAll()">&#128263; Mute All</button>
+    <button class="btn btn-danger" onclick="muteAll()">🔇 Mute All</button>
 
 
-    <button class="btn btn-fav" onclick="toggleFavPanel()">&#9825; Favs</button>
+    <button class="btn btn-fav" onclick="toggleFavPanel()">♡ Favs</button>
 
 
     <button class="btn btn-stats" onclick="openStats()">📊 Stats</button>
@@ -1378,10 +1378,10 @@
   <div class="fav-header">
 
 
-    <div class="fav-title">&#9825; <span>Favorites</span></div>
+    <div class="fav-title">♡ <span>Favorites</span></div>
 
 
-    <button class="fav-close" onclick="toggleFavPanel()">&#10005;</button>
+    <button class="fav-close" onclick="toggleFavPanel()">✕</button>
 
 
   </div>
@@ -1414,7 +1414,7 @@
       <div class="stats-title">LIVE<span>GRID</span> � Live Stats</div>
 
 
-      <button class="stats-close" onclick="closeStats()">&#10005;</button>
+      <button class="stats-close" onclick="closeStats()">✕</button>
 
 
     </div>
@@ -1669,7 +1669,7 @@ function renderFavPanel() {
   if (!usernames.length) {
 
 
-    body.innerHTML = '<div class="fav-empty">No favorites yet.<br>Click &#9825; on any tile<br>to add a favorite.</div>';
+    body.innerHTML = '<div class="fav-empty">No favorites yet.<br>Click ♡ on any tile<br>to add a favorite.</div>';
 
 
     footer.textContent = '';
@@ -2155,7 +2155,7 @@ function muteAll() {
   document.querySelectorAll('video').forEach(v => v.muted = true);
 
 
-  document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = '&#128263;'; });
+  document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = '🔇'; });
 
 
   document.querySelectorAll('.tile').forEach(t => { t.classList.remove('active-audio'); t.style.order = ''; });
@@ -2365,7 +2365,7 @@ function unmuteTile(tile, explicitBtn) {
   document.querySelectorAll('video').forEach(v => v.muted = true);
 
 
-  document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = '&#128263;'; });
+  document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = '🔇'; });
 
 
   document.querySelectorAll('.tile').forEach(t => { t.classList.remove('active-audio'); t.style.order = ''; });
@@ -2377,7 +2377,7 @@ function unmuteTile(tile, explicitBtn) {
   const muteBtn = explicitBtn || tile.querySelector('.tile-btn');
 
 
-  if (muteBtn) { muteBtn.classList.add('unmuted'); muteBtn.textContent = '&#128266;'; }
+  if (muteBtn) { muteBtn.classList.add('unmuted'); muteBtn.textContent = '🔊'; }
 
 
   tile.classList.add('active-audio');
@@ -3037,7 +3037,7 @@ async function loadAll() {
     loadAllAbort = true;
 
 
-    btn.textContent = '&#9654; Load All';
+    btn.textContent = '▶ Load All';
 
 
     document.getElementById('loadall-bar').classList.remove('active');
@@ -3055,7 +3055,7 @@ async function loadAll() {
   loadAllAbort = false;
 
 
-  btn.textContent = '&#10005; Cancel';
+  btn.textContent = '✕ Cancel';
 
 
   document.getElementById('loadall-bar').classList.add('active');
@@ -3286,7 +3286,7 @@ async function loadAll() {
   loadAllAbort = false;
 
 
-  btn.textContent = '&#9654; Load All';
+  btn.textContent = '▶ Load All';
 
 
   document.getElementById('loadall-bar').classList.remove('active');
@@ -3343,7 +3343,7 @@ function renderGrid() {
   allPaused = false;
 
 
-  document.getElementById('pauseAllBtn').textContent = '&#9646;&#9646; Pause All';
+  document.getElementById('pauseAllBtn').textContent = '▮▮ Pause All';
 
 
 
@@ -3706,7 +3706,7 @@ function buildTile(model, quality) {
   const muteBtn = document.createElement('button');
 
 
-  muteBtn.className = 'tile-btn'; muteBtn.textContent = '&#128263;'; muteBtn.title = 'Toggle audio';
+  muteBtn.className = 'tile-btn'; muteBtn.textContent = '🔇'; muteBtn.title = 'Toggle audio';
 
 
   muteBtn.onclick = e => {
@@ -3721,7 +3721,7 @@ function buildTile(model, quality) {
     else {
 
 
-      video.muted = true; muteBtn.classList.remove('unmuted'); muteBtn.textContent = '&#128263;';
+      video.muted = true; muteBtn.classList.remove('unmuted'); muteBtn.textContent = '🔇';
 
 
       tile.classList.remove('active-audio'); tile.style.order = '';
@@ -3763,7 +3763,7 @@ function buildTile(model, quality) {
   const fsBtn = document.createElement('button');
 
 
-  fsBtn.className = 'tile-btn'; fsBtn.textContent = '&#9974;'; fsBtn.title = 'Fullscreen';
+  fsBtn.className = 'tile-btn'; fsBtn.textContent = '⛶'; fsBtn.title = 'Fullscreen';
 
 
   fsBtn.onclick = e => {
@@ -4795,7 +4795,7 @@ buildTile = function(model, quality) {
           const flag = model.country ? getCountryFlag(model.country) : '';
           const ctry = model.country ? model.country.toUpperCase() : '';
           badge.innerHTML = '<span class="mmb-name">' + model.username + '</span>' +
-            (viewers ? '<span class="mmb-viewers">&#128065; ' + viewers + '</span>' : '') +
+            (viewers ? '<span class="mmb-viewers">👁 ' + viewers + '</span>' : '') +
             (flag    ? '<span class="mmb-country">' + flag + ' ' + ctry + '</span>' : '');
           tile.appendChild(badge);
           setTimeout(() => badge.remove(), 3000);
