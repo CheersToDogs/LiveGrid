@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -17,6 +17,7 @@
     --text: #e8edf5;
     --muted: #4a5568;
     --live: #ff3d71;
+    --fav: #f59e0b;
     --radius: 6px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -40,6 +41,10 @@
   .btn-pause:hover { background: rgba(246,201,14,.15); }
   .btn-stats { background: transparent; border: 1px solid #a78bfa; color: #a78bfa; }
   .btn-stats:hover { background: rgba(167,139,250,.15); }
+  .btn-fav { background: transparent; border: 1px solid var(--fav); color: var(--fav); }
+  .btn-fav:hover { background: rgba(245,158,11,.15); }
+  .btn-loadall { background: transparent; border: 1px solid #34d399; color: #34d399; }
+  .btn-loadall:hover { background: rgba(52,211,153,.15); }
   .status-bar { margin-left: auto; display: flex; align-items: center; gap: 10px; }
   .status-text { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; }
   .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--live); animation: pulse 1.5s ease-in-out infinite; display: inline-block; }
@@ -63,14 +68,25 @@
   #grid { display: grid; gap: 8px; }
 
   /* TILE */
-  .tile { position: relative; background: #000; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); transition: border-color .2s, box-shadow .2s, transform .25s, z-index .25s; aspect-ratio: 16/9; }
+  .tile { position: relative; background: #000; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); transition: border-color .2s, box-shadow .2s, transform .25s; aspect-ratio: 16/9; }
   .tile:hover { border-color: rgba(0,229,255,.5); }
   .tile.active-audio { border-color: var(--accent) !important; box-shadow: 0 0 0 2px rgba(0,229,255,.4), 0 0 30px rgba(0,229,255,.2); order: -9999; }
   .tile.focused { border-color: #f6c90e !important; box-shadow: 0 0 0 2px rgba(246,201,14,.4), 0 0 24px rgba(246,201,14,.15); z-index: 10; transform: scale(1.04); }
   .tile.focused.active-audio { border-color: var(--accent) !important; }
-  .tile video { width: 100%; height: 100%; object-fit: cover; display: block; background: #000; }
+  .tile.favorited { box-shadow: inset 0 0 0 2px rgba(245,158,11,.3); }
+  /* Paused-by-viewport overlay */
+  .tile.vp-paused video { opacity: 0.15; }
+  .tile.vp-paused::after { content: '⏸'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 28px; opacity: 0.5; pointer-events: none; }
+  .tile video { width: 100%; height: 100%; object-fit: cover; display: block; background: #000; transition: opacity .4s; }
   .tile-snapshot { position: absolute; inset: 0; background-size: cover; background-position: center; transition: opacity .5s; }
   .tile-snapshot.hidden { opacity: 0; pointer-events: none; }
+
+  /* LOAD ALL PROGRESS BAR */
+  #loadall-bar { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 500; background: var(--surface); border-top: 1px solid var(--border); padding: 6px 16px; flex-direction: column; gap: 4px; }
+  #loadall-bar.active { display: flex; }
+  .loadall-track { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .loadall-fill { height: 100%; background: #34d399; border-radius: 2px; transition: width .3s; }
+  .loadall-text { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); display: flex; justify-content: space-between; }
 
   /* TOP BAR */
   .tile-top { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 8px; background: linear-gradient(to bottom,rgba(0,0,0,.75),transparent); pointer-events: none; z-index: 20; }
@@ -80,13 +96,14 @@
 
   /* BOTTOM BAR */
   .tile-bottom { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 8px; background: linear-gradient(to top,rgba(0,0,0,.85),transparent); z-index: 20; }
-  .tile-username { font-size: 12px; font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; }
+  .tile-username { font-size: 12px; font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 55%; }
   .tile-viewers { font-family: 'Space Mono',monospace; font-size: 10px; color: rgba(255,255,255,.7); }
   .tile-viewers::before { content: '👁 '; }
   .tile-controls { display: flex; gap: 4px; pointer-events: all; }
   .tile-btn { width: 26px; height: 26px; border-radius: 4px; background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.15); color: #fff; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s; backdrop-filter: blur(4px); }
   .tile-btn:hover { background: rgba(255,255,255,.2); }
   .tile-btn.unmuted { background: rgba(0,229,255,.3); border-color: var(--accent); }
+  .tile-btn.fav-active { color: var(--fav); border-color: var(--fav); background: rgba(245,158,11,.2); }
 
   /* META OVERLAY */
   .tile-meta { position: absolute; left: 0; right: 0; bottom: 44px; max-height: calc(100% - 80px); background: rgba(4,6,12,.93); backdrop-filter: blur(10px); opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; display: flex; flex-direction: column; padding: 8px 10px 6px; gap: 4px; overflow-y: auto; overflow-x: hidden; z-index: 12; transform: translateY(4px); border-top: 1px solid rgba(255,255,255,.07); }
@@ -110,6 +127,32 @@
   .cta-link { display: block; padding: 7px 12px; background: var(--accent2); color: #fff; text-decoration: none; border-radius: var(--radius); font-size: 11px; font-weight: 700; text-align: center; font-family: 'Space Mono',monospace; letter-spacing: .5px; box-shadow: 0 3px 16px rgba(255,61,113,.4); transition: transform .15s, box-shadow .15s; }
   .cta-link:hover { transform: scale(1.03); box-shadow: 0 5px 22px rgba(255,61,113,.6); }
 
+  /* FAVORITES PANEL */
+  #fav-panel { display: none; position: fixed; top: 0; right: 0; bottom: 0; width: 260px; z-index: 800; background: var(--surface); border-left: 1px solid var(--border); flex-direction: column; box-shadow: -10px 0 40px rgba(0,0,0,.5); }
+  #fav-panel.open { display: flex; }
+  .fav-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .fav-title { font-size: 13px; font-weight: 800; }
+  .fav-title span { color: var(--fav); }
+  .fav-close { width: 26px; height: 26px; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: all .15s; }
+  .fav-close:hover { border-color: var(--accent2); color: var(--accent2); }
+  .fav-body { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .fav-body::-webkit-scrollbar { width: 4px; }
+  .fav-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .fav-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: border-color .15s; position: relative; }
+  .fav-item:hover { border-color: var(--fav); }
+  .fav-item.fav-online { border-color: rgba(0,229,255,.4); }
+  .fav-item.fav-offline { opacity: 0.55; }
+  .fav-snap { width: 52px; height: 30px; border-radius: 3px; background: var(--bg); background-size: cover; background-position: center; flex-shrink: 0; }
+  .fav-info { flex: 1; min-width: 0; }
+  .fav-name { font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fav-status { font-family: 'Space Mono',monospace; font-size: 9px; color: var(--muted); margin-top: 2px; }
+  .fav-status.online { color: var(--accent); }
+  .fav-status.offline { color: var(--muted); }
+  .fav-remove { width: 20px; height: 20px; border-radius: 3px; background: transparent; border: 1px solid transparent; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; transition: all .15s; flex-shrink: 0; }
+  .fav-remove:hover { border-color: var(--accent2); color: var(--accent2); }
+  .fav-empty { font-family: 'Space Mono',monospace; font-size: 11px; color: var(--muted); text-align: center; margin-top: 40px; line-height: 1.8; }
+  .fav-footer { padding: 10px; border-top: 1px solid var(--border); flex-shrink: 0; font-family: 'Space Mono',monospace; font-size: 10px; color: var(--muted); text-align: center; }
+
   /* EMPTY / LOADING */
   #empty-state { display: none; flex-direction: column; align-items: center; justify-content: center; height: 200px; gap: 12px; color: var(--muted); font-size: 14px; }
   #empty-state .icon { font-size: 40px; opacity: .4; }
@@ -123,7 +166,7 @@
   .tile-error { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.7); font-size: 11px; color: var(--muted); font-family: 'Space Mono',monospace; z-index: 5; }
   .aff-input { width: 130px !important; }
 
-  /* ── STATS MODAL ── */
+  /* STATS MODAL */
   #stats-modal { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.7); backdrop-filter: blur(6px); align-items: center; justify-content: center; }
   #stats-modal.open { display: flex; }
   .stats-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; width: 560px; max-width: 95vw; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
@@ -232,8 +275,10 @@
     </div>
 
     <button class="btn btn-primary" onclick="loadStreams()">⟳ Refresh</button>
+    <button class="btn btn-loadall" id="loadAllBtn" onclick="loadAll()">⬇ Load All</button>
     <button class="btn btn-pause" id="pauseAllBtn" onclick="togglePauseAll()">⏸ Pause All</button>
     <button class="btn btn-danger" onclick="muteAll()">🔇 Mute All</button>
+    <button class="btn btn-fav" onclick="toggleFavPanel()">♥ Favs</button>
     <button class="btn btn-stats" onclick="openStats()">📊 Stats</button>
   </div>
   <div class="status-bar">
@@ -247,6 +292,25 @@
   <div id="grid"></div>
   <div id="empty-state"><div class="icon">📡</div><div>Loading live streams…</div></div>
   <div id="scroll-sentinel"><span class="load-spinner"></span><span class="sentinel-text"></span></div>
+</div>
+
+<!-- LOAD ALL PROGRESS BAR -->
+<div id="loadall-bar">
+  <div class="loadall-text">
+    <span id="loadall-label">Loading all streams…</span>
+    <span id="loadall-count">0 / ?</span>
+  </div>
+  <div class="loadall-track"><div class="loadall-fill" id="loadall-fill" style="width:0%"></div></div>
+</div>
+
+<!-- FAVORITES PANEL -->
+<div id="fav-panel">
+  <div class="fav-header">
+    <div class="fav-title">♥ <span>Favorites</span></div>
+    <button class="fav-close" onclick="toggleFavPanel()">✕</button>
+  </div>
+  <div class="fav-body" id="fav-body"></div>
+  <div class="fav-footer" id="fav-footer">Watching for when they come online…</div>
 </div>
 
 <!-- STATS MODAL -->
@@ -264,27 +328,238 @@
 
 <script>
 // ── STATE ──────────────────────────────────────────────────────────────────
-const hlsInstances  = new Map();
-let refreshTimer    = null;
-let allPaused       = false;
-let currentOffset   = 0;
-let isLoadingMore   = false;
-let hasMore         = true;
-let allModels       = [];
-let currentFiltered = [];
+const hlsInstances   = new Map();   // username -> Hls instance
+let refreshTimer     = null;
+let allPaused        = false;
+let currentOffset    = 0;
+let isLoadingMore    = false;
+let hasMore          = true;
+let allModels        = [];          // full fetched pool
+let currentFiltered  = [];          // post-filter slice
 let infiniteObserver = null;
-let focusedIndex    = -1;  // D-pad nav index into rendered tiles
-const BATCH = 16;
-const API   = 'https://go.stripchat.com/api/models';
+let focusedIndex     = -1;
+let vpObserver       = null;        // viewport pause IntersectionObserver
+const vpPauseDelay   = new Map();   // username -> setTimeout id for deferred pause
+let favWatchTimer    = null;
+const BATCH          = 16;
+const API            = 'https://go.stripchat.com/api/models';
 
-// ── GENDER FIX ─────────────────────────────────────────────────────────────
-// Stripchat API uses 'type' param with values: girls, guys, couples, trans
-// BUT go.stripchat.com/api/models uses 'gender' with: female, male, couple, trans
-// The real fix: try both param names and filter client-side as backup
-function genderParam(val) {
-  if (!val) return {};
-  // API uses 'gender' param on go.stripchat.com
-  return { gender: val };
+// ── FAVORITES (localStorage) ───────────────────────────────────────────────
+function getFavs() {
+  try { return JSON.parse(localStorage.getItem('lg_favs') || '{}'); } catch { return {}; }
+}
+function saveFavs(obj) {
+  try { localStorage.setItem('lg_favs', JSON.stringify(obj)); } catch {}
+}
+function isFav(username) { return !!getFavs()[username]; }
+
+function toggleFav(username, model) {
+  const favs = getFavs();
+  if (favs[username]) {
+    delete favs[username];
+  } else {
+    favs[username] = {
+      username,
+      snapshotUrl: model.snapshotUrl || model.widgetPreviewUrl || '',
+      addedAt: Date.now(),
+      lastSeenOnline: Date.now()
+    };
+  }
+  saveFavs(favs);
+  // Update all fav buttons for this user in the grid
+  document.querySelectorAll(`.tile[data-username="${username}"] .tile-btn-fav`).forEach(btn => {
+    updateFavBtn(btn, !!favs[username]);
+  });
+  // Update tile border
+  document.querySelectorAll(`.tile[data-username="${username}"]`).forEach(tile => {
+    tile.classList.toggle('favorited', !!favs[username]);
+  });
+  renderFavPanel();
+}
+
+function updateFavBtn(btn, active) {
+  if (active) {
+    btn.classList.add('fav-active');
+    btn.textContent = '♥';
+    btn.title = 'Remove from favorites';
+  } else {
+    btn.classList.remove('fav-active');
+    btn.textContent = '♡';
+    btn.title = 'Add to favorites';
+  }
+}
+
+function toggleFavPanel() {
+  const panel = document.getElementById('fav-panel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) renderFavPanel();
+}
+
+function renderFavPanel() {
+  const favs = getFavs();
+  const body = document.getElementById('fav-body');
+  const footer = document.getElementById('fav-footer');
+  body.innerHTML = '';
+
+  const usernames = Object.keys(favs);
+  if (!usernames.length) {
+    body.innerHTML = '<div class="fav-empty">No favorites yet.<br>Click ♡ on any tile<br>to add a favorite.</div>';
+    footer.textContent = '';
+    return;
+  }
+
+  const onlineSet = new Set(allModels.map(m => m.username));
+
+  // Sort: online first, then alphabetical
+  usernames.sort((a, b) => {
+    const ao = onlineSet.has(a), bo = onlineSet.has(b);
+    if (ao !== bo) return ao ? -1 : 1;
+    return a.localeCompare(b);
+  });
+
+  usernames.forEach(username => {
+    const fav = favs[username];
+    const online = onlineSet.has(username);
+    const item = document.createElement('div');
+    item.className = `fav-item ${online ? 'fav-online' : 'fav-offline'}`;
+
+    const snap = document.createElement('div');
+    snap.className = 'fav-snap';
+    if (fav.snapshotUrl) snap.style.backgroundImage = `url(${fav.snapshotUrl})`;
+
+    const info = document.createElement('div');
+    info.className = 'fav-info';
+
+    const name = document.createElement('div');
+    name.className = 'fav-name';
+    name.textContent = username;
+
+    const status = document.createElement('div');
+    status.className = `fav-status ${online ? 'online' : 'offline'}`;
+    if (online) {
+      const m = allModels.find(x => x.username === username);
+      status.textContent = m ? `🟢 LIVE · 👁 ${fmtViewers(m.viewersCount)}` : '🟢 LIVE';
+    } else {
+      const last = fav.lastSeenOnline;
+      const ago = last ? fmtAgo(Date.now() - last) : 'unknown';
+      status.textContent = `⚫ Offline · last seen ${ago}`;
+    }
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'fav-remove';
+    removeBtn.textContent = '✕';
+    removeBtn.title = 'Remove favorite';
+    removeBtn.onclick = e => { e.stopPropagation(); toggleFav(username, fav); };
+
+    info.appendChild(name);
+    info.appendChild(status);
+    item.appendChild(snap);
+    item.appendChild(info);
+    item.appendChild(removeBtn);
+
+    // Click → open room
+    item.onclick = () => window.open(buildAffUrl(username), '_blank', 'noopener');
+    body.appendChild(item);
+  });
+
+  const onlineCount = usernames.filter(u => onlineSet.has(u)).length;
+  footer.textContent = `${onlineCount} / ${usernames.length} online · checks every 5min`;
+}
+
+function fmtAgo(ms) {
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h/24)}d ago`;
+}
+
+// Update lastSeenOnline for online favorites when we refresh
+function updateFavOnlineStatus() {
+  const favs = getFavs();
+  const onlineSet = new Set(allModels.map(m => m.username));
+  let changed = false;
+  Object.keys(favs).forEach(u => {
+    if (onlineSet.has(u)) {
+      favs[u].lastSeenOnline = Date.now();
+      changed = true;
+    }
+  });
+  if (changed) saveFavs(favs);
+  if (document.getElementById('fav-panel').classList.contains('open')) renderFavPanel();
+}
+
+// Background watcher: refetch and check fav status every 5 min
+function startFavWatcher() {
+  if (favWatchTimer) clearInterval(favWatchTimer);
+  favWatchTimer = setInterval(async () => {
+    const favs = getFavs();
+    if (!Object.keys(favs).length) return;
+    // Light fetch: just get top 500 to check presence
+    try {
+      const r = await fetch(`${API}?limit=500&sortBy=viewersCount`, { headers: { Accept: 'application/json' } });
+      if (!r.ok) return;
+      const data = await r.json();
+      const onlineSet = new Set((data.models || []).map(m => m.username));
+      const f2 = getFavs();
+      Object.keys(f2).forEach(u => { if (onlineSet.has(u)) f2[u].lastSeenOnline = Date.now(); });
+      saveFavs(f2);
+      if (document.getElementById('fav-panel').classList.contains('open')) renderFavPanel();
+    } catch {}
+  }, 5 * 60 * 1000);
+}
+
+// ── VIEWPORT PAUSE/RESUME ─────────────────────────────────────────────────
+// When a tile scrolls out of view for >2s, pause its HLS to save bandwidth.
+// When it scrolls back in, resume immediately.
+function setupViewportObserver() {
+  if (vpObserver) vpObserver.disconnect();
+  vpObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      const tile = entry.target;
+      const username = tile.dataset.username;
+      if (!username) return;
+      if (entry.isIntersecting) {
+        // Cancel any pending pause
+        if (vpPauseDelay.has(username)) {
+          clearTimeout(vpPauseDelay.get(username));
+          vpPauseDelay.delete(username);
+        }
+        // Resume if paused
+        if (tile.classList.contains('vp-paused')) {
+          tile.classList.remove('vp-paused');
+          const hls = hlsInstances.get(username);
+          if (hls) {
+            hls.startLoad();
+            tile.querySelector('video')?.play().catch(() => {});
+          }
+        }
+      } else {
+        // Debounce: only pause after 2s off-screen (avoid thrashing during scroll)
+        if (!vpPauseDelay.has(username)) {
+          const id = setTimeout(() => {
+            vpPauseDelay.delete(username);
+            if (tile.classList.contains('vp-paused')) return; // already paused
+            tile.classList.add('vp-paused');
+            const hls = hlsInstances.get(username);
+            if (hls) {
+              tile.querySelector('video')?.pause();
+              hls.stopLoad();
+            }
+          }, 2000);
+          vpPauseDelay.set(username, id);
+        }
+      }
+    });
+  }, {
+    root: document.getElementById('grid-wrapper'),
+    rootMargin: '100px',   // pre-load 100px before entering viewport
+    threshold: 0.01
+  });
+  // Observe all current tiles
+  document.querySelectorAll('#grid .tile').forEach(t => vpObserver.observe(t));
 }
 
 // ── HELPERS ────────────────────────────────────────────────────────────────
@@ -332,7 +607,16 @@ function getCountryFlag(code) {
   return [...code.toUpperCase()].map(c => String.fromCodePoint(c.charCodeAt(0)+127397)).join('');
 }
 
+function genderParam(val) {
+  if (!val) return {};
+  return { gender: val };
+}
+
 function destroyAll() {
+  // Cancel all pending viewport pauses
+  vpPauseDelay.forEach(id => clearTimeout(id));
+  vpPauseDelay.clear();
+  if (vpObserver) { vpObserver.disconnect(); vpObserver = null; }
   hlsInstances.forEach(h => { try { h.destroy(); } catch(e){} });
   hlsInstances.clear();
   document.querySelectorAll('video').forEach(v => { v.pause(); v.src=''; v.removeAttribute('src'); });
@@ -346,15 +630,13 @@ function setTagFilter(tag) {
   loadStreams();
 }
 
-// ── UNMUTE TILE (shared logic) ─────────────────────────────────────────────
+// ── UNMUTE TILE ────────────────────────────────────────────────────────────
 function unmuteTile(tile, explicitBtn) {
   const video = tile.querySelector('video');
   if (!video) return;
-  // Mute everything else first
   document.querySelectorAll('video').forEach(v => v.muted = true);
   document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = '🔇'; });
   document.querySelectorAll('.tile').forEach(t => { t.classList.remove('active-audio'); t.style.order = ''; });
-  // Unmute this tile
   video.muted = false;
   const muteBtn = explicitBtn || tile.querySelector('.tile-btn');
   if (muteBtn) { muteBtn.classList.add('unmuted'); muteBtn.textContent = '🔊'; }
@@ -364,39 +646,24 @@ function unmuteTile(tile, explicitBtn) {
 }
 
 // ── D-PAD NAVIGATION ──────────────────────────────────────────────────────
-function getVisibleTiles() {
-  return [...document.querySelectorAll('#grid .tile')];
-}
-
-function getCols() {
-  return parseInt(Math.sqrt(parseInt(document.getElementById('gridSelect').value)));
-}
+function getVisibleTiles() { return [...document.querySelectorAll('#grid .tile')]; }
+function getCols() { return parseInt(Math.sqrt(parseInt(document.getElementById('gridSelect').value))); }
 
 function updateDpadPos() {
   const tiles = getVisibleTiles();
   const el = document.getElementById('dpad-pos');
-  if (focusedIndex < 0 || focusedIndex >= tiles.length) {
-    el.textContent = '—';
-    return;
-  }
+  if (focusedIndex < 0 || focusedIndex >= tiles.length) { el.textContent = '—'; return; }
   const cols = getCols();
-  const row = Math.floor(focusedIndex / cols) + 1;
-  const col = (focusedIndex % cols) + 1;
-  el.textContent = `${row},${col}`;
+  el.textContent = `${Math.floor(focusedIndex/cols)+1},${(focusedIndex%cols)+1}`;
 }
 
 function focusTile(idx) {
   const tiles = getVisibleTiles();
   if (idx < 0 || idx >= tiles.length) return;
-
-  // Remove focused from all
   tiles.forEach(t => t.classList.remove('focused'));
-
   focusedIndex = idx;
   const tile = tiles[idx];
   tile.classList.add('focused');
-
-  // Unmute + scroll into view
   unmuteTile(tile);
   tile.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   updateDpadPos();
@@ -407,12 +674,10 @@ function dpadMove(dir) {
   if (!tiles.length) return;
   const cols = getCols();
   let idx = focusedIndex < 0 ? 0 : focusedIndex;
-
   if (dir === 'up')    idx = Math.max(0, idx - cols);
   if (dir === 'down')  idx = Math.min(tiles.length - 1, idx + cols);
   if (dir === 'left')  idx = Math.max(0, idx - 1);
   if (dir === 'right') idx = Math.min(tiles.length - 1, idx + 1);
-
   focusTile(idx);
 }
 
@@ -420,13 +685,10 @@ document.getElementById('dpad-up').onclick    = () => dpadMove('up');
 document.getElementById('dpad-down').onclick  = () => dpadMove('down');
 document.getElementById('dpad-left').onclick  = () => dpadMove('left');
 document.getElementById('dpad-right').onclick = () => dpadMove('right');
-
-// Keyboard arrows
 document.addEventListener('keydown', e => {
   if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
     e.preventDefault();
-    const map = { ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right' };
-    dpadMove(map[e.key]);
+    dpadMove({ ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right' }[e.key]);
   }
 });
 
@@ -436,9 +698,8 @@ function populateCountryFilter(models) {
   const current = sel.value;
   const counts = {};
   models.forEach(m => { if (m.country) counts[m.country] = (counts[m.country]||0)+1; });
-  const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
   while (sel.options.length > 1) sel.remove(1);
-  sorted.forEach(([code, cnt]) => {
+  Object.entries(counts).sort((a,b) => b[1]-a[1]).forEach(([code, cnt]) => {
     const opt = document.createElement('option');
     opt.value = code;
     opt.textContent = `${getCountryFlag(code)} ${code.toUpperCase()} (${cnt})`;
@@ -452,7 +713,7 @@ function applyCountryFilter(models) {
   return country ? models.filter(m => m.country === country) : models;
 }
 
-// ── FETCH ─────────────────────────────────────────────────────────────────
+// ── FETCH 1500 (3x parallel) ───────────────────────────────────────────────
 async function loadStreams() {
   const gender = document.getElementById('genderSelect').value;
   const sort   = document.getElementById('sortSelect').value;
@@ -460,15 +721,13 @@ async function loadStreams() {
 
   document.getElementById('statusText').textContent = 'Loading…';
 
-  // Fetch 3 pages in parallel — server hard cap 500/req, offset confirmed working
-  // 3 × 500 = up to 1500 models (was 200)
   const baseParams = { limit: 500, sortBy: sort, ...genderParam(gender) };
   if (tag) baseParams.tag = tag;
 
   try {
     const pages = await Promise.all([0, 500, 1000].map(offset => {
-      const p = new URLSearchParams(Object.assign({}, baseParams, { offset }));
-      return fetch(API + '?' + p, { headers: { Accept: 'application/json' } })
+      const p = new URLSearchParams({ ...baseParams, offset });
+      return fetch(`${API}?${p}`, { headers: { Accept: 'application/json' } })
         .then(r => r.ok ? r.json() : { models: [] })
         .catch(() => ({ models: [] }));
     }));
@@ -491,6 +750,7 @@ async function loadStreams() {
     return;
   }
 
+  updateFavOnlineStatus();
   populateCountryFilter(allModels);
   renderGrid();
 
@@ -498,17 +758,204 @@ async function loadStreams() {
   bar.style.animation = 'none'; bar.offsetHeight;
   bar.style.animation = 'drain 60s linear forwards';
   clearTimeout(refreshTimer);
-  refreshTimer = setTimeout(loadStreams, 60000);
+  refreshTimer = setTimeout(diffRefresh, 60000);
+}
+
+// ── DIFF-BASED AUTO-REFRESH ────────────────────────────────────────────────
+// Background fetch, diff against current grid, only add/remove/update — never destroyAll
+async function diffRefresh() {
+  const gender = document.getElementById('genderSelect').value;
+  const sort   = document.getElementById('sortSelect').value;
+  const tag    = document.getElementById('tagInput').value.trim();
+  const quality = document.getElementById('qualitySelect').value;
+  const baseParams = { limit: 500, sortBy: sort, ...genderParam(gender) };
+  if (tag) baseParams.tag = tag;
+
+  let freshModels = [];
+  try {
+    const pages = await Promise.all([0, 500, 1000].map(offset => {
+      const p = new URLSearchParams({ ...baseParams, offset });
+      return fetch(`${API}?${p}`, { headers: { Accept: 'application/json' } })
+        .then(r => r.ok ? r.json() : { models: [] })
+        .catch(() => ({ models: [] }));
+    }));
+    const seen = new Set();
+    pages.forEach(data => {
+      (data.models || []).forEach(m => {
+        if (!seen.has(m.username)) { seen.add(m.username); freshModels.push(m); }
+      });
+    });
+    freshModels = freshModels.filter(m => m.status === 'public' && m.stream && m.stream.urls);
+    freshModels.forEach(m => { if (!m.country && m.modelsCountry) m.country = m.modelsCountry; });
+    if (gender) freshModels = freshModels.filter(m => m.gender === gender);
+  } catch { /* silently skip, retry next cycle */ }
+
+  if (!freshModels.length) {
+    // Retry in 30s if fetch failed
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(diffRefresh, 30000);
+    return;
+  }
+
+  allModels = freshModels;
+  updateFavOnlineStatus();
+  populateCountryFilter(allModels);
+
+  // Update status text + reset bar
+  document.getElementById('statusText').textContent = `${allModels.length} streams · ${new Date().toLocaleTimeString()}`;
+  const bar = document.getElementById('refreshBar');
+  bar.style.animation = 'none'; bar.offsetHeight;
+  bar.style.animation = 'drain 60s linear forwards';
+
+  // Now diff the visible grid
+  const grid = document.getElementById('grid');
+  const country = document.getElementById('countrySelect').value;
+  const filtered = country ? freshModels.filter(m => m.country === country) : freshModels;
+  const freshMap = new Map(filtered.map(m => [m.username, m]));
+
+  // Remove tiles that are no longer in the fresh list
+  grid.querySelectorAll('.tile').forEach(tile => {
+    const u = tile.dataset.username;
+    if (!freshMap.has(u)) {
+      // Fade out and remove
+      tile.style.transition = 'opacity .4s';
+      tile.style.opacity = '0';
+      const hls = hlsInstances.get(u);
+      if (hls) { try { hls.destroy(); } catch {} hlsInstances.delete(u); }
+      setTimeout(() => tile.remove(), 420);
+    }
+  });
+
+  // Update viewer counts on existing tiles
+  grid.querySelectorAll('.tile').forEach(tile => {
+    const u = tile.dataset.username;
+    const fresh = freshMap.get(u);
+    if (fresh) {
+      const viewEl = tile.querySelector('.tile-viewers');
+      if (viewEl) viewEl.textContent = fmtViewers(fresh.viewersCount);
+    }
+  });
+
+  // Add new models that don't have tiles yet (append to end)
+  const existingUsernames = new Set([...grid.querySelectorAll('.tile')].map(t => t.dataset.username));
+  filtered.forEach(m => {
+    if (!existingUsernames.has(m.username)) {
+      const tile = buildTile(m, quality);
+      tile.style.opacity = '0';
+      tile.style.transition = 'opacity .4s';
+      grid.appendChild(tile);
+      vpObserver?.observe(tile);
+      requestAnimationFrame(() => { requestAnimationFrame(() => { tile.style.opacity = '1'; }); });
+    }
+  });
+
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(diffRefresh, 60000);
+}
+
+// ── LOAD ALL (paginate until done) ─────────────────────────────────────────
+let loadAllAbort = false;
+async function loadAll() {
+  const btn = document.getElementById('loadAllBtn');
+  if (btn.textContent.includes('Cancel')) {
+    loadAllAbort = true;
+    btn.textContent = '⬇ Load All';
+    document.getElementById('loadall-bar').classList.remove('active');
+    return;
+  }
+
+  loadAllAbort = false;
+  btn.textContent = '✕ Cancel';
+  document.getElementById('loadall-bar').classList.add('active');
+
+  const gender = document.getElementById('genderSelect').value;
+  const sort   = document.getElementById('sortSelect').value;
+  const tag    = document.getElementById('tagInput').value.trim();
+  const quality = document.getElementById('qualitySelect').value;
+  const baseParams = { limit: 500, sortBy: sort, ...genderParam(gender) };
+  if (tag) baseParams.tag = tag;
+
+  const seen = new Set(allModels.map(m => m.username));
+  let offset = 0;
+  let totalFetched = allModels.length;
+  let grandTotal = null;
+
+  const updateBar = (fetched, total) => {
+    document.getElementById('loadall-count').textContent = `${fetched}${total ? ' / ~' + total : ''}`;
+    document.getElementById('loadall-fill').style.width = total ? `${Math.min(100, Math.round(fetched/total*100))}%` : '50%';
+    document.getElementById('loadall-label').textContent = 'Loading all streams…';
+    document.getElementById('statusText').textContent = `Fetched ${fetched} streams…`;
+  };
+
+  // Batch 5 requests at a time to avoid hammering the API
+  while (!loadAllAbort) {
+    const offsets = [0,1,2,3,4].map(i => offset + i*500);
+    const pages = await Promise.all(offsets.map(o => {
+      const p = new URLSearchParams({ ...baseParams, offset: o });
+      return fetch(`${API}?${p}`, { headers: { Accept: 'application/json' } })
+        .then(r => r.ok ? r.json() : { models: [], count: 0 })
+        .catch(() => ({ models: [], count: 0 }));
+    }));
+
+    let anyNew = false;
+    let maxCount = 0;
+    pages.forEach(data => {
+      if (data.count) maxCount = Math.max(maxCount, data.count);
+      (data.models || []).forEach(m => {
+        if (!seen.has(m.username) && m.status === 'public' && m.stream && m.stream.urls) {
+          if (!m.country && m.modelsCountry) m.country = m.modelsCountry;
+          if (!gender || m.gender === gender) {
+            seen.add(m.username);
+            allModels.push(m);
+            anyNew = true;
+            totalFetched++;
+          }
+        }
+      });
+    });
+
+    if (maxCount) grandTotal = maxCount;
+
+    // Check if any page returned < 500 — we've hit the end
+    const hitEnd = pages.some(p => (p.models || []).length < 500);
+
+    updateBar(totalFetched, grandTotal);
+
+    // Render new models into grid immediately
+    const country = document.getElementById('countrySelect').value;
+    const newFiltered = allModels.filter(m => !currentFiltered.find(x => x.username === m.username));
+    newFiltered.forEach(m => {
+      if (country && m.country !== country) return;
+      const tile = buildTile(m, quality);
+      tile.style.opacity = '0';
+      tile.style.transition = 'opacity .3s';
+      document.getElementById('grid').appendChild(tile);
+      vpObserver?.observe(tile);
+      requestAnimationFrame(() => { requestAnimationFrame(() => { tile.style.opacity = '1'; }); });
+    });
+    currentFiltered = applyCountryFilter(allModels);
+    currentOffset = currentFiltered.length;
+
+    if (!anyNew || hitEnd) break;
+    offset += 2500; // 5 pages × 500
+    await new Promise(r => setTimeout(r, 300)); // polite delay between batches
+  }
+
+  loadAllAbort = false;
+  btn.textContent = '⬇ Load All';
+  document.getElementById('loadall-bar').classList.remove('active');
+  document.getElementById('statusText').textContent = `${allModels.length} streams · ${new Date().toLocaleTimeString()}`;
+  populateCountryFilter(allModels);
 }
 
 // ── RENDER GRID ────────────────────────────────────────────────────────────
 function renderGrid() {
   destroyAll();
-  const count    = parseInt(document.getElementById('gridSelect').value);
-  const cols     = Math.sqrt(count);
-  const quality  = document.getElementById('qualitySelect').value;
-  const grid     = document.getElementById('grid');
-  const empty    = document.getElementById('empty-state');
+  const count   = parseInt(document.getElementById('gridSelect').value);
+  const cols    = Math.sqrt(count);
+  const quality = document.getElementById('qualitySelect').value;
+  const grid    = document.getElementById('grid');
+  const empty   = document.getElementById('empty-state');
   const sentinel = document.getElementById('scroll-sentinel');
 
   grid.innerHTML = '';
@@ -535,7 +982,9 @@ function renderGrid() {
   sentinel.classList.remove('loading');
   sentinel.querySelector('.sentinel-text').textContent = hasMore ? 'Scroll for more' : '';
   document.getElementById('statusText').textContent = `${currentFiltered.length} streams · ${new Date().toLocaleTimeString()}`;
+
   setupInfiniteScroll();
+  setupViewportObserver();
 }
 
 // ── INFINITE SCROLL ────────────────────────────────────────────────────────
@@ -556,18 +1005,18 @@ async function loadMoreTiles() {
   sentinel.querySelector('.sentinel-text').textContent = 'Loading…';
   await new Promise(r => setTimeout(r, 250));
   const quality = document.getElementById('qualitySelect').value;
-  const grid    = document.getElementById('grid');
-  const batch   = currentFiltered.slice(currentOffset, currentOffset + BATCH);
-  batch.forEach(m => grid.appendChild(buildTile(m, quality)));
+  const grid = document.getElementById('grid');
+  const batch = currentFiltered.slice(currentOffset, currentOffset + BATCH);
+  batch.forEach(m => {
+    const tile = buildTile(m, quality);
+    grid.appendChild(tile);
+    vpObserver?.observe(tile); // wire new tiles into viewport observer
+  });
   currentOffset += batch.length;
   hasMore = currentOffset < currentFiltered.length;
   sentinel.classList.remove('loading');
-  if (hasMore) {
-    sentinel.querySelector('.sentinel-text').textContent = 'Scroll for more';
-  } else {
-    sentinel.querySelector('.sentinel-text').textContent = `All ${currentFiltered.length} streams loaded`;
-    setTimeout(() => { sentinel.style.display = 'none'; }, 3000);
-  }
+  sentinel.querySelector('.sentinel-text').textContent = hasMore ? 'Scroll for more' : `All ${currentFiltered.length} streams loaded`;
+  if (!hasMore) setTimeout(() => { sentinel.style.display = 'none'; }, 3000);
   isLoadingMore = false;
 }
 
@@ -577,6 +1026,7 @@ function buildTile(model, quality) {
   const tile = document.createElement('div');
   tile.className = 'tile';
   tile.dataset.username = model.username;
+  if (isFav(model.username)) tile.classList.add('favorited');
 
   const snap = document.createElement('div');
   snap.className = 'tile-snapshot';
@@ -587,29 +1037,27 @@ function buildTile(model, quality) {
   video.muted = true; video.autoplay = true; video.playsInline = true;
 
   if (Hls.isSupported()) {
-    const hls = new Hls({ maxBufferLength: 30, maxMaxBufferLength: 60, enableWorker: true, strictManifestParsing: false, manifestLoadingTimeOut: 10000, manifestLoadingMaxRetry: 4, levelLoadingTimeOut: 10000, levelLoadingMaxRetry: 4, fragLoadingTimeOut: 20000, fragLoadingMaxRetry: 6 });
+    const hls = new Hls({
+      maxBufferLength: 30, maxMaxBufferLength: 60, enableWorker: true,
+      strictManifestParsing: false,
+      manifestLoadingTimeOut: 10000, manifestLoadingMaxRetry: 4,
+      levelLoadingTimeOut: 10000, levelLoadingMaxRetry: 4,
+      fragLoadingTimeOut: 20000, fragLoadingMaxRetry: 6
+    });
     hls.loadSource(streamUrl);
     hls.attachMedia(video);
     hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(()=>{}); snap.classList.add('hidden'); });
     hls.on(Hls.Events.ERROR, (_, data) => {
       if (!data.fatal) return;
       if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-        // Network blip or buffer stall — try to recover, don't kill the tile
-        console.warn('[LiveGrid] HLS network error, recovering:', data.details);
         hls.startLoad();
       } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-        console.warn('[LiveGrid] HLS media error, recovering:', data.details);
         hls.recoverMediaError();
       } else {
-        // Truly fatal (manifest gone, stream ended) — show error
         const e = document.createElement('div'); e.className='tile-error'; e.textContent='Stream ended'; tile.appendChild(e);
       }
     });
-
-    // Keep buffer topped up — re-trigger load if stalled
-    video.addEventListener('waiting', () => {
-      try { hls.startLoad(); } catch(e) {}
-    });
+    video.addEventListener('waiting', () => { try { hls.startLoad(); } catch {} });
     hlsInstances.set(model.username, hls);
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
     video.src = streamUrl;
@@ -632,19 +1080,26 @@ function buildTile(model, quality) {
   const viewEl = document.createElement('div'); viewEl.className='tile-viewers'; viewEl.textContent=fmtViewers(model.viewersCount);
   const ctrlEl = document.createElement('div'); ctrlEl.className='tile-controls';
 
+  // Mute button
   const muteBtn = document.createElement('button');
   muteBtn.className = 'tile-btn'; muteBtn.textContent = '🔇'; muteBtn.title = 'Toggle audio';
   muteBtn.onclick = e => {
     e.stopPropagation();
-    if (video.muted) {
-      unmuteTile(tile, muteBtn);
-    } else {
+    if (video.muted) { unmuteTile(tile, muteBtn); }
+    else {
       video.muted = true; muteBtn.classList.remove('unmuted'); muteBtn.textContent = '🔇';
       tile.classList.remove('active-audio'); tile.style.order = '';
       document.getElementById('grid-wrapper').classList.remove('has-active-audio');
     }
   };
 
+  // Favorite button
+  const favBtn = document.createElement('button');
+  favBtn.className = 'tile-btn tile-btn-fav';
+  updateFavBtn(favBtn, isFav(model.username));
+  favBtn.onclick = e => { e.stopPropagation(); toggleFav(model.username, model); };
+
+  // Fullscreen button
   const fsBtn = document.createElement('button');
   fsBtn.className = 'tile-btn'; fsBtn.textContent = '⛶'; fsBtn.title = 'Fullscreen';
   fsBtn.onclick = e => {
@@ -655,14 +1110,13 @@ function buildTile(model, quality) {
     (video.requestFullscreen || video.webkitRequestFullscreen).call(video);
   };
 
-  ctrlEl.appendChild(muteBtn); ctrlEl.appendChild(fsBtn);
+  ctrlEl.appendChild(muteBtn); ctrlEl.appendChild(favBtn); ctrlEl.appendChild(fsBtn);
   bot.appendChild(nameEl); bot.appendChild(viewEl); bot.appendChild(ctrlEl);
 
   const metaPanel = buildMetaPanel(model);
   tile.appendChild(snap); tile.appendChild(video); tile.appendChild(top); tile.appendChild(bot);
   tile.appendChild(metaPanel);
 
-  // Show meta only when hovering upper 60% of tile (not over bottom controls)
   tile.addEventListener('mouseenter', () => metaPanel.classList.add('visible'));
   tile.addEventListener('mouseleave', () => metaPanel.classList.remove('visible'));
 
@@ -673,7 +1127,6 @@ function buildTile(model, quality) {
 function buildMetaPanel(model) {
   const meta = document.createElement('div');
   meta.className = 'tile-meta';
-  // meta panel - clicks on tags/CTA handled per-element
 
   const hdr = document.createElement('div'); hdr.className = 'meta-header';
   const nameSpan = document.createElement('span'); nameSpan.className='meta-name'; nameSpan.textContent=model.username;
@@ -698,23 +1151,21 @@ function buildMetaPanel(model) {
   else if (model.liveSince) onlineStr = fmtTime(Math.floor((Date.now()-new Date(model.liveSince).getTime())/1000));
   if (onlineStr) addRow('⏱', 'Online', onlineStr);
 
-  if (model.country) addRow('📍', 'Country', `${getCountryFlag(model.country)} ${model.country.toUpperCase()}`);
-  if (model.city)    addRow('🏙', 'City', model.city);
-  if (model.age)     addRow('🎂', 'Age', `${model.age}`);
-  if (model.gender)  addRow('✦', 'Gender', {female:'♀ Female',male:'♂ Male',couple:'⚤ Couple',trans:'⚧ Trans'}[model.gender] || model.gender);
+  if (model.country)    addRow('📍', 'Country', `${getCountryFlag(model.country)} ${model.country.toUpperCase()}`);
+  if (model.city)       addRow('🏙', 'City', model.city);
+  if (model.age)        addRow('🎂', 'Age', `${model.age}`);
+  if (model.gender)     addRow('✦', 'Gender', {female:'♀ Female',male:'♂ Male',couple:'⚤ Couple',trans:'⚧ Trans'}[model.gender] || model.gender);
   if (model.ethnicity)  addRow('🌐', 'Ethnicity', model.ethnicity);
   if (model.bodyType)   addRow('⚡', 'Body', model.bodyType);
   if (model.hairColor)  addRow('💇', 'Hair', model.hairColor);
   if (model.eyeColor)   addRow('👁', 'Eyes', model.eyeColor);
 
-  // Quality streams available
   const availableQualities = Object.keys(model.stream.urls || {}).filter(k => k !== 'original' && model.stream.urls[k]);
   if (availableQualities.length) {
     meta.appendChild(divider());
     const qRow = document.createElement('div'); qRow.className='meta-row'; qRow.style.alignItems='center';
     qRow.innerHTML = `<span class="meta-icon">📺</span><span class="meta-label">Streams:&nbsp;</span>`;
     const qBadges = document.createElement('div'); qBadges.className='meta-quality-row';
-    // Always show 'original' first
     const allQ = model.stream.urls.original ? ['original', ...availableQualities] : availableQualities;
     [...new Set(allQ)].forEach(q => {
       const b = document.createElement('span'); b.className='meta-quality-badge';
@@ -736,7 +1187,6 @@ function buildMetaPanel(model) {
   if (model.isNew) extras.push('New');
   if (extras.length) addRow('ℹ', 'Features', extras.join(' · '));
 
-  // Tags — clickable to filter
   const tags = model.tags || model.categories || [];
   if (tags.length > 0) {
     meta.appendChild(divider());
@@ -752,7 +1202,6 @@ function buildMetaPanel(model) {
   }
 
   const spacer = document.createElement('div'); spacer.className='meta-spacer'; meta.appendChild(spacer);
-
   const ctaWrap = document.createElement('div'); ctaWrap.className='meta-cta';
   const ctaLink = document.createElement('a'); ctaLink.className='cta-link';
   ctaLink.href=buildAffUrl(model.username); ctaLink.target='_blank'; ctaLink.rel='noopener noreferrer';
@@ -763,39 +1212,26 @@ function buildMetaPanel(model) {
 }
 
 // ── STATS MODAL ────────────────────────────────────────────────────────────
-function openStats() {
-  document.getElementById('stats-modal').classList.add('open');
-  renderStats();
-}
-
-function closeStats() {
-  document.getElementById('stats-modal').classList.remove('open');
-}
-
-document.getElementById('stats-modal').addEventListener('click', e => {
-  if (e.target === document.getElementById('stats-modal')) closeStats();
-});
+function openStats()  { document.getElementById('stats-modal').classList.add('open'); renderStats(); }
+function closeStats() { document.getElementById('stats-modal').classList.remove('open'); }
+document.getElementById('stats-modal').addEventListener('click', e => { if (e.target === document.getElementById('stats-modal')) closeStats(); });
 
 function renderStats() {
   const body = document.getElementById('stats-body');
   const models = allModels;
   if (!models.length) { body.innerHTML = '<div style="color:var(--muted);font-family:\'Space Mono\',monospace;font-size:12px;">No data — load streams first.</div>'; return; }
 
-  // KPIs
   const totalViewers = models.reduce((s, m) => s + (m.viewersCount || 0), 0);
   const hdCount = models.filter(m => m.broadcastHD).length;
   const countries = new Set(models.map(m => m.country).filter(Boolean)).size;
 
-  // Gender breakdown
   const genderCounts = {};
   models.forEach(m => { if (m.gender) genderCounts[m.gender] = (genderCounts[m.gender]||0)+1; });
 
-  // Country top 10
   const countryCounts = {};
   models.forEach(m => { if (m.country) countryCounts[m.country] = (countryCounts[m.country]||0)+1; });
   const topCountries = Object.entries(countryCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
 
-  // Tag cloud — collect ALL tags from loaded models
   const tagCounts = {};
   models.forEach(m => {
     const tags = m.tags || m.categories || [];
@@ -806,7 +1242,6 @@ function renderStats() {
   });
   const topTags = Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]).slice(0,40);
 
-  // Quality availability
   const qualCounts = {};
   models.forEach(m => {
     Object.keys(m.stream?.urls || {}).forEach(q => { if (m.stream.urls[q]) qualCounts[q] = (qualCounts[q]||0)+1; });
@@ -814,7 +1249,6 @@ function renderStats() {
 
   body.innerHTML = '';
 
-  // KPI row
   const kpis = document.createElement('div'); kpis.className='stats-kpis';
   [
     { val: fmtNum(models.length), label: 'Live Streams' },
@@ -823,12 +1257,9 @@ function renderStats() {
     { val: hdCount, label: 'HD Streams' },
     { val: Math.round(totalViewers/Math.max(models.length,1)), label: 'Avg Viewers' },
     { val: Object.keys(tagCounts).length, label: 'Unique Tags' },
-  ].forEach(k => {
-    kpis.innerHTML += `<div class="kpi"><div class="kpi-val">${k.val}</div><div class="kpi-label">${k.label}</div></div>`;
-  });
+  ].forEach(k => { kpis.innerHTML += `<div class="kpi"><div class="kpi-val">${k.val}</div><div class="kpi-label">${k.label}</div></div>`; });
   body.appendChild(kpis);
 
-  // Gender breakdown
   const gSection = document.createElement('div');
   gSection.innerHTML = `<div class="stats-section-title">Gender Breakdown</div>`;
   const gList = document.createElement('div'); gList.className='stats-bar-list';
@@ -839,10 +1270,8 @@ function renderStats() {
     row.innerHTML = `<div class="stats-bar-label">${g}</div><div class="stats-bar-track"><div class="stats-bar-fill ${gColors[g]||''}" style="width:${Math.round(cnt/gMax*100)}%"></div></div><div class="stats-bar-count">${cnt}</div>`;
     gList.appendChild(row);
   });
-  gSection.appendChild(gList);
-  body.appendChild(gSection);
+  gSection.appendChild(gList); body.appendChild(gSection);
 
-  // Top countries
   const cSection = document.createElement('div');
   cSection.innerHTML = `<div class="stats-section-title">Top Countries</div>`;
   const cList = document.createElement('div'); cList.className='stats-bar-list';
@@ -851,29 +1280,24 @@ function renderStats() {
     const row = document.createElement('div'); row.className='stats-bar-row';
     const label = document.createElement('div'); label.className='stats-bar-label';
     label.textContent = `${getCountryFlag(code)} ${code.toUpperCase()}`;
-    label.title = 'Filter by country';
     label.onclick = () => { document.getElementById('countrySelect').value = code; renderGrid(); closeStats(); };
     row.appendChild(label);
     row.innerHTML += `<div class="stats-bar-track"><div class="stats-bar-fill" style="width:${Math.round(cnt/cMax*100)}%"></div></div><div class="stats-bar-count">${cnt}</div>`;
     cList.appendChild(row);
   });
-  cSection.appendChild(cList);
-  body.appendChild(cSection);
+  cSection.appendChild(cList); body.appendChild(cSection);
 
-  // Quality availability
   const qSection = document.createElement('div');
   qSection.innerHTML = `<div class="stats-section-title">Available Stream Qualities</div>`;
   const qList = document.createElement('div'); qList.className='stats-bar-list';
   const qMax = Math.max(...Object.values(qualCounts), 1);
   Object.entries(qualCounts).sort((a,b)=>b[1]-a[1]).forEach(([q, cnt]) => {
     const row = document.createElement('div'); row.className='stats-bar-row';
-    row.innerHTML = `<div class="stats-bar-label">${q==='original'?'MAX/Original':q}</div><div class="stats-bar-track"><div class="stats-bar-fill purple" style="width:${Math.round(cnt/qMax*100)}%"></div></div><div class="stats-bar-count">${cnt}</div>`;
+    row.innerHTML = `<div class="stats-bar-label">${q==='original'?'MAX':q}</div><div class="stats-bar-track"><div class="stats-bar-fill purple" style="width:${Math.round(cnt/qMax*100)}%"></div></div><div class="stats-bar-count">${cnt}</div>`;
     qList.appendChild(row);
   });
-  qSection.appendChild(qList);
-  body.appendChild(qSection);
+  qSection.appendChild(qList); body.appendChild(qSection);
 
-  // Tag cloud
   if (topTags.length) {
     const tSection = document.createElement('div');
     tSection.innerHTML = `<div class="stats-section-title">Live Tag Cloud (click to filter)</div>`;
@@ -884,8 +1308,7 @@ function renderStats() {
       el.onclick = () => { setTagFilter(tag); closeStats(); };
       cloud.appendChild(el);
     });
-    tSection.appendChild(cloud);
-    body.appendChild(tSection);
+    tSection.appendChild(cloud); body.appendChild(tSection);
   }
 
   const updated = document.createElement('div'); updated.className='stats-updated';
@@ -900,6 +1323,7 @@ function renderStats() {
 document.getElementById('countrySelect').addEventListener('change', renderGrid);
 document.getElementById('tagInput').addEventListener('keydown', e => { if (e.key==='Enter') loadStreams(); });
 
+startFavWatcher();
 loadStreams();
 </script>
 </body>
