@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 
 
 <html lang="en">
@@ -1490,6 +1490,9 @@ const BATCH          = 16;
 
 
 const API            = 'https://go.stripchat.com/api/models';
+let apiOffset        = 0;           // how far into the full API we've paged
+let isBgFetching     = false;       // silent background prefetch running
+let apiTotal         = null;        // total live models (from API count field)
 
 
 
@@ -1777,7 +1780,7 @@ function renderFavPanel() {
       const m = allModels.find(x => x.username === username);
 
 
-      status.textContent = m ? `?? LIVE · ?? ${fmtViewers(m.viewersCount)}` : '?? LIVE';
+      status.textContent = m ? `?? LIVE ï¿½ ?? ${fmtViewers(m.viewersCount)}` : '?? LIVE';
 
 
     } else {
@@ -1789,7 +1792,7 @@ function renderFavPanel() {
       const ago = last ? fmtAgo(Date.now() - last) : 'unknown';
 
 
-      status.textContent = `? Offline · last seen ${ago}`;
+      status.textContent = `? Offline ï¿½ last seen ${ago}`;
 
 
     }
@@ -1852,7 +1855,7 @@ function renderFavPanel() {
   const onlineCount = usernames.filter(u => onlineSet.has(u)).length;
 
 
-  footer.textContent = `${onlineCount} / ${usernames.length} online · checks every 5min`;
+  footer.textContent = `${onlineCount} / ${usernames.length} online ï¿½ checks every 5min`;
 
 
 }
@@ -2638,51 +2641,15 @@ async function loadStreams() {
   try {
 
 
-    const pages = await Promise.all([0, 500, 1000].map(offset => {
-
-
-      const p = new URLSearchParams({ ...baseParams, offset });
-
-
-      return fetch(`${API}?${p}`, { headers: { Accept: 'application/json' } })
-
-
-        .then(r => r.ok ? r.json() : { models: [] })
-
-
-        .catch(() => ({ models: [] }));
-
-
-    }));
-
-
-
-
-
+    const p0 = new URLSearchParams({ ...baseParams, limit: 200, offset: 0 });
+    const data0 = await fetch(`?`, { headers: { Accept: 'application/json' } })
+      .then(r => r.ok ? r.json() : { models: [], count: 0 })
+      .catch(() => ({ models: [], count: 0 }));
+    if (data0.count) apiTotal = data0.count;
+    apiOffset = 200;
     const seen = new Set();
-
-
     let models = [];
-
-
-    pages.forEach(data => {
-
-
-      (data.models || []).forEach(m => {
-
-
-        if (!seen.has(m.username)) { seen.add(m.username); models.push(m); }
-
-
-      });
-
-
-    });
-
-
-
-
-
+    (data0.models || []).forEach(m => { if (!seen.has(m.username)) { seen.add(m.username); models.push(m); } });
     models = models.filter(m => m.status === 'public' && m.stream && m.stream.urls);
 
 
@@ -2720,6 +2687,7 @@ async function loadStreams() {
 
 
   renderGrid();
+  backgroundPrefetch();
 
 
 
@@ -2782,42 +2750,12 @@ async function diffRefresh() {
   try {
 
 
-    const pages = await Promise.all([0, 500, 1000].map(offset => {
-
-
-      const p = new URLSearchParams({ ...baseParams, offset });
-
-
-      return fetch(`${API}?${p}`, { headers: { Accept: 'application/json' } })
-
-
-        .then(r => r.ok ? r.json() : { models: [] })
-
-
-        .catch(() => ({ models: [] }));
-
-
-    }));
-
-
+    const pRef = new URLSearchParams({ ...baseParams, limit: 200, offset: 0 });
+    const dataRef = await fetch(`?`, { headers: { Accept: 'application/json' } })
+      .then(r => r.ok ? r.json() : { models: [] })
+      .catch(() => ({ models: [] }));
     const seen = new Set();
-
-
-    pages.forEach(data => {
-
-
-      (data.models || []).forEach(m => {
-
-
-        if (!seen.has(m.username)) { seen.add(m.username); freshModels.push(m); }
-
-
-      });
-
-
-    });
-
-
+    (dataRef.models || []).forEach(m => { if (!seen.has(m.username)) { seen.add(m.username); freshModels.push(m); } });
     freshModels = freshModels.filter(m => m.status === 'public' && m.stream && m.stream.urls);
 
 
@@ -2869,7 +2807,7 @@ async function diffRefresh() {
   // Update status text + reset bar
 
 
-  document.getElementById('statusText').textContent = `${allModels.length} streams · ${new Date().toLocaleTimeString()}`;
+  document.getElementById('statusText').textContent = `${allModels.length} streams ï¿½ ${new Date().toLocaleTimeString()}`;
 
 
   const bar = document.getElementById('refreshBar');
@@ -3295,7 +3233,7 @@ async function loadAll() {
   document.getElementById('loadall-bar').classList.remove('active');
 
 
-  document.getElementById('statusText').textContent = `${allModels.length} streams · ${new Date().toLocaleTimeString()}`;
+  document.getElementById('statusText').textContent = `${allModels.length} streams ï¿½ ${new Date().toLocaleTimeString()}`;
 
 
   populateCountryFilter(allModels);
@@ -3406,7 +3344,7 @@ function renderGrid() {
   sentinel.querySelector('.sentinel-text').textContent = hasMore ? 'Scroll for more' : '';
 
 
-  document.getElementById('statusText').textContent = `${currentFiltered.length} streams · ${new Date().toLocaleTimeString()}`;
+  document.getElementById('statusText').textContent = `${currentFiltered.length} streams ï¿½ ${new Date().toLocaleTimeString()}`;
 
 
 
@@ -3423,6 +3361,87 @@ function renderGrid() {
 
 
 
+
+
+
+// -- BACKGROUND PREFETCH & API PAGINATION -----------------------------------
+
+// Silently fetch pages 2-5 into allModels after initial load
+async function backgroundPrefetch() {
+  if (isBgFetching) return;
+  isBgFetching = true;
+  const gender = document.getElementById('genderSelect').value;
+  const sort   = document.getElementById('sortSelect').value;
+  const tag    = document.getElementById('tagInput').value.trim();
+  const baseParams = { limit: 200, sortBy: sort, ...genderParam(gender) };
+  if (tag) baseParams.tag = tag;
+  const seen = new Set(allModels.map(m => m.username));
+  for (let off = 200; off <= 800; off += 200) {
+    if (apiOffset > off) continue; // already have this page
+    try {
+      const p = new URLSearchParams({ ...baseParams, offset: off });
+      const data = await fetch(${API}?, { headers: { Accept: 'application/json' } })
+        .then(r => r.ok ? r.json() : { models: [] })
+        .catch(() => ({ models: [] }));
+      let added = 0;
+      (data.models || []).forEach(m => {
+        if (!seen.has(m.username) && m.status === 'public' && m.stream && m.stream.urls) {
+          if (!m.country && m.modelsCountry) m.country = m.modelsCountry;
+          if (!gender || m.gender === gender) {
+            seen.add(m.username);
+            allModels.push(m);
+            added++;
+          }
+        }
+      });
+      apiOffset = off + 200;
+      if (added > 0) {
+        populateCountryFilter(allModels);
+        document.getElementById('statusText').textContent = ${allModels.length} streams \u2022 ;
+      }
+      if (!data.models || data.models.length < 200) break; // end of data
+    } catch(e) { break; }
+  }
+  isBgFetching = false;
+}
+
+// Fetch the next API page on demand (when infinite scroll pool is exhausted)
+async function fetchNextApiPage() {
+  if (isBgFetching) return;
+  isBgFetching = true;
+  const gender = document.getElementById('genderSelect').value;
+  const sort   = document.getElementById('sortSelect').value;
+  const tag    = document.getElementById('tagInput').value.trim();
+  const baseParams = { limit: 200, sortBy: sort, ...genderParam(gender) };
+  if (tag) baseParams.tag = tag;
+  const seen = new Set(allModels.map(m => m.username));
+  try {
+    const p = new URLSearchParams({ ...baseParams, offset: apiOffset });
+    const data = await fetch(${API}?, { headers: { Accept: 'application/json' } })
+      .then(r => r.ok ? r.json() : { models: [] })
+      .catch(() => ({ models: [] }));
+    let added = 0;
+    (data.models || []).forEach(m => {
+      if (!seen.has(m.username) && m.status === 'public' && m.stream && m.stream.urls) {
+        if (!m.country && m.modelsCountry) m.country = m.modelsCountry;
+        if (!gender || m.gender === gender) {
+          seen.add(m.username);
+          allModels.push(m);
+          added++;
+        }
+      }
+    });
+    apiOffset += 200;
+    if (added > 0) {
+      currentFiltered = applyCountryFilter(allModels);
+      hasMore = currentOffset < currentFiltered.length || (apiTotal ? apiOffset < apiTotal : data.models.length === 200);
+      document.getElementById('statusText').textContent = ${allModels.length} streams \u2022 ;
+    } else {
+      hasMore = false;
+    }
+  } catch(e) { hasMore = false; }
+  isBgFetching = false;
+}
 
 // -- INFINITE SCROLL --------------------------------------------------------
 
@@ -3481,6 +3500,17 @@ async function loadMoreTiles() {
   const grid = document.getElementById('grid');
 
 
+  // If local pool exhausted, fetch next API page first
+  if (currentOffset >= currentFiltered.length) {
+    await fetchNextApiPage();
+    if (!hasMore && currentOffset >= currentFiltered.length) {
+      sentinel.classList.remove('loading');
+      sentinel.querySelector('.sentinel-text').textContent = 'All ' + currentFiltered.length + ' streams loaded';
+      setTimeout(() => { sentinel.style.display = 'none'; }, 3000);
+      isLoadingMore = false;
+      return;
+    }
+  }
   const batch = currentFiltered.slice(currentOffset, currentOffset + BATCH);
 
 
@@ -3502,7 +3532,7 @@ async function loadMoreTiles() {
   currentOffset += batch.length;
 
 
-  hasMore = currentOffset < currentFiltered.length;
+  hasMore = currentOffset < currentFiltered.length || (apiTotal ? apiOffset < apiTotal : !isBgFetching);
 
 
   sentinel.classList.remove('loading');
@@ -4047,7 +4077,7 @@ function buildMetaPanel(model) {
   if (model.isNew) extras.push('New');
 
 
-  if (extras.length) addRow('?', 'Features', extras.join(' · '));
+  if (extras.length) addRow('?', 'Features', extras.join(' ï¿½ '));
 
 
 
