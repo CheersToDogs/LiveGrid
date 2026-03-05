@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 
 
 <html lang="en">
@@ -13,7 +13,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 
-<title>LiveGrid � Multi-Stream Viewer</title>
+<title>LiveGrid � Multi-Stream Viewer</title>
 
 
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
@@ -783,6 +783,175 @@
   .tile.active-audio .tile-snapshot { opacity: 0 !important; pointer-events: none; }
 
 
+
+  /* ── MOBILE FILTER BUTTON ── */
+  .btn-mobile-filters {
+    display: none;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 16px;
+    border-radius: var(--radius);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 44px;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  /* ── MOBILE FILTER DRAWER ── */
+  .mobile-drawer {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 900;
+    background: var(--surface);
+    border-top: 2px solid var(--accent);
+    border-radius: 14px 14px 0 0;
+    box-shadow: 0 -10px 40px rgba(0,0,0,.6);
+    transform: translateY(100%);
+    transition: transform .3s cubic-bezier(.4,0,.2,1);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .mobile-drawer.open { display: block; transform: translateY(0); }
+  .mobile-drawer-backdrop {
+    display: none; position: fixed; inset: 0;
+    z-index: 899; background: rgba(0,0,0,.5);
+  }
+  .mobile-drawer-backdrop.open { display: block; }
+  .mobile-drawer-header {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .mobile-drawer-title { font-size: 14px; font-weight: 800; }
+  .mobile-drawer-close {
+    width: 44px; height: 44px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text); font-size: 16px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .mobile-drawer-body {
+    padding: 12px 20px 20px;
+    display: flex; flex-direction: column; gap: 12px;
+    max-height: 60vh; overflow-y: auto;
+  }
+  .mf-row { display: flex; align-items: center; gap: 10px; }
+  .mf-row label {
+    width: 70px; flex-shrink: 0;
+    font-size: 11px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .mf-row select, .mf-row input {
+    flex: 1; min-height: 44px; font-size: 14px; padding: 8px 12px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); color: var(--text);
+    font-family: 'Space Mono', monospace;
+  }
+  .mf-actions { display: flex; gap: 8px; padding-top: 4px; }
+  .mf-actions button {
+    flex: 1; min-height: 48px; border-radius: var(--radius);
+    font-family: 'Space Mono', monospace; font-size: 13px;
+    font-weight: 700; cursor: pointer; border: none;
+  }
+  .mf-apply { background: var(--accent); color: #000; }
+  .mf-reset { background: transparent; border: 1px solid var(--border) !important; color: var(--muted); }
+
+  /* ── FULLSCREEN SWIPE OVERLAY ── */
+  #fs-overlay {
+    display: none; position: fixed; inset: 0;
+    z-index: 2000; background: #000;
+    flex-direction: column; touch-action: none;
+  }
+  #fs-overlay.open { display: flex; }
+  #fs-video-wrap { flex: 1; position: relative; overflow: hidden; }
+  #fs-video-wrap video { width: 100%; height: 100%; object-fit: contain; display: block; }
+  #fs-video-wrap.anim-left  { animation: swipeLeft  .22s ease forwards; }
+  #fs-video-wrap.anim-right { animation: swipeRight .22s ease forwards; }
+  @keyframes swipeLeft  { to { transform: translateX(-30%); opacity: 0; } }
+  @keyframes swipeRight { to { transform: translateX(30%);  opacity: 0; } }
+  #fs-topbar {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px;
+    padding-top: max(12px, env(safe-area-inset-top, 12px));
+    background: linear-gradient(to bottom, rgba(0,0,0,.8), transparent);
+  }
+  #fs-counter {
+    font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700;
+    color: #fff; background: rgba(0,0,0,.55); padding: 5px 12px;
+    border-radius: 20px; backdrop-filter: blur(4px);
+  }
+  #fs-mode-badge {
+    font-family: 'Space Mono', monospace; font-size: 10px;
+    color: var(--fav); background: rgba(0,0,0,.55);
+    padding: 4px 10px; border-radius: 20px; margin-left: 6px;
+    backdrop-filter: blur(4px);
+  }
+  #fs-close {
+    width: 44px; height: 44px; background: rgba(0,0,0,.55);
+    border: 1px solid rgba(255,255,255,.2); border-radius: 50%;
+    color: #fff; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  #fs-bottombar {
+    position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
+    padding: 12px 16px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+    background: linear-gradient(to top, rgba(0,0,0,.85), transparent);
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 12px;
+  }
+  #fs-info { flex: 1; min-width: 0; }
+  #fs-username {
+    font-size: 16px; font-weight: 800; color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px;
+  }
+  #fs-meta { font-family: 'Space Mono', monospace; font-size: 11px; color: rgba(255,255,255,.7); }
+  .fs-btn {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: rgba(0,0,0,.6); border: 2px solid rgba(255,255,255,.2);
+    color: #fff; font-size: 22px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px); flex-shrink: 0; transition: all .15s;
+  }
+  .fs-btn:active { transform: scale(.88); }
+  .fs-btn.fav-on { border-color: var(--fav); color: var(--fav); background: rgba(245,158,11,.2); }
+  .fs-swipe-hint {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    font-size: 32px; color: rgba(255,255,255,.12); pointer-events: none;
+  }
+  .fs-swipe-hint.left  { left: 10px; }
+  .fs-swipe-hint.right { right: 10px; }
+
+  /* ── TABLET ≤900px ── */
+  @media (max-width: 900px) {
+    .dpad-container { display: none !important; }
+  }
+
+  /* ── MOBILE ≤600px ── */
+  @media (max-width: 600px) {
+    header { padding: 8px 12px; gap: 8px; flex-wrap: nowrap; }
+    .stream-controls { display: none !important; }
+    .cam-controls    { display: none !important; }
+    .status-bar      { display: none !important; }
+    .btn-mobile-filters { display: flex !important; margin-left: auto; }
+    #grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .tile-btn { width: 40px !important; height: 40px !important; font-size: 16px !important; }
+    .tile-bottom { padding: 8px 10px 10px; }
+    .source-tab { min-height: 44px; padding: 8px 14px; }
+  }
+
+  /* ── MOBILE LANDSCAPE ── */
+  @media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
+    header { padding: 4px 10px; }
+    #grid { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+
 </style>
 
 
@@ -813,6 +982,7 @@
   </div>
 
 
+  <button class="btn-mobile-filters" onclick="openMobileFilters()">&#9881; Filters</button>
   <div class="controls">
 
     <div class="stream-controls" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1;">
@@ -827,22 +997,22 @@
       <select id="gridSelect">
 
 
-        <option value="1">1�1</option>
+        <option value="1">1�1</option>
 
 
-        <option value="4" selected>2�2</option>
+        <option value="4" selected>2�2</option>
 
 
-        <option value="9">3�3</option>
+        <option value="9">3�3</option>
 
 
-        <option value="16">4�4</option>
+        <option value="16">4�4</option>
 
 
-        <option value="25">5�5</option>
+        <option value="25">5�5</option>
 
 
-        <option value="36">6�6</option>
+        <option value="36">6�6</option>
 
 
       </select>
@@ -911,7 +1081,7 @@
       <label>Tag</label>
 
 
-      <input type="text" id="tagInput" placeholder="latina, bbw�">
+      <input type="text" id="tagInput" placeholder="latina, bbw�">
 
 
     </div>
@@ -977,7 +1147,7 @@
     <!-- D-PAD NAVIGATOR -->
 
 
-    <div style="display:flex;align-items:center;gap:5px;">
+    <div class="dpad-container" style="display:flex;align-items:center;gap:5px;">
 
 
       <label>Nav</label>
@@ -1001,7 +1171,7 @@
           <button class="dpad-btn" id="dpad-left" title="Left (←)">◀</button>
 
 
-          <div class="dpad-center" title="Current position" id="dpad-pos">�</div>
+          <div class="dpad-center" title="Current position" id="dpad-pos">�</div>
 
 
           <button class="dpad-btn" id="dpad-right" title="Right (→)">?</button>
@@ -1050,29 +1220,6 @@
 
     <div class="cam-controls">
 
-      <label>Sort</label>
-
-      <select id="camSortSelect">
-
-        <option value="active">Active First</option>
-
-        <option value="motion">Most Motion</option>
-
-        <option value="recent">Recently Active</option>
-
-      </select>
-
-      <label>Country</label>
-
-      <input type="text" id="camCountryInput" placeholder="e.g. Japan, US�" style="width:110px">
-
-      <button class="btn btn-primary" onclick="loadCams()">? Refresh</button>
-
-    </div>    </div>
-
-
-    <div class="cam-controls">
-
 
       <label>Sort</label>
 
@@ -1098,7 +1245,7 @@
     <span class="live-dot"></span>
 
 
-    <span class="status-text" id="statusText">�</span>
+    <span class="status-text" id="statusText">�</span>
 
 
     <div class="refresh-progress"><div class="refresh-bar" id="refreshBar"></div></div>
@@ -1119,7 +1266,7 @@
   <div id="grid"></div>
 
 
-  <div id="empty-state"><div class="icon">📡</div><div>Loading live streams�</div></div>
+  <div id="empty-state"><div class="icon">📡</div><div>Loading live streams�</div></div>
 
 
   <div id="scroll-sentinel"><span class="load-spinner"></span><span class="sentinel-text"></span></div>
@@ -1140,7 +1287,7 @@
   <div class="loadall-text">
 
 
-    <span id="loadall-label">Loading all streams�</span>
+    <span id="loadall-label">Loading all streams�</span>
 
 
     <span id="loadall-count">0 / ?</span>
@@ -1179,7 +1326,7 @@
   <div class="fav-body" id="fav-body"></div>
 
 
-  <div class="fav-footer" id="fav-footer">Watching for when they come online�</div>
+  <div class="fav-footer" id="fav-footer">Watching for when they come online�</div>
 
 
 </div>
@@ -1200,7 +1347,7 @@
     <div class="stats-header">
 
 
-      <div class="stats-title">LIVE<span>GRID</span> � Live Stats</div>
+      <div class="stats-title">LIVE<span>GRID</span> � Live Stats</div>
 
 
       <button class="stats-close" onclick="closeStats()">?</button>
@@ -1212,7 +1359,7 @@
     <div class="stats-body" id="stats-body">
 
 
-      <div style="color:var(--muted);font-family:'Space Mono',monospace;font-size:12px;">Loading stats�</div>
+      <div style="color:var(--muted);font-family:'Space Mono',monospace;font-size:12px;">Loading stats�</div>
 
 
     </div>
@@ -2205,7 +2352,7 @@ function updateDpadPos() {
   const el = document.getElementById('dpad-pos');
 
 
-  if (focusedIndex < 0 || focusedIndex >= tiles.length) { el.textContent = '�'; return; }
+  if (focusedIndex < 0 || focusedIndex >= tiles.length) { el.textContent = '�'; return; }
 
 
   const cols = getCols();
@@ -2406,7 +2553,7 @@ async function loadStreams() {
 
 
 
-  document.getElementById('statusText').textContent = 'Loading�';
+  document.getElementById('statusText').textContent = 'Loading�';
 
 
 
@@ -2484,7 +2631,7 @@ async function loadStreams() {
   } catch(e) {
 
 
-    document.getElementById('statusText').textContent = 'API error � retry';
+    document.getElementById('statusText').textContent = 'API error � retry';
 
 
     console.error(e);
@@ -2535,7 +2682,7 @@ async function loadStreams() {
 // ── DIFF-BASED AUTO-REFRESH ────────────────────────────────────────────────
 
 
-// Background fetch, diff against current grid, only add/remove/update � never destroyAll
+// Background fetch, diff against current grid, only add/remove/update � never destroyAll
 
 
 async function diffRefresh() {
@@ -2898,10 +3045,10 @@ async function loadAll() {
     document.getElementById('loadall-fill').style.width = total ? `${Math.min(100, Math.round(fetched/total*100))}%` : '50%';
 
 
-    document.getElementById('loadall-label').textContent = 'Loading all streams�';
+    document.getElementById('loadall-label').textContent = 'Loading all streams�';
 
 
-    document.getElementById('statusText').textContent = `Fetched ${fetched} streams�`;
+    document.getElementById('statusText').textContent = `Fetched ${fetched} streams�`;
 
 
   };
@@ -2997,7 +3144,7 @@ async function loadAll() {
 
 
 
-    // Check if any page returned < 500 � we've hit the end
+    // Check if any page returned < 500 � we've hit the end
 
 
     const hitEnd = pages.some(p => (p.models || []).length < 500);
@@ -3060,7 +3207,7 @@ async function loadAll() {
     if (!anyNew || hitEnd) break;
 
 
-    offset += 2500; // 5 pages � 500
+    offset += 2500; // 5 pages � 500
 
 
     await new Promise(r => setTimeout(r, 300)); // polite delay between batches
@@ -3255,7 +3402,7 @@ async function loadMoreTiles() {
   sentinel.classList.add('loading');
 
 
-  sentinel.querySelector('.sentinel-text').textContent = 'Loading�';
+  sentinel.querySelector('.sentinel-text').textContent = 'Loading�';
 
 
   await new Promise(r => setTimeout(r, 250));
@@ -3935,7 +4082,7 @@ function renderStats() {
   const models = allModels;
 
 
-  if (!models.length) { body.innerHTML = '<div style="color:var(--muted);font-family:\'Space Mono\',monospace;font-size:12px;">No data � load streams first.</div>'; return; }
+  if (!models.length) { body.innerHTML = '<div style="color:var(--muted);font-family:\'Space Mono\',monospace;font-size:12px;">No data � load streams first.</div>'; return; }
 
 
 
@@ -4419,8 +4566,264 @@ function buildCamTile(cam) {
 
   return tile;
 
-}</script>
+}
+// ── MOBILE FILTER DRAWER ─────────────────────────────────────────────────────
+function openMobileFilters() {
+  const syncSelects = [['gridSelect','gridSelectM'],['genderSelect','genderSelectM'],
+    ['sortSelect','sortSelectM'],['qualitySelect','qualitySelectM']];
+  syncSelects.forEach(([d,m]) => { const de=document.getElementById(d),me=document.getElementById(m); if(de&&me) me.value=de.value; });
+  document.getElementById('tagInputM').value = document.getElementById('tagInput').value;
+  const aff = document.getElementById('affId'); if(aff) document.getElementById('affIdM').value=aff.value;
+  // Sync country options
+  const cs=document.getElementById('countrySelect'), cm=document.getElementById('countrySelectM');
+  cm.innerHTML=cs.innerHTML; cm.value=cs.value;
+  document.getElementById('mobile-filter-drawer').classList.add('open');
+  document.getElementById('mobile-drawer-backdrop').classList.add('open');
+}
+function closeMobileFilters() {
+  document.getElementById('mobile-filter-drawer').classList.remove('open');
+  document.getElementById('mobile-drawer-backdrop').classList.remove('open');
+}
+function applyMobileFilters() {
+  const syncSelects = [['gridSelectM','gridSelect'],['genderSelectM','genderSelect'],
+    ['sortSelectM','sortSelect'],['qualitySelectM','qualitySelect'],['countrySelectM','countrySelect']];
+  syncSelects.forEach(([m,d]) => { const me=document.getElementById(m),de=document.getElementById(d); if(me&&de) de.value=me.value; });
+  document.getElementById('tagInput').value = document.getElementById('tagInputM').value;
+  const aff=document.getElementById('affId'); if(aff) aff.value=document.getElementById('affIdM').value;
+  closeMobileFilters();
+  loadStreams();
+}
+function resetMobileFilters() {
+  document.getElementById('gridSelectM').value='4';
+  document.getElementById('genderSelectM').value='female';
+  document.getElementById('sortSelectM').value='viewersCount';
+  document.getElementById('qualitySelectM').value='original';
+  document.getElementById('countrySelectM').value='';
+  document.getElementById('tagInputM').value='';
+}
 
+// ── MOBILE GRID COL CAP ───────────────────────────────────────────────────────
+function getResponsiveCols() {
+  const raw = Math.round(Math.sqrt(parseInt(document.getElementById('gridSelect').value)||4));
+  const w = window.innerWidth;
+  if (w <= 600)  return Math.min(raw, 2);
+  if (w <= 900)  return Math.min(raw, 3);
+  return raw;
+}
+const _renderGridOrig = renderGrid;
+renderGrid = function() {
+  _renderGridOrig();
+  document.getElementById('grid').style.gridTemplateColumns = `repeat(${getResponsiveCols()}, 1fr)`;
+};
+window.addEventListener('resize', () => {
+  const g = document.getElementById('grid');
+  if (g) g.style.gridTemplateColumns = `repeat(${getResponsiveCols()}, 1fr)`;
+});
+
+// ── FULLSCREEN SWIPE MODE ─────────────────────────────────────────────────────
+let _fsHls=null, _fsList=[], _fsIdx=0, _fsFavMode=false, _fsMuted=false;
+let _fsTx=0, _fsTy=0, _fsSwiping=false;
+
+function openFsOverlay(usernameOrModel, list, favMode) {
+  _fsList    = list || currentFiltered;
+  _fsFavMode = !!favMode;
+  const uname = typeof usernameOrModel==='string' ? usernameOrModel : usernameOrModel.username;
+  _fsIdx = _fsList.findIndex(m => m.username===uname);
+  if (_fsIdx < 0) _fsIdx = 0;
+  document.getElementById('fs-overlay').classList.add('open');
+  document.getElementById('fs-mode-badge').style.display = _fsFavMode ? 'inline-block' : 'none';
+  _fsLoad();
+}
+function closeFsOverlay() {
+  document.getElementById('fs-overlay').classList.remove('open');
+  if (_fsHls) { try{_fsHls.destroy();}catch(e){} _fsHls=null; }
+  const v=document.getElementById('fs-video');
+  v.pause(); v.src=''; v.removeAttribute('src');
+}
+function _fsLoad() {
+  const m=_fsList[_fsIdx]; if(!m) return;
+  document.getElementById('fs-counter').textContent=`${_fsIdx+1} / ${_fsList.length}`;
+  document.getElementById('fs-username').textContent=m.username;
+  const vw=m.viewersCount?`\uD83D\uDC41 ${fmtViewers(m.viewersCount)}`:'';
+  const co=m.country?`  ${getCountryFlag(m.country)} ${m.country.toUpperCase()}`:'';
+  document.getElementById('fs-meta').textContent=vw+co;
+  const favOn=isFav(m.username);
+  const fb=document.getElementById('fs-fav-btn');
+  fb.textContent=favOn?'\u2665':'\u2661'; fb.classList.toggle('fav-on',favOn);
+  if (_fsHls){try{_fsHls.destroy();}catch(e){} _fsHls=null;}
+  const v=document.getElementById('fs-video');
+  v.pause(); v.src=''; v.removeAttribute('src');
+  const q=document.getElementById('qualitySelect').value;
+  const url=m.stream?.urls?.[q]||m.stream?.urls?.original||m.stream?.url;
+  if(!url) return;
+  v.muted=_fsMuted;
+  if(Hls.isSupported()){
+    _fsHls=new Hls({strictManifestParsing:false,maxBufferLength:30});
+    _fsHls.loadSource(url); _fsHls.attachMedia(v);
+    _fsHls.on(Hls.Events.MANIFEST_PARSED,()=>v.play().catch(()=>{}));
+  } else if(v.canPlayType('application/vnd.apple.mpegurl')){
+    v.src=url; v.play().catch(()=>{});
+  }
+  document.getElementById('fs-mute-btn').textContent=_fsMuted?'\uD83D\uDD07':'\uD83D\uDD0A';
+}
+function _fsNav(dir) {
+  const ni=_fsIdx+dir;
+  if(ni<0||ni>=_fsList.length) return;
+  const w=document.getElementById('fs-video-wrap');
+  const cls=dir>0?'anim-left':'anim-right';
+  w.classList.add(cls);
+  setTimeout(()=>{ w.classList.remove(cls); _fsIdx=ni; _fsLoad(); }, 200);
+}
+function fsFavToggle() {
+  const m=_fsList[_fsIdx]; if(!m) return;
+  toggleFav(m.username,m);
+  const on=isFav(m.username);
+  const fb=document.getElementById('fs-fav-btn');
+  fb.textContent=on?'\u2665':'\u2661'; fb.classList.toggle('fav-on',on);
+}
+function fsMuteToggle() {
+  _fsMuted=!_fsMuted;
+  document.getElementById('fs-video').muted=_fsMuted;
+  document.getElementById('fs-mute-btn').textContent=_fsMuted?'\uD83D\uDD07':'\uD83D\uDD0A';
+}
+
+// Touch swipe handler
+(function(){
+  const ov=document.getElementById('fs-overlay');
+  ov.addEventListener('touchstart',e=>{_fsTx=e.touches[0].clientX;_fsTy=e.touches[0].clientY;_fsSwiping=false;},{passive:true});
+  ov.addEventListener('touchmove',e=>{
+    const dx=e.touches[0].clientX-_fsTx, dy=e.touches[0].clientY-_fsTy;
+    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>8) _fsSwiping=true;
+  },{passive:true});
+  ov.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-_fsTx, dy=e.changedTouches[0].clientY-_fsTy;
+    if(Math.abs(dy)>90&&Math.abs(dy)>Math.abs(dx)){ closeFsOverlay(); return; }
+    if(!_fsSwiping||Math.abs(dx)<40) return;
+    _fsNav(dx<0?1:-1);
+    _fsSwiping=false;
+  },{passive:true});
+  document.addEventListener('keydown',e=>{
+    if(!document.getElementById('fs-overlay').classList.contains('open')) return;
+    if(e.key==='ArrowRight') _fsNav(1);
+    if(e.key==='ArrowLeft')  _fsNav(-1);
+    if(e.key==='Escape')     closeFsOverlay();
+  });
+})();
+
+// Wire tile tap → FS on mobile
+const _btOrig = buildTile;
+buildTile = function(model, quality) {
+  const tile = _btOrig(model, quality);
+  tile.addEventListener('click', e => {
+    if (window.innerWidth > 900) return;
+    if (e.target.closest('.tile-btn,.tile-meta,.cta-link')) return;
+    openFsOverlay(model, currentFiltered, false);
+  });
+  return tile;
+};
+
+// Wire fav panel item → FS swipe through favs on mobile
+const _rfpOrig = renderFavPanel;
+renderFavPanel = function() {
+  _rfpOrig();
+  if (window.innerWidth > 900) return;
+  document.querySelectorAll('.fav-item').forEach(item => {
+    const uname = item.querySelector('.fav-name')?.textContent;
+    if (!uname) return;
+    item.onclick = () => {
+      const favList = Object.keys(getFavs())
+        .map(u => allModels.find(m=>m.username===u))
+        .filter(m => m && m.stream);
+      if (!favList.length) return;
+      toggleFavPanel();
+      openFsOverlay(uname, favList, true);
+    };
+  });
+};
+
+</script>
+
+
+
+<!-- MOBILE FILTER DRAWER BACKDROP -->
+<div id="mobile-drawer-backdrop" class="mobile-drawer-backdrop" onclick="closeMobileFilters()"></div>
+
+<!-- MOBILE FILTER DRAWER -->
+<div id="mobile-filter-drawer" class="mobile-drawer">
+  <div class="mobile-drawer-header">
+    <span class="mobile-drawer-title">&#9881; Filters</span>
+    <button class="mobile-drawer-close" onclick="closeMobileFilters()">&#10005;</button>
+  </div>
+  <div class="mobile-drawer-body">
+    <div class="mf-row"><label>Grid</label>
+      <select id="gridSelectM">
+        <option value="1">1&#xD7;1</option>
+        <option value="4" selected>2&#xD7;2</option>
+        <option value="9">3&#xD7;3</option>
+        <option value="16">4&#xD7;4</option>
+      </select>
+    </div>
+    <div class="mf-row"><label>Gender</label>
+      <select id="genderSelectM">
+        <option value="">All</option><option value="female" selected>Female</option>
+        <option value="male">Male</option><option value="couple">Couple</option>
+        <option value="trans">Trans</option>
+      </select>
+    </div>
+    <div class="mf-row"><label>Sort</label>
+      <select id="sortSelectM">
+        <option value="viewersCount" selected>Most Viewers</option>
+        <option value="onlineTime">Longest Online</option>
+        <option value="new">Newest</option>
+      </select>
+    </div>
+    <div class="mf-row"><label>Tag</label>
+      <input type="text" id="tagInputM" placeholder="latina, bbw&#x2026;">
+    </div>
+    <div class="mf-row"><label>Quality</label>
+      <select id="qualitySelectM">
+        <option value="original">Original (Max)</option>
+        <option value="720p">720p</option><option value="480p">480p</option>
+        <option value="240p">240p</option><option value="160p">160p</option>
+      </select>
+    </div>
+    <div class="mf-row"><label>Country</label>
+      <select id="countrySelectM"><option value="">All</option></select>
+    </div>
+    <div class="mf-row"><label>Aff.</label>
+      <input type="text" id="affIdM" placeholder="campaign-id">
+    </div>
+    <div class="mf-actions">
+      <button class="mf-apply" onclick="applyMobileFilters()">Apply</button>
+      <button class="mf-reset" onclick="resetMobileFilters()">Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- FULLSCREEN SWIPE OVERLAY -->
+<div id="fs-overlay">
+  <div id="fs-video-wrap">
+    <video id="fs-video" muted autoplay playsinline></video>
+    <div class="fs-swipe-hint left">&#9664;</div>
+    <div class="fs-swipe-hint right">&#9654;</div>
+  </div>
+  <div id="fs-topbar">
+    <div style="display:flex;align-items:center;">
+      <span id="fs-counter">1 / 1</span>
+      <span id="fs-mode-badge" style="display:none;">&#9829; Favs</span>
+    </div>
+    <button id="fs-close" onclick="closeFsOverlay()">&#10005;</button>
+  </div>
+  <div id="fs-bottombar">
+    <div id="fs-info">
+      <div id="fs-username"></div>
+      <div id="fs-meta"></div>
+    </div>
+    <button class="fs-btn" id="fs-fav-btn" onclick="fsFavToggle()">&#9825;</button>
+    <button class="fs-btn" id="fs-grid-btn" onclick="closeFsOverlay()" title="Back to grid">&#8862;</button>
+    <button class="fs-btn" id="fs-mute-btn" onclick="fsMuteToggle()">&#128266;</button>
+  </div>
+</div>
 
 </body>
 
