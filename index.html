@@ -89,10 +89,10 @@
   .tile-btn.unmuted { background: rgba(0,229,255,.3); border-color: var(--accent); }
 
   /* META OVERLAY */
-  .tile-meta { position: absolute; left: 0; right: 0; bottom: 46px; max-height: calc(100% - 56px); background: rgba(4,6,12,.95); backdrop-filter: blur(10px); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; display: flex; flex-direction: column; padding: 8px 10px 6px; gap: 4px; overflow-y: auto; overflow-x: hidden; z-index: 14; transform: translateY(4px); border-top: 1px solid rgba(255,255,255,.07); }
+  .tile-meta { position: absolute; left: 0; right: 0; bottom: 44px; max-height: calc(100% - 80px); background: rgba(4,6,12,.93); backdrop-filter: blur(10px); opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; display: flex; flex-direction: column; padding: 8px 10px 6px; gap: 4px; overflow-y: auto; overflow-x: hidden; z-index: 12; transform: translateY(4px); border-top: 1px solid rgba(255,255,255,.07); }
   .tile-meta::-webkit-scrollbar { width: 3px; }
   .tile-meta::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-  .tile:hover .tile-meta { opacity: 1; pointer-events: all; transform: translateY(0); }
+  .tile-meta.visible { opacity: 1; pointer-events: all; transform: translateY(0); }
   .meta-header { display: flex; align-items: center; gap: 7px; flex-shrink: 0; padding-bottom: 4px; }
   .meta-name { font-family: 'Syne',sans-serif; font-weight: 800; font-size: 13px; color: #fff; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .meta-divider { height: 1px; background: var(--border); flex-shrink: 0; margin: 1px 0; }
@@ -473,7 +473,9 @@ async function loadStreams() {
     const data = await res.json();
     let models = (data.models || []).filter(m => m.status === 'public' && m.stream?.urls);
     // Client-side gender filter as safety net (API sometimes ignores param)
-    if (gender) models = models.filter(m => m.gender === gender);
+    // Normalize country field — API returns modelsCountry
+  models.forEach(m => { if (!m.country && m.modelsCountry) m.country = m.modelsCountry; });
+  if (gender) models = models.filter(m => m.gender === gender);
     allModels = models;
     if (models.length) { console.log("[LiveGrid] Sample model fields:", JSON.stringify(models[0], null, 2)); }
   } catch(e) {
@@ -633,8 +635,14 @@ function buildTile(model, quality) {
   ctrlEl.appendChild(muteBtn); ctrlEl.appendChild(fsBtn);
   bot.appendChild(nameEl); bot.appendChild(viewEl); bot.appendChild(ctrlEl);
 
+  const metaPanel = buildMetaPanel(model);
   tile.appendChild(snap); tile.appendChild(video); tile.appendChild(top); tile.appendChild(bot);
-  tile.appendChild(buildMetaPanel(model));
+  tile.appendChild(metaPanel);
+
+  // Show meta only when hovering upper 60% of tile (not over bottom controls)
+  tile.addEventListener('mouseenter', () => metaPanel.classList.add('visible'));
+  tile.addEventListener('mouseleave', () => metaPanel.classList.remove('visible'));
+
   return tile;
 }
 
@@ -642,7 +650,7 @@ function buildTile(model, quality) {
 function buildMetaPanel(model) {
   const meta = document.createElement('div');
   meta.className = 'tile-meta';
-  meta.addEventListener('mousedown', e => e.stopPropagation());
+  // meta panel - clicks on tags/CTA handled per-element
 
   const hdr = document.createElement('div'); hdr.className = 'meta-header';
   const nameSpan = document.createElement('span'); nameSpan.className='meta-name'; nameSpan.textContent=model.username;
@@ -696,6 +704,14 @@ function buildMetaPanel(model) {
 
   const langs = model.languages || model.spokenLanguages;
   if (langs) addRow('🗣', 'Language', Array.isArray(langs) ? langs.join(', ') : langs);
+  const toys = model.broadcastInteractiveToy;
+  if (toys && toys.length) addRow('📳', 'Toy', Array.isArray(toys) ? toys.join(', ') : toys);
+  if (model.favoritedCount) addRow('♥', 'Favorites', fmtNum(model.favoritedCount));
+  const extras = [];
+  if (model.broadcastVR) extras.push('VR');
+  if (model.broadcastMobile) extras.push('Mobile');
+  if (model.isNew) extras.push('New');
+  if (extras.length) addRow('ℹ', 'Features', extras.join(' · '));
 
   // Tags — clickable to filter
   const tags = model.tags || model.categories || [];
