@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LiveGrid — Multi-Stream Viewer</title>
+<title>LiveGrid â€” Multi-Stream Viewer</title>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
@@ -76,7 +76,7 @@
   .tile.favorited { box-shadow: inset 0 0 0 2px rgba(245,158,11,.3); }
   /* Paused-by-viewport overlay */
   .tile.vp-paused video { opacity: 0.15; }
-  .tile.vp-paused::after { content: '⏸'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 28px; opacity: 0.5; pointer-events: none; }
+  .tile.vp-paused::after { content: 'â¸'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 28px; opacity: 0.5; pointer-events: none; }
   .tile video { width: 100%; height: 100%; object-fit: cover; display: block; background: #000; transition: opacity .4s; }
   .tile-snapshot { position: absolute; inset: 0; background-size: cover; background-position: center; transition: opacity .5s; }
   .tile-snapshot.hidden { opacity: 0; pointer-events: none; }
@@ -98,7 +98,7 @@
   .tile-bottom { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 8px; background: linear-gradient(to top,rgba(0,0,0,.85),transparent); z-index: 20; }
   .tile-username { font-size: 12px; font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 55%; }
   .tile-viewers { font-family: 'Space Mono',monospace; font-size: 10px; color: rgba(255,255,255,.7); }
-  .tile-viewers::before { content: '👁 '; }
+  .tile-viewers::before { content: 'ðŸ‘ '; }
   .tile-controls { display: flex; gap: 4px; pointer-events: all; }
   .tile-btn { width: 26px; height: 26px; border-radius: 4px; background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.15); color: #fff; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s; backdrop-filter: blur(4px); }
   .tile-btn:hover { background: rgba(255,255,255,.2); }
@@ -197,22 +197,112 @@
   .stats-tag:hover { border-color: var(--accent); color: var(--accent); }
   .stats-tag .tag-count { color: var(--accent); font-weight: 700; }
   .stats-updated { font-family: 'Space Mono',monospace; font-size: 10px; color: var(--muted); text-align: right; }
+
+  /* ── SOURCE TABS ── */
+  .source-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 3px;
+    flex-shrink: 0;
+  }
+  .source-tab {
+    padding: 5px 14px;
+    border-radius: 4px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    transition: all .2s;
+    text-transform: uppercase;
+  }
+  .source-tab.active {
+    background: var(--accent);
+    color: #000;
+  }
+  .source-tab:not(.active):hover { color: var(--text); }
+
+  /* Cam-only controls (hidden in STREAMS mode) */
+  .cam-controls { display: none; }
+  body.source-cams .cam-controls { display: flex; align-items: center; gap: 6px; }
+  body.source-cams .stream-controls { display: none; }
+
+  /* ── CAM TILE STATUS BADGE ── */
+  .badge-status {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+  .badge-status.active  { background: #00e5a0; color: #000; }
+  .badge-status.idle    { background: #f59e0b; color: #000; }
+  .badge-status.unknown { background: #4a5568; color: #fff; }
+
+  /* Motion score bar */
+  .motion-bar-wrap {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: rgba(255,255,255,.1);
+  }
+  .motion-bar {
+    height: 100%;
+    background: #00e5a0;
+    transition: width .5s ease;
+  }
+
+  /* Cam snapshot img */
+  .tile-cam-img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    background: #000;
+  }
+  /* SOURCE TABS */
+  .source-tabs { display:flex; gap:4px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:3px; flex-shrink:0; }
+  .source-tab { padding:5px 14px; border-radius:4px; font-family:'Space Mono',monospace; font-size:11px; font-weight:700; letter-spacing:.5px; cursor:pointer; border:none; background:transparent; color:var(--muted); transition:all .2s; text-transform:uppercase; }
+  .source-tab.active { background:var(--accent); color:#000; }
+  .source-tab:not(.active):hover { color:var(--text); }
+  .cam-controls { display:none; align-items:center; gap:6px; flex-wrap:wrap; }
+  body.source-cams .cam-controls { display:flex; }
+  body.source-cams .stream-controls { display:none; }
+  .tile-cam-img { width:100%; height:100%; object-fit:cover; display:block; background:#000; }
+  .badge-status { font-family:'Space Mono',monospace; font-size:9px; font-weight:700; letter-spacing:1px; padding:2px 6px; border-radius:3px; }
+  .badge-status.active  { background:#00e5a0; color:#000; }
+  .badge-status.idle    { background:#f59e0b; color:#000; }
+  .badge-status.unknown { background:#4a5568; color:#fff; }
+  .badge-status.dead    { background:#333; color:#666; }
+  .motion-bar-wrap { position:absolute; bottom:0; left:0; right:0; height:3px; background:rgba(255,255,255,.1); }
+  .motion-bar { height:100%; background:#00e5a0; transition:width .5s ease; }
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">LIVE<span>GRID</span></div>
+  <div class="source-tabs">
+    <button class="source-tab active" id="tabStreams" onclick="switchSource('streams')">STREAMS</button>
+    <button class="source-tab"        id="tabCams"    onclick="switchSource('cams')">CAMS</button>
+  </div>
   <div class="controls">
+    <div class="stream-controls" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1;">
     <div style="display:flex;align-items:center;gap:5px;">
       <label>Grid</label>
       <select id="gridSelect">
-        <option value="1">1×1</option>
-        <option value="4" selected>2×2</option>
-        <option value="9">3×3</option>
-        <option value="16">4×4</option>
-        <option value="25">5×5</option>
-        <option value="36">6×6</option>
+        <option value="1">1Ã—1</option>
+        <option value="4" selected>2Ã—2</option>
+        <option value="9">3Ã—3</option>
+        <option value="16">4Ã—4</option>
+        <option value="25">5Ã—5</option>
+        <option value="36">6Ã—6</option>
       </select>
     </div>
     <div style="display:flex;align-items:center;gap:5px;">
@@ -235,7 +325,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:5px;">
       <label>Tag</label>
-      <input type="text" id="tagInput" placeholder="latina, bbw…">
+      <input type="text" id="tagInput" placeholder="latina, bbwâ€¦">
     </div>
     <div style="display:flex;align-items:center;gap:5px;">
       <label>Country</label>
@@ -262,42 +352,60 @@
       <div class="dpad">
         <div style="display:grid;grid-template-columns:repeat(3,24px);grid-template-rows:repeat(3,24px);gap:2px;">
           <div></div>
-          <button class="dpad-btn" id="dpad-up" title="Up (↑)">▲</button>
+          <button class="dpad-btn" id="dpad-up" title="Up (â†‘)">â–²</button>
           <div></div>
-          <button class="dpad-btn" id="dpad-left" title="Left (←)">◀</button>
-          <div class="dpad-center" title="Current position" id="dpad-pos">—</div>
-          <button class="dpad-btn" id="dpad-right" title="Right (→)">▶</button>
+          <button class="dpad-btn" id="dpad-left" title="Left (â†)">â—€</button>
+          <div class="dpad-center" title="Current position" id="dpad-pos">â€”</div>
+          <button class="dpad-btn" id="dpad-right" title="Right (â†’)">â–¶</button>
           <div></div>
-          <button class="dpad-btn" id="dpad-down" title="Down (↓)">▼</button>
+          <button class="dpad-btn" id="dpad-down" title="Down (â†“)">â–¼</button>
           <div></div>
         </div>
       </div>
     </div>
 
-    <button class="btn btn-primary" onclick="loadStreams()">⟳ Refresh</button>
-    <button class="btn btn-loadall" id="loadAllBtn" onclick="loadAll()">⬇ Load All</button>
-    <button class="btn btn-pause" id="pauseAllBtn" onclick="togglePauseAll()">⏸ Pause All</button>
-    <button class="btn btn-danger" onclick="muteAll()">🔇 Mute All</button>
-    <button class="btn btn-fav" onclick="toggleFavPanel()">♥ Favs</button>
-    <button class="btn btn-stats" onclick="openStats()">📊 Stats</button>
-  </div>
+    <button class="btn btn-primary" onclick="loadStreams()">âŸ³ Refresh</button>
+    <button class="btn btn-loadall" id="loadAllBtn" onclick="loadAll()">â¬‡ Load All</button>
+    <button class="btn btn-pause" id="pauseAllBtn" onclick="togglePauseAll()">â¸ Pause All</button>
+    <button class="btn btn-danger" onclick="muteAll()">ðŸ”‡ Mute All</button>
+    <button class="btn btn-fav" onclick="toggleFavPanel()">â™¥ Favs</button>
+    <button class="btn btn-stats" onclick="openStats()">ðŸ“Š Stats</button>
+    </div><!-- /stream-controls -->
+    <div class="cam-controls">
+      <label>Sort</label>
+      <select id="camSortSelect">
+        <option value="active">Active First</option>
+        <option value="motion">Most Motion</option>
+        <option value="recent">Recently Active</option>
+      </select>
+      <label>Country</label>
+      <input type="text" id="camCountryInput" placeholder="e.g. Japan, US…" style="width:110px">
+      <button class="btn btn-primary" onclick="loadCams()">⟳ Refresh</button>
+    </div>    </div>
+    <div class="cam-controls">
+      <label>Sort</label>
+      <select id="camSortSelect"><option value="active">Active First</option><option value="motion">Most Motion</option><option value="recent">Recent</option></select>
+      <label>Country</label>
+      <input type="text" id="camCountryInput" placeholder="e.g. Japan..." style="width:100px">
+      <button class="btn btn-primary" onclick="loadCams()">Refresh</button>
+    </div>
   <div class="status-bar">
     <span class="live-dot"></span>
-    <span class="status-text" id="statusText">—</span>
+    <span class="status-text" id="statusText">â€”</span>
     <div class="refresh-progress"><div class="refresh-bar" id="refreshBar"></div></div>
   </div>
 </header>
 
 <div id="grid-wrapper">
   <div id="grid"></div>
-  <div id="empty-state"><div class="icon">📡</div><div>Loading live streams…</div></div>
+  <div id="empty-state"><div class="icon">ðŸ“¡</div><div>Loading live streamsâ€¦</div></div>
   <div id="scroll-sentinel"><span class="load-spinner"></span><span class="sentinel-text"></span></div>
 </div>
 
 <!-- LOAD ALL PROGRESS BAR -->
 <div id="loadall-bar">
   <div class="loadall-text">
-    <span id="loadall-label">Loading all streams…</span>
+    <span id="loadall-label">Loading all streamsâ€¦</span>
     <span id="loadall-count">0 / ?</span>
   </div>
   <div class="loadall-track"><div class="loadall-fill" id="loadall-fill" style="width:0%"></div></div>
@@ -306,28 +414,28 @@
 <!-- FAVORITES PANEL -->
 <div id="fav-panel">
   <div class="fav-header">
-    <div class="fav-title">♥ <span>Favorites</span></div>
-    <button class="fav-close" onclick="toggleFavPanel()">✕</button>
+    <div class="fav-title">â™¥ <span>Favorites</span></div>
+    <button class="fav-close" onclick="toggleFavPanel()">âœ•</button>
   </div>
   <div class="fav-body" id="fav-body"></div>
-  <div class="fav-footer" id="fav-footer">Watching for when they come online…</div>
+  <div class="fav-footer" id="fav-footer">Watching for when they come onlineâ€¦</div>
 </div>
 
 <!-- STATS MODAL -->
 <div id="stats-modal">
   <div class="stats-box">
     <div class="stats-header">
-      <div class="stats-title">LIVE<span>GRID</span> — Live Stats</div>
-      <button class="stats-close" onclick="closeStats()">✕</button>
+      <div class="stats-title">LIVE<span>GRID</span> â€” Live Stats</div>
+      <button class="stats-close" onclick="closeStats()">âœ•</button>
     </div>
     <div class="stats-body" id="stats-body">
-      <div style="color:var(--muted);font-family:'Space Mono',monospace;font-size:12px;">Loading stats…</div>
+      <div style="color:var(--muted);font-family:'Space Mono',monospace;font-size:12px;">Loading statsâ€¦</div>
     </div>
   </div>
 </div>
 
 <script>
-// ── STATE ──────────────────────────────────────────────────────────────────
+// â”€â”€ STATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const hlsInstances   = new Map();   // username -> Hls instance
 let refreshTimer     = null;
 let allPaused        = false;
@@ -344,7 +452,7 @@ let favWatchTimer    = null;
 const BATCH          = 16;
 const API            = 'https://go.stripchat.com/api/models';
 
-// ── FAVORITES (localStorage) ───────────────────────────────────────────────
+// â”€â”€ FAVORITES (localStorage) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function getFavs() {
   try { return JSON.parse(localStorage.getItem('lg_favs') || '{}'); } catch { return {}; }
 }
@@ -380,11 +488,11 @@ function toggleFav(username, model) {
 function updateFavBtn(btn, active) {
   if (active) {
     btn.classList.add('fav-active');
-    btn.textContent = '♥';
+    btn.textContent = 'â™¥';
     btn.title = 'Remove from favorites';
   } else {
     btn.classList.remove('fav-active');
-    btn.textContent = '♡';
+    btn.textContent = 'â™¡';
     btn.title = 'Add to favorites';
   }
 }
@@ -403,7 +511,7 @@ function renderFavPanel() {
 
   const usernames = Object.keys(favs);
   if (!usernames.length) {
-    body.innerHTML = '<div class="fav-empty">No favorites yet.<br>Click ♡ on any tile<br>to add a favorite.</div>';
+    body.innerHTML = '<div class="fav-empty">No favorites yet.<br>Click â™¡ on any tile<br>to add a favorite.</div>';
     footer.textContent = '';
     return;
   }
@@ -438,16 +546,16 @@ function renderFavPanel() {
     status.className = `fav-status ${online ? 'online' : 'offline'}`;
     if (online) {
       const m = allModels.find(x => x.username === username);
-      status.textContent = m ? `🟢 LIVE · 👁 ${fmtViewers(m.viewersCount)}` : '🟢 LIVE';
+      status.textContent = m ? `ðŸŸ¢ LIVE Â· ðŸ‘ ${fmtViewers(m.viewersCount)}` : 'ðŸŸ¢ LIVE';
     } else {
       const last = fav.lastSeenOnline;
       const ago = last ? fmtAgo(Date.now() - last) : 'unknown';
-      status.textContent = `⚫ Offline · last seen ${ago}`;
+      status.textContent = `âš« Offline Â· last seen ${ago}`;
     }
 
     const removeBtn = document.createElement('button');
     removeBtn.className = 'fav-remove';
-    removeBtn.textContent = '✕';
+    removeBtn.textContent = 'âœ•';
     removeBtn.title = 'Remove favorite';
     removeBtn.onclick = e => { e.stopPropagation(); toggleFav(username, fav); };
 
@@ -457,13 +565,13 @@ function renderFavPanel() {
     item.appendChild(info);
     item.appendChild(removeBtn);
 
-    // Click → open room
+    // Click â†’ open room
     item.onclick = () => window.open(buildAffUrl(username), '_blank', 'noopener');
     body.appendChild(item);
   });
 
   const onlineCount = usernames.filter(u => onlineSet.has(u)).length;
-  footer.textContent = `${onlineCount} / ${usernames.length} online · checks every 5min`;
+  footer.textContent = `${onlineCount} / ${usernames.length} online Â· checks every 5min`;
 }
 
 function fmtAgo(ms) {
@@ -511,7 +619,7 @@ function startFavWatcher() {
   }, 5 * 60 * 1000);
 }
 
-// ── VIEWPORT PAUSE/RESUME ─────────────────────────────────────────────────
+// â”€â”€ VIEWPORT PAUSE/RESUME â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // When a tile scrolls out of view for >2s, pause its HLS to save bandwidth.
 // When it scrolls back in, resume immediately.
 function setupViewportObserver() {
@@ -562,10 +670,10 @@ function setupViewportObserver() {
   document.querySelectorAll('#grid .tile').forEach(t => vpObserver.observe(t));
 }
 
-// ── HELPERS ────────────────────────────────────────────────────────────────
+// â”€â”€ HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function muteAll() {
   document.querySelectorAll('video').forEach(v => v.muted = true);
-  document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = '🔇'; });
+  document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = 'ðŸ”‡'; });
   document.querySelectorAll('.tile').forEach(t => { t.classList.remove('active-audio'); t.style.order = ''; });
   document.getElementById('grid-wrapper').classList.remove('has-active-audio');
 }
@@ -574,7 +682,7 @@ function togglePauseAll() {
   allPaused = !allPaused;
   const btn = document.getElementById('pauseAllBtn');
   document.querySelectorAll('video').forEach(v => { if (allPaused) v.pause(); else v.play().catch(() => {}); });
-  btn.textContent = allPaused ? '▶ Play All' : '⏸ Pause All';
+  btn.textContent = allPaused ? 'â–¶ Play All' : 'â¸ Pause All';
 }
 
 function fmtViewers(n) {
@@ -630,29 +738,29 @@ function setTagFilter(tag) {
   loadStreams();
 }
 
-// ── UNMUTE TILE ────────────────────────────────────────────────────────────
+// â”€â”€ UNMUTE TILE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function unmuteTile(tile, explicitBtn) {
   const video = tile.querySelector('video');
   if (!video) return;
   document.querySelectorAll('video').forEach(v => v.muted = true);
-  document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = '🔇'; });
+  document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = 'ðŸ”‡'; });
   document.querySelectorAll('.tile').forEach(t => { t.classList.remove('active-audio'); t.style.order = ''; });
   video.muted = false;
   const muteBtn = explicitBtn || tile.querySelector('.tile-btn');
-  if (muteBtn) { muteBtn.classList.add('unmuted'); muteBtn.textContent = '🔊'; }
+  if (muteBtn) { muteBtn.classList.add('unmuted'); muteBtn.textContent = 'ðŸ”Š'; }
   tile.classList.add('active-audio');
   tile.style.order = '-9999';
   document.getElementById('grid-wrapper').classList.add('has-active-audio');
 }
 
-// ── D-PAD NAVIGATION ──────────────────────────────────────────────────────
+// â”€â”€ D-PAD NAVIGATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function getVisibleTiles() { return [...document.querySelectorAll('#grid .tile')]; }
 function getCols() { return parseInt(Math.sqrt(parseInt(document.getElementById('gridSelect').value))); }
 
 function updateDpadPos() {
   const tiles = getVisibleTiles();
   const el = document.getElementById('dpad-pos');
-  if (focusedIndex < 0 || focusedIndex >= tiles.length) { el.textContent = '—'; return; }
+  if (focusedIndex < 0 || focusedIndex >= tiles.length) { el.textContent = 'â€”'; return; }
   const cols = getCols();
   el.textContent = `${Math.floor(focusedIndex/cols)+1},${(focusedIndex%cols)+1}`;
 }
@@ -692,7 +800,7 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// ── COUNTRY DROPDOWN ──────────────────────────────────────────────────────
+// â”€â”€ COUNTRY DROPDOWN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function populateCountryFilter(models) {
   const sel = document.getElementById('countrySelect');
   const current = sel.value;
@@ -713,13 +821,13 @@ function applyCountryFilter(models) {
   return country ? models.filter(m => m.country === country) : models;
 }
 
-// ── FETCH 1500 (3x parallel) ───────────────────────────────────────────────
+// â”€â”€ FETCH 1500 (3x parallel) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function loadStreams() {
   const gender = document.getElementById('genderSelect').value;
   const sort   = document.getElementById('sortSelect').value;
   const tag    = document.getElementById('tagInput').value.trim();
 
-  document.getElementById('statusText').textContent = 'Loading…';
+  document.getElementById('statusText').textContent = 'Loadingâ€¦';
 
   const baseParams = { limit: 500, sortBy: sort, ...genderParam(gender) };
   if (tag) baseParams.tag = tag;
@@ -745,7 +853,7 @@ async function loadStreams() {
     if (gender) models = models.filter(m => m.gender === gender);
     allModels = models;
   } catch(e) {
-    document.getElementById('statusText').textContent = 'API error — retry';
+    document.getElementById('statusText').textContent = 'API error â€” retry';
     console.error(e);
     return;
   }
@@ -761,8 +869,8 @@ async function loadStreams() {
   refreshTimer = setTimeout(diffRefresh, 60000);
 }
 
-// ── DIFF-BASED AUTO-REFRESH ────────────────────────────────────────────────
-// Background fetch, diff against current grid, only add/remove/update — never destroyAll
+// â”€â”€ DIFF-BASED AUTO-REFRESH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Background fetch, diff against current grid, only add/remove/update â€” never destroyAll
 async function diffRefresh() {
   const gender = document.getElementById('genderSelect').value;
   const sort   = document.getElementById('sortSelect').value;
@@ -802,7 +910,7 @@ async function diffRefresh() {
   populateCountryFilter(allModels);
 
   // Update status text + reset bar
-  document.getElementById('statusText').textContent = `${allModels.length} streams · ${new Date().toLocaleTimeString()}`;
+  document.getElementById('statusText').textContent = `${allModels.length} streams Â· ${new Date().toLocaleTimeString()}`;
   const bar = document.getElementById('refreshBar');
   bar.style.animation = 'none'; bar.offsetHeight;
   bar.style.animation = 'drain 60s linear forwards';
@@ -853,19 +961,19 @@ async function diffRefresh() {
   refreshTimer = setTimeout(diffRefresh, 60000);
 }
 
-// ── LOAD ALL (paginate until done) ─────────────────────────────────────────
+// â”€â”€ LOAD ALL (paginate until done) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let loadAllAbort = false;
 async function loadAll() {
   const btn = document.getElementById('loadAllBtn');
   if (btn.textContent.includes('Cancel')) {
     loadAllAbort = true;
-    btn.textContent = '⬇ Load All';
+    btn.textContent = 'â¬‡ Load All';
     document.getElementById('loadall-bar').classList.remove('active');
     return;
   }
 
   loadAllAbort = false;
-  btn.textContent = '✕ Cancel';
+  btn.textContent = 'âœ• Cancel';
   document.getElementById('loadall-bar').classList.add('active');
 
   const gender = document.getElementById('genderSelect').value;
@@ -883,8 +991,8 @@ async function loadAll() {
   const updateBar = (fetched, total) => {
     document.getElementById('loadall-count').textContent = `${fetched}${total ? ' / ~' + total : ''}`;
     document.getElementById('loadall-fill').style.width = total ? `${Math.min(100, Math.round(fetched/total*100))}%` : '50%';
-    document.getElementById('loadall-label').textContent = 'Loading all streams…';
-    document.getElementById('statusText').textContent = `Fetched ${fetched} streams…`;
+    document.getElementById('loadall-label').textContent = 'Loading all streamsâ€¦';
+    document.getElementById('statusText').textContent = `Fetched ${fetched} streamsâ€¦`;
   };
 
   // Batch 5 requests at a time to avoid hammering the API
@@ -916,7 +1024,7 @@ async function loadAll() {
 
     if (maxCount) grandTotal = maxCount;
 
-    // Check if any page returned < 500 — we've hit the end
+    // Check if any page returned < 500 â€” we've hit the end
     const hitEnd = pages.some(p => (p.models || []).length < 500);
 
     updateBar(totalFetched, grandTotal);
@@ -937,18 +1045,18 @@ async function loadAll() {
     currentOffset = currentFiltered.length;
 
     if (!anyNew || hitEnd) break;
-    offset += 2500; // 5 pages × 500
+    offset += 2500; // 5 pages Ã— 500
     await new Promise(r => setTimeout(r, 300)); // polite delay between batches
   }
 
   loadAllAbort = false;
-  btn.textContent = '⬇ Load All';
+  btn.textContent = 'â¬‡ Load All';
   document.getElementById('loadall-bar').classList.remove('active');
-  document.getElementById('statusText').textContent = `${allModels.length} streams · ${new Date().toLocaleTimeString()}`;
+  document.getElementById('statusText').textContent = `${allModels.length} streams Â· ${new Date().toLocaleTimeString()}`;
   populateCountryFilter(allModels);
 }
 
-// ── RENDER GRID ────────────────────────────────────────────────────────────
+// â”€â”€ RENDER GRID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderGrid() {
   destroyAll();
   const count   = parseInt(document.getElementById('gridSelect').value);
@@ -961,7 +1069,7 @@ function renderGrid() {
   grid.innerHTML = '';
   grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
   allPaused = false;
-  document.getElementById('pauseAllBtn').textContent = '⏸ Pause All';
+  document.getElementById('pauseAllBtn').textContent = 'â¸ Pause All';
 
   currentFiltered = applyCountryFilter(allModels);
 
@@ -981,13 +1089,13 @@ function renderGrid() {
   sentinel.style.display = 'flex';
   sentinel.classList.remove('loading');
   sentinel.querySelector('.sentinel-text').textContent = hasMore ? 'Scroll for more' : '';
-  document.getElementById('statusText').textContent = `${currentFiltered.length} streams · ${new Date().toLocaleTimeString()}`;
+  document.getElementById('statusText').textContent = `${currentFiltered.length} streams Â· ${new Date().toLocaleTimeString()}`;
 
   setupInfiniteScroll();
   setupViewportObserver();
 }
 
-// ── INFINITE SCROLL ────────────────────────────────────────────────────────
+// â”€â”€ INFINITE SCROLL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function setupInfiniteScroll() {
   if (infiniteObserver) infiniteObserver.disconnect();
   const sentinel = document.getElementById('scroll-sentinel');
@@ -1002,7 +1110,7 @@ async function loadMoreTiles() {
   isLoadingMore = true;
   const sentinel = document.getElementById('scroll-sentinel');
   sentinel.classList.add('loading');
-  sentinel.querySelector('.sentinel-text').textContent = 'Loading…';
+  sentinel.querySelector('.sentinel-text').textContent = 'Loadingâ€¦';
   await new Promise(r => setTimeout(r, 250));
   const quality = document.getElementById('qualitySelect').value;
   const grid = document.getElementById('grid');
@@ -1020,7 +1128,7 @@ async function loadMoreTiles() {
   isLoadingMore = false;
 }
 
-// ── BUILD TILE ─────────────────────────────────────────────────────────────
+// â”€â”€ BUILD TILE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function buildTile(model, quality) {
   const streamUrl = model.stream.urls[quality] || model.stream.urls['original'] || model.stream.url;
   const tile = document.createElement('div');
@@ -1082,12 +1190,12 @@ function buildTile(model, quality) {
 
   // Mute button
   const muteBtn = document.createElement('button');
-  muteBtn.className = 'tile-btn'; muteBtn.textContent = '🔇'; muteBtn.title = 'Toggle audio';
+  muteBtn.className = 'tile-btn'; muteBtn.textContent = 'ðŸ”‡'; muteBtn.title = 'Toggle audio';
   muteBtn.onclick = e => {
     e.stopPropagation();
     if (video.muted) { unmuteTile(tile, muteBtn); }
     else {
-      video.muted = true; muteBtn.classList.remove('unmuted'); muteBtn.textContent = '🔇';
+      video.muted = true; muteBtn.classList.remove('unmuted'); muteBtn.textContent = 'ðŸ”‡';
       tile.classList.remove('active-audio'); tile.style.order = '';
       document.getElementById('grid-wrapper').classList.remove('has-active-audio');
     }
@@ -1101,7 +1209,7 @@ function buildTile(model, quality) {
 
   // Fullscreen button
   const fsBtn = document.createElement('button');
-  fsBtn.className = 'tile-btn'; fsBtn.textContent = '⛶'; fsBtn.title = 'Fullscreen';
+  fsBtn.className = 'tile-btn'; fsBtn.textContent = 'â›¶'; fsBtn.title = 'Fullscreen';
   fsBtn.onclick = e => {
     e.stopPropagation();
     document.querySelectorAll('video').forEach(v => { if (v !== video) v.pause(); });
@@ -1123,7 +1231,7 @@ function buildTile(model, quality) {
   return tile;
 }
 
-// ── META PANEL ─────────────────────────────────────────────────────────────
+// â”€â”€ META PANEL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function buildMetaPanel(model) {
   const meta = document.createElement('div');
   meta.className = 'tile-meta';
@@ -1144,27 +1252,27 @@ function buildMetaPanel(model) {
     meta.appendChild(row);
   };
 
-  addRow('👁', 'Viewers', fmtViewers(model.viewersCount || 0));
+  addRow('ðŸ‘', 'Viewers', fmtViewers(model.viewersCount || 0));
 
   let onlineStr = null;
   if (model.onlineTime) onlineStr = fmtTime(model.onlineTime);
   else if (model.liveSince) onlineStr = fmtTime(Math.floor((Date.now()-new Date(model.liveSince).getTime())/1000));
-  if (onlineStr) addRow('⏱', 'Online', onlineStr);
+  if (onlineStr) addRow('â±', 'Online', onlineStr);
 
-  if (model.country)    addRow('📍', 'Country', `${getCountryFlag(model.country)} ${model.country.toUpperCase()}`);
-  if (model.city)       addRow('🏙', 'City', model.city);
-  if (model.age)        addRow('🎂', 'Age', `${model.age}`);
-  if (model.gender)     addRow('✦', 'Gender', {female:'♀ Female',male:'♂ Male',couple:'⚤ Couple',trans:'⚧ Trans'}[model.gender] || model.gender);
-  if (model.ethnicity)  addRow('🌐', 'Ethnicity', model.ethnicity);
-  if (model.bodyType)   addRow('⚡', 'Body', model.bodyType);
-  if (model.hairColor)  addRow('💇', 'Hair', model.hairColor);
-  if (model.eyeColor)   addRow('👁', 'Eyes', model.eyeColor);
+  if (model.country)    addRow('ðŸ“', 'Country', `${getCountryFlag(model.country)} ${model.country.toUpperCase()}`);
+  if (model.city)       addRow('ðŸ™', 'City', model.city);
+  if (model.age)        addRow('ðŸŽ‚', 'Age', `${model.age}`);
+  if (model.gender)     addRow('âœ¦', 'Gender', {female:'â™€ Female',male:'â™‚ Male',couple:'âš¤ Couple',trans:'âš§ Trans'}[model.gender] || model.gender);
+  if (model.ethnicity)  addRow('ðŸŒ', 'Ethnicity', model.ethnicity);
+  if (model.bodyType)   addRow('âš¡', 'Body', model.bodyType);
+  if (model.hairColor)  addRow('ðŸ’‡', 'Hair', model.hairColor);
+  if (model.eyeColor)   addRow('ðŸ‘', 'Eyes', model.eyeColor);
 
   const availableQualities = Object.keys(model.stream.urls || {}).filter(k => k !== 'original' && model.stream.urls[k]);
   if (availableQualities.length) {
     meta.appendChild(divider());
     const qRow = document.createElement('div'); qRow.className='meta-row'; qRow.style.alignItems='center';
-    qRow.innerHTML = `<span class="meta-icon">📺</span><span class="meta-label">Streams:&nbsp;</span>`;
+    qRow.innerHTML = `<span class="meta-icon">ðŸ“º</span><span class="meta-label">Streams:&nbsp;</span>`;
     const qBadges = document.createElement('div'); qBadges.className='meta-quality-row';
     const allQ = model.stream.urls.original ? ['original', ...availableQualities] : availableQualities;
     [...new Set(allQ)].forEach(q => {
@@ -1177,15 +1285,15 @@ function buildMetaPanel(model) {
   }
 
   const langs = model.languages || model.spokenLanguages;
-  if (langs) addRow('🗣', 'Language', Array.isArray(langs) ? langs.join(', ') : langs);
+  if (langs) addRow('ðŸ—£', 'Language', Array.isArray(langs) ? langs.join(', ') : langs);
   const toys = model.broadcastInteractiveToy;
-  if (toys && toys.length) addRow('📳', 'Toy', Array.isArray(toys) ? toys.join(', ') : toys);
-  if (model.favoritedCount) addRow('♥', 'Favorites', fmtNum(model.favoritedCount));
+  if (toys && toys.length) addRow('ðŸ“³', 'Toy', Array.isArray(toys) ? toys.join(', ') : toys);
+  if (model.favoritedCount) addRow('â™¥', 'Favorites', fmtNum(model.favoritedCount));
   const extras = [];
   if (model.broadcastVR) extras.push('VR');
   if (model.broadcastMobile) extras.push('Mobile');
   if (model.isNew) extras.push('New');
-  if (extras.length) addRow('ℹ', 'Features', extras.join(' · '));
+  if (extras.length) addRow('â„¹', 'Features', extras.join(' Â· '));
 
   const tags = model.tags || model.categories || [];
   if (tags.length > 0) {
@@ -1205,13 +1313,13 @@ function buildMetaPanel(model) {
   const ctaWrap = document.createElement('div'); ctaWrap.className='meta-cta';
   const ctaLink = document.createElement('a'); ctaLink.className='cta-link';
   ctaLink.href=buildAffUrl(model.username); ctaLink.target='_blank'; ctaLink.rel='noopener noreferrer';
-  ctaLink.textContent=`▶ Join ${model.username}'s Room`;
+  ctaLink.textContent=`â–¶ Join ${model.username}'s Room`;
   ctaLink.onclick = e => e.stopPropagation();
   ctaWrap.appendChild(ctaLink); meta.appendChild(ctaWrap);
   return meta;
 }
 
-// ── STATS MODAL ────────────────────────────────────────────────────────────
+// â”€â”€ STATS MODAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function openStats()  { document.getElementById('stats-modal').classList.add('open'); renderStats(); }
 function closeStats() { document.getElementById('stats-modal').classList.remove('open'); }
 document.getElementById('stats-modal').addEventListener('click', e => { if (e.target === document.getElementById('stats-modal')) closeStats(); });
@@ -1219,7 +1327,7 @@ document.getElementById('stats-modal').addEventListener('click', e => { if (e.ta
 function renderStats() {
   const body = document.getElementById('stats-body');
   const models = allModels;
-  if (!models.length) { body.innerHTML = '<div style="color:var(--muted);font-family:\'Space Mono\',monospace;font-size:12px;">No data — load streams first.</div>'; return; }
+  if (!models.length) { body.innerHTML = '<div style="color:var(--muted);font-family:\'Space Mono\',monospace;font-size:12px;">No data â€” load streams first.</div>'; return; }
 
   const totalViewers = models.reduce((s, m) => s + (m.viewersCount || 0), 0);
   const hdCount = models.filter(m => m.broadcastHD).length;
@@ -1316,7 +1424,7 @@ function renderStats() {
   body.appendChild(updated);
 }
 
-// ── BOOT ──────────────────────────────────────────────────────────────────
+// â”€â”€ BOOT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 ['gridSelect','genderSelect','sortSelect','qualitySelect'].forEach(id => {
   document.getElementById(id).addEventListener('change', loadStreams);
 });
@@ -1325,6 +1433,89 @@ document.getElementById('tagInput').addEventListener('keydown', e => { if (e.key
 
 startFavWatcher();
 loadStreams();
-</script>
+
+// CAM SOURCE ================================================================
+const VISION_API    = 'http://98.95.155.84:8765';
+let   currentSource = 'streams';
+let   camRefreshTimer = null;
+let   camTileTimers   = {};
+
+function switchSource(src) {
+  currentSource = src;
+  document.getElementById('tabStreams').classList.toggle('active', src === 'streams');
+  document.getElementById('tabCams').classList.toggle('active',    src === 'cams');
+  document.body.classList.toggle('source-cams', src === 'cams');
+  if (src === 'streams') { clearTimeout(camRefreshTimer); stopCamRefresh(); loadStreams(); }
+  else { destroyAll(); loadCams(); }
+}
+
+function stopCamRefresh() {
+  Object.values(camTileTimers).forEach(t => clearInterval(t));
+  camTileTimers = {};
+}
+
+async function loadCams() {
+  clearTimeout(camRefreshTimer); stopCamRefresh();
+  const sort    = document.getElementById('camSortSelect')?.value || 'active';
+  const country = (document.getElementById('camCountryInput')?.value || '').trim().toLowerCase();
+  const count   = parseInt(document.getElementById('gridSelect').value);
+  const cols    = Math.sqrt(count);
+  document.getElementById('statusText').textContent = 'Loading cams...';
+  let cams = [];
+  try {
+    const res = await fetch(`${VISION_API}/cams?limit=200`);
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    cams = (await res.json()).cams || [];
+  } catch(e) { document.getElementById('statusText').textContent = 'Cam API unavailable'; return; }
+  if (country) cams = cams.filter(c => (c.country||'').toLowerCase().includes(country) || (c.city||'').toLowerCase().includes(country));
+  if (sort === 'motion') cams.sort((a,b) => (b.motion_score||0) - (a.motion_score||0));
+  else if (sort === 'recent') cams.sort((a,b) => (b.last_active||0) - (a.last_active||0));
+  cams = cams.slice(0, count);
+  const grid = document.getElementById('grid'), empty = document.getElementById('empty-state');
+  grid.innerHTML = '';
+  if (!cams.length) { empty.style.display='flex'; empty.innerHTML='<div class="icon">no signal</div><div>No cams match.</div>'; return; }
+  empty.style.display = 'none';
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  cams.forEach(cam => grid.appendChild(buildCamTile(cam)));
+  const active = cams.filter(c => c.status==='active').length;
+  document.getElementById('statusText').textContent = `${cams.length} cams - ${active} active - ${new Date().toLocaleTimeString()}`;
+  const bar = document.getElementById('refreshBar');
+  bar.style.animation='none'; bar.offsetHeight; bar.style.animation='drain 60s linear forwards';
+  camRefreshTimer = setTimeout(loadCams, 60000);
+}
+
+function buildCamTile(cam) {
+  const tile = document.createElement('div');
+  tile.className = 'tile';
+  const img = document.createElement('img');
+  img.className = 'tile-cam-img';
+  const snapBase = `${VISION_API}/cams/${cam.cam_id}/snapshot`;
+  img.src = `${snapBase}?t=${Date.now()}`;
+  img.onerror = () => { img.src=''; img.style.background='#111'; };
+  camTileTimers[cam.cam_id] = setInterval(() => { img.src=`${snapBase}?t=${Date.now()}`; }, 15000);
+  const top = document.createElement('div'); top.className='tile-top';
+  const badge = document.createElement('span');
+  badge.className = `badge-status ${cam.status||'unknown'}`;
+  badge.textContent = ({active:'ACTIVE',idle:'IDLE',unknown:'WAIT',dead:'DEAD'})[cam.status||'unknown']||'?';
+  const loc = document.createElement('span'); loc.className='badge-hd';
+  loc.textContent = [cam.country,cam.city].filter(Boolean).join(', ').slice(0,22)||'--';
+  top.appendChild(badge); top.appendChild(loc);
+  const bot = document.createElement('div'); bot.className='tile-bottom';
+  const nameEl = document.createElement('div'); nameEl.className='tile-username';
+  nameEl.textContent = cam.label||cam.cam_id;
+  const motEl = document.createElement('div'); motEl.className='tile-viewers'; motEl.style.fontSize='9px';
+  motEl.textContent = cam.motion_score>0 ? `${cam.motion_score.toFixed(1)}% motion` : 'idle';
+  const ctrlEl = document.createElement('div'); ctrlEl.className='tile-controls';
+  const fsBtn = document.createElement('button'); fsBtn.className='tile-btn'; fsBtn.textContent='[]'; fsBtn.title='Fullscreen';
+  fsBtn.onclick = e => { e.stopPropagation(); img.requestFullscreen?.(); };
+  ctrlEl.appendChild(fsBtn); bot.appendChild(nameEl); bot.appendChild(motEl); bot.appendChild(ctrlEl);
+  const bw = document.createElement('div'); bw.className='motion-bar-wrap';
+  const bb = document.createElement('div'); bb.className='motion-bar'; bb.style.width=Math.min(100,cam.motion_score||0).toFixed(1)+'%';
+  bw.appendChild(bb);
+  tile.style.cursor='pointer';
+  tile.onclick = e => { if(!e.target.closest('.tile-btn') && cam.page_url) window.open(cam.page_url,'_blank','noopener'); };
+  tile.appendChild(img); tile.appendChild(top); tile.appendChild(bot); tile.appendChild(bw);
+  return tile;
+}</script>
 </body>
 </html>
