@@ -3556,23 +3556,52 @@ function buildTile(model, quality) {
 
 
   fsBtn.onclick = e => {
-
-
     e.stopPropagation();
 
-
+    // --- FULLSCREEN ENTER: stop all other HLS loads, monopolize bandwidth ---
+    const fsUsername = model.username;
+    hlsInstances.forEach((h, uname) => {
+      if (uname !== fsUsername) {
+        try { h.stopLoad(); } catch(err) {}
+      }
+    });
+    // Pause other videos visually too
     document.querySelectorAll('video').forEach(v => { if (v !== video) v.pause(); });
 
+    // Boost buffer targets on the fullscreen tile
+    const fsHls = hlsInstances.get(fsUsername);
+    if (fsHls) {
+      fsHls.config.maxBufferLength    = 60;
+      fsHls.config.maxMaxBufferLength = 120;
+      try { fsHls.startLoad(); } catch(err) {}
+    }
 
-    const onExit = () => { if (!document.fullscreenElement) { document.querySelectorAll('video').forEach(v => { if (v!==video && !allPaused) v.play().catch(()=>{}); }); document.removeEventListener('fullscreenchange', onExit); } };
-
+    // --- FULLSCREEN EXIT: restore all HLS loads ---
+    const onExit = () => {
+      if (!document.fullscreenElement) {
+        // Restore buffer targets on fullscreen tile
+        if (fsHls) {
+          fsHls.config.maxBufferLength    = 30;
+          fsHls.config.maxMaxBufferLength = 60;
+        }
+        // Resume all other instances
+        hlsInstances.forEach((h, uname) => {
+          if (uname !== fsUsername) {
+            try { h.startLoad(); } catch(err) {}
+          }
+        });
+        // Resume video playback on visible tiles
+        if (!allPaused) {
+          document.querySelectorAll('video').forEach(v => {
+            if (v !== video) v.play().catch(() => {});
+          });
+        }
+        document.removeEventListener('fullscreenchange', onExit);
+      }
+    };
 
     document.addEventListener('fullscreenchange', onExit);
-
-
     (video.requestFullscreen || video.webkitRequestFullscreen).call(video);
-
-
   };
 
 
