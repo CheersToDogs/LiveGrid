@@ -327,7 +327,7 @@
   /* META OVERLAY */
 
 
-  .tile-meta { position: absolute; left: 0; right: 0; bottom: 44px; max-height: calc(100% - 80px); background: rgba(4,6,12,.88); backdrop-filter: blur(8px); opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; display: flex; flex-direction: column; padding: 8px 10px 6px; gap: 4px; overflow-y: auto; overflow-x: hidden; z-index: 12; transform: translateY(4px); border-top: 1px solid rgba(255,255,255,.07); }
+  .tile-meta { position: absolute; left: 0; right: 0; bottom: 44px; max-height: calc(100% - 80px); background: linear-gradient(to top, rgba(0,0,0,.55) 0%, rgba(0,0,0,.15) 100%); backdrop-filter: blur(2px); opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; display: flex; flex-direction: column; padding: 8px 10px 6px; gap: 4px; overflow-y: auto; overflow-x: hidden; z-index: 12; transform: translateY(4px); border-top: none; }
 
 
   .tile-meta::-webkit-scrollbar { width: 3px; }
@@ -342,7 +342,7 @@
   .meta-header { display: flex; align-items: center; gap: 7px; flex-shrink: 0; padding-bottom: 4px; }
 
 
-  .meta-name { font-family: 'Syne',sans-serif; font-weight: 800; font-size: 13px; color: #fff; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .meta-name { font-family: 'Syne',sans-serif; font-weight: 800; font-size: 13px; color: #ffd600; flex: 1; text-shadow: 0 1px 4px rgba(0,0,0,.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 
   .meta-divider { height: 1px; background: var(--border); flex-shrink: 0; margin: 1px 0; }
@@ -354,10 +354,10 @@
   .meta-icon { flex-shrink: 0; font-size: 10px; }
 
 
-  .meta-label { color: var(--muted); white-space: nowrap; }
+  .meta-label { color: #ffd600; white-space: nowrap; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,.9); }
 
 
-  .meta-val { color: var(--text); word-break: break-word; }
+  .meta-val { color: #ffffff; word-break: break-word; font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,.9); }
 
 
   .meta-quality-row { display: flex; flex-wrap: wrap; gap: 3px; flex-shrink: 0; }
