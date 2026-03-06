@@ -2656,27 +2656,25 @@ async function loadStreams() {
 
 
   const baseParams = { sortBy: sort, ...genderParam(gender) };
-
-
   if (tag) baseParams.tag = tag;
-
-
-
-
+  const statuses = getSelectedStatuses();
 
   try {
-
-
-    const p0 = new URLSearchParams({ ...baseParams, limit: 200, offset: 0 });
-    const data0 = await fetch(`${API}?${p0}`, { headers: { Accept: 'application/json' } })
-      .then(r => r.ok ? r.json() : { models: [], count: 0 })
-      .catch(() => ({ models: [], count: 0 }));
-    if (data0.count) apiTotal = data0.count;
+    const fetches = statuses.map(st => {
+      const p = new URLSearchParams({ ...baseParams, limit: 200, offset: 0, status: st });
+      return fetch(`${API}?${p}`, { headers: { Accept: 'application/json' } })
+        .then(r => r.ok ? r.json() : { models: [], count: 0 })
+        .catch(() => ({ models: [], count: 0 }));
+    });
+    const results = await Promise.all(fetches);
+    if (results[0]?.count) apiTotal = results[0].count;
     apiOffset = 200;
     const seen = new Set();
     let models = [];
-    (data0.models || []).forEach(m => { if (!seen.has(m.username)) { seen.add(m.username); models.push(m); } });
-    models = models.filter(m => getSelectedStatuses().includes(m.status) && m.stream && m.stream.urls);
+    results.forEach(data => {
+      (data.models || []).forEach(m => { if (!seen.has(m.username)) { seen.add(m.username); models.push(m); } });
+    });
+    models = models.filter(m => statuses.includes(m.status) && m.stream && m.stream.urls);
 
 
     models.forEach(m => { if (!m.country && m.modelsCountry) m.country = m.modelsCountry; });
@@ -2763,27 +2761,24 @@ async function diffRefresh() {
 
 
   const baseParams = { sortBy: sort, ...genderParam(gender) };
-
-
   if (tag) baseParams.tag = tag;
-
-
-
-
+  const statuses = getSelectedStatuses();
 
   let freshModels = [];
 
-
   try {
-
-
-    const pRef = new URLSearchParams({ ...baseParams, limit: 200, offset: 0 });
-    const dataRef = await fetch(`${API}?${pRef}`, { headers: { Accept: 'application/json' } })
-      .then(r => r.ok ? r.json() : { models: [] })
-      .catch(() => ({ models: [] }));
+    const fetches = statuses.map(st => {
+      const p = new URLSearchParams({ ...baseParams, limit: 200, offset: 0, status: st });
+      return fetch(`${API}?${p}`, { headers: { Accept: 'application/json' } })
+        .then(r => r.ok ? r.json() : { models: [] })
+        .catch(() => ({ models: [] }));
+    });
+    const results = await Promise.all(fetches);
     const seen = new Set();
-    (dataRef.models || []).forEach(m => { if (!seen.has(m.username)) { seen.add(m.username); freshModels.push(m); } });
-    freshModels = freshModels.filter(m => m.status === 'public' && m.stream && m.stream.urls);
+    results.forEach(data => {
+      (data.models || []).forEach(m => { if (!seen.has(m.username)) { seen.add(m.username); freshModels.push(m); } });
+    });
+    freshModels = freshModels.filter(m => statuses.includes(m.status) && m.stream && m.stream.urls);
 
 
     freshModels.forEach(m => { if (!m.country && m.modelsCountry) m.country = m.modelsCountry; });
