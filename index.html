@@ -212,6 +212,9 @@
 
 
   .tile:hover { border-color: rgba(0,229,255,.5); }
+  .tile:hover .tile-top, .tile:hover .tile-bottom { opacity: 1; }
+  .tile.active-audio .tile-top, .tile.active-audio .tile-bottom { opacity: 1; }
+  .tile.focused .tile-top, .tile.focused .tile-bottom { opacity: 1; }
 
 
   .tile.active-audio { border-color: var(--accent) !important; box-shadow: 0 0 0 2px rgba(0,229,255,.4), 0 0 30px rgba(0,229,255,.2); order: -9999; }
@@ -271,7 +274,7 @@
   /* TOP BAR */
 
 
-  .tile-top { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 8px; background: linear-gradient(to bottom,rgba(0,0,0,.75),transparent); pointer-events: none; z-index: 20; }
+  .tile-top { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 8px; background: linear-gradient(to bottom,rgba(0,0,0,.75),transparent); pointer-events: none; z-index: 20; opacity: 0; transition: opacity .2s; }
 
 
   .badge-live { font-family: 'Space Mono',monospace; font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 2px 6px; border-radius: 3px; background: var(--live); color: #fff; }
@@ -289,7 +292,7 @@
   /* BOTTOM BAR */
 
 
-  .tile-bottom { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 8px; background: linear-gradient(to top,rgba(0,0,0,.85),transparent); z-index: 20; }
+  .tile-bottom { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 8px; background: linear-gradient(to top,rgba(0,0,0,.85),transparent); z-index: 20; opacity: 0; transition: opacity .2s; }
 
 
   .tile-username { font-size: 12px; font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 55%; }
@@ -2524,9 +2527,9 @@ document.addEventListener('keydown', e => {
     if (e.key === 'Escape')     { e.preventDefault(); closeFsOverlay(); return; }
     return;
   }
-  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+  if (['ArrowUp','ArrowDown'].includes(e.key)) {
     e.preventDefault();
-    dpadMove({ ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right' }[e.key]);
+    dpadMove({ ArrowUp:'up', ArrowDown:'down' }[e.key]);
   }
 });
 
@@ -4735,7 +4738,6 @@ function openFsOverlay(usernameOrModel, list, favMode) {
   const ov = document.getElementById('fs-overlay');
   ov.classList.add('open');
   document.getElementById('fs-mode-badge').style.display = _fsFavMode ? 'inline-block' : 'none';
-  ov.setAttribute('tabindex', '-1');
   setTimeout(() => { if (document.activeElement) document.activeElement.blur(); ov.focus(); }, 0);
   _fsLoad();
 }
@@ -4818,12 +4820,7 @@ function fsMuteToggle() {
     _fsNav(dx<0?1:-1);
     _fsSwiping=false;
   },{passive:true});
-  document.addEventListener('keydown',e=>{
-    if(!document.getElementById('fs-overlay').classList.contains('open')) return;
-    if(e.key==='ArrowRight') _fsNav(1);
-    if(e.key==='ArrowLeft')  _fsNav(-1);
-    if(e.key==='Escape')     closeFsOverlay();
-  });
+  // keydown handled by main document listener
 })();
 
 // Tile interactions: mobile double-tap OR desktop double-click = fullscreen
@@ -4945,9 +4942,9 @@ renderFavPanel = function() {
 </div>
 
 <!-- FULLSCREEN SWIPE OVERLAY -->
-<div id="fs-overlay">
+<div id="fs-overlay" tabindex="-1" style="outline:none">
   <div id="fs-video-wrap">
-    <video id="fs-video" muted autoplay playsinline></video>
+    <video id="fs-video" muted autoplay playsinline tabindex="-1" style="pointer-events:none"></video>
     <div class="fs-swipe-hint left">&#9664;</div>
     <div class="fs-swipe-hint right">&#9654;</div>
   </div>
