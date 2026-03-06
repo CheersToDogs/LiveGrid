@@ -759,6 +759,7 @@
 
 
   .tile-cam-img { width:100%; height:100%; object-fit:cover; display:block; background:#000; }
+  .cam-nosignal { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#ff4444; font-size:11px; font-weight:700; letter-spacing:2px; opacity:0.7; pointer-events:none; }
 
 
   .badge-status { font-family:'Space Mono',monospace; font-size:9px; font-weight:700; letter-spacing:1px; padding:2px 6px; border-radius:3px; }
@@ -4589,7 +4590,13 @@ function buildCamTile(cam) {
 
   img.src = `${snapBase}?t=${Date.now()}`;
 
-  img.onerror = () => { img.src=''; img.style.background='#111'; };
+  img.onerror = () => {
+    img.style.display = 'none';
+    const noSig = tile.querySelector('.cam-nosignal') || document.createElement('div');
+    noSig.className = 'cam-nosignal';
+    noSig.textContent = 'NO SIGNAL';
+    if (!tile.querySelector('.cam-nosignal')) tile.insertBefore(noSig, tile.firstChild);
+  };
 
   function _camInterval(motion) {
     if (motion > 20) return 2000;
