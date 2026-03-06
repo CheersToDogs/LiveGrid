@@ -2162,7 +2162,7 @@ function muteAll() {
   document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = '🔇'; });
 
 
-  document.querySelectorAll('.tile').forEach(t => { t.classList.remove('active-audio'); t.style.order = ''; });
+  document.querySelectorAll('.tile').forEach(t => { t.classList.remove('active-audio'); });
 
 
   document.getElementById('grid-wrapper').classList.remove('has-active-audio');
@@ -2387,9 +2387,6 @@ function unmuteTile(tile, explicitBtn) {
   tile.classList.add('active-audio');
 
 
-  tile.style.order = '-9999';
-
-
   document.getElementById('grid-wrapper').classList.add('has-active-audio');
 
 
@@ -2520,20 +2517,18 @@ document.getElementById('dpad-right').onclick = () => dpadMove('right');
 
 
 document.addEventListener('keydown', e => {
-
-
-  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
-
-
-    e.preventDefault();
-
-
-    dpadMove({ ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right' }[e.key]);
-
-
+  // If fullscreen overlay is open, arrows navigate streams
+  const fsOpen = document.getElementById('fs-overlay')?.classList.contains('open');
+  if (fsOpen) {
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); _fsIdx = Math.max(0, _fsIdx-1); _fsLoad(); return; }
+    if (e.key === 'ArrowRight') { e.preventDefault(); _fsIdx = Math.min(_fsList.length-1, _fsIdx+1); _fsLoad(); return; }
+    if (e.key === 'Escape')     { e.preventDefault(); closeFsOverlay(); return; }
+    return;
   }
-
-
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+    e.preventDefault();
+    dpadMove({ ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right' }[e.key]);
+  }
 });
 
 
@@ -4586,9 +4581,10 @@ function buildCamTile(cam) {
 
   img.className = 'tile-cam-img';
 
-  const snapBase = `${VISION_API}/cams/${cam.cam_id}/snapshot`;
+  const isActive = cam.status === 'active';
+  const snapBase = `${VISION_API}/cams/${cam.cam_id}/snapshot${isActive ? '?live=1' : ''}`;
 
-  img.src = `${snapBase}?t=${Date.now()}`;
+  img.src = snapBase + (snapBase.includes('?') ? '&' : '?') + 't=' + Date.now();
 
   img.onerror = () => {
     img.style.display = 'none';
@@ -4605,7 +4601,8 @@ function buildCamTile(cam) {
   }
   function _scheduleRefresh(id, el, base, motion) {
     camTileTimers[id] = setTimeout(function tick() {
-      const next = `${base}?t=${Date.now()}`;
+      const sep = base.includes("?") ? "&" : "?";
+      const next = `${base}${sep}t=${Date.now()}`;
       const probe = new Image();
       probe.onload = () => {
         el.src = next;
