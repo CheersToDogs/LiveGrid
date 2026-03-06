@@ -13,7 +13,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 
-<title>LiveGrid ? Multi-Stream Viewer</title>
+<title>LiveGrid � Multi-Stream Viewer</title>
 
 
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
@@ -232,7 +232,7 @@
   .tile.vp-paused video { opacity: 0.15; }
 
 
-  .tile.vp-paused::after { content: '?'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 28px; opacity: 0.5; pointer-events: none; }
+  .tile.vp-paused::after { content: '▶'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 28px; opacity: 0.5; pointer-events: none; }
 
 
   .tile video { width: 100%; height: 100%; object-fit: cover; display: block; background: #000; transition: opacity .4s; }
@@ -298,7 +298,7 @@
   .tile-viewers { font-family: 'Space Mono',monospace; font-size: 10px; color: rgba(255,255,255,.7); }
 
 
-  .tile-viewers::before { content: '?? '; }
+  .tile-viewers::before { content: '👁 '; }
 
 
   .tile-controls { display: flex; gap: 4px; pointer-events: all; }
@@ -804,7 +804,7 @@
   .nav-pill.active { background: var(--accent); color: #000; border-color: var(--accent); }
   .nav-pill:active { transform: scale(.95); }
   /* Hide nav row on desktop */
-  .header-top-row { display: contents; } /* desktop: transparent passthrough */
+  .header-top-row { display: flex; align-items: center; gap: 10px; padding: 10px 16px; flex: 1; flex-wrap: wrap; }
   @media (min-width: 601px) {
     .header-nav-row { display: none !important; }
   }
@@ -845,7 +845,7 @@
   .mmb-viewers { font-size: 10px; color: var(--accent); font-family: 'Space Mono', monospace; }
   .mmb-country { font-size: 10px; color: rgba(255,255,255,.7); font-family: 'Space Mono', monospace; }
 
-  /* -- MOBILE FILTER BUTTON -- */
+  /* ── MOBILE FILTER BUTTON ── */
   .btn-mobile-filters {
     display: none;
     background: var(--surface2);
@@ -863,7 +863,7 @@
     white-space: nowrap;
   }
 
-  /* -- MOBILE FILTER DRAWER -- */
+  /* ── MOBILE FILTER DRAWER ── */
   .mobile-drawer {
     display: none;
     position: fixed;
@@ -922,7 +922,7 @@
   .mf-apply { background: var(--accent); color: #000; }
   .mf-reset { background: transparent; border: 1px solid var(--border) !important; color: var(--muted); }
 
-  /* -- FULLSCREEN SWIPE OVERLAY -- */
+  /* ── FULLSCREEN SWIPE OVERLAY ── */
   #fs-overlay {
     display: none; position: fixed; inset: 0;
     z-index: 2000; background: #000;
@@ -989,12 +989,12 @@
   .fs-swipe-hint.left  { left: 10px; }
   .fs-swipe-hint.right { right: 10px; }
 
-  /* -- TABLET =900px -- */
+  /* ── TABLET ≤900px ── */
   @media (max-width: 900px) {
     .dpad-container { display: none !important; }
   }
 
-  /* -- MOBILE =600px -- */
+  /* ── MOBILE ≤600px ── */
   @media (max-width: 600px) {
     header { padding: 8px 12px; gap: 8px; flex-wrap: nowrap; }
     .stream-controls { display: none !important; }
@@ -1007,13 +1007,10 @@
     .source-tab { min-height: 44px; padding: 8px 14px; }
   }
 
-  /* -- MOBILE LANDSCAPE -- */
+  /* ── MOBILE LANDSCAPE ── */
   @media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
-    header { padding: 0; height: auto; }
-    .header-top-row { padding: 4px 10px 2px !important; }
-    .header-nav-row { padding: 0 10px 4px !important; }
+    header { padding: 4px 10px; }
     #grid { grid-template-columns: repeat(2, 1fr) !important; }
-    .tile { aspect-ratio: 16/10; }
   }
 
 </style>
@@ -1040,15 +1037,15 @@
   </div>
   <!-- MOBILE NAV ROW (horizontal scroll, hidden on desktop) -->
   <div class="header-nav-row" id="mobileNavRow" style="display:none">
-    <button class="nav-pill active" onclick="switchSource('streams')">?? Streams</button>
-    <button class="nav-pill" onclick="switchSource('cams')">?? Cams</button>
-    <button class="nav-pill" onclick="loadStreams()">? Refresh</button>
-    <button class="nav-pill" onclick="loadAll()">? Load All</button>
-    <button class="nav-pill" onclick="togglePauseAll()">?? Pause</button>
-    <button class="nav-pill" onclick="muteAll()">?? Mute</button>
-    <button class="nav-pill" onclick="toggleFavPanel()">? Favs</button>
-    <button class="nav-pill" onclick="openStats()">?? Stats</button>
-    <button class="nav-pill" onclick="openMobileFilters()">? Filters</button>
+    <button class="nav-pill active" onclick="switchSource('streams')">🎥 Streams</button>
+    <button class="nav-pill" onclick="switchSource('cams')">📷 Cams</button>
+    <button class="nav-pill" onclick="loadStreams()">↻ Refresh</button>
+    <button class="nav-pill" onclick="loadAll()">▶ Load All</button>
+    <button class="nav-pill" onclick="togglePauseAll()">▮▮ Pause</button>
+    <button class="nav-pill" onclick="muteAll()">🔇 Mute</button>
+    <button class="nav-pill" onclick="toggleFavPanel()">♡ Favs</button>
+    <button class="nav-pill" onclick="openStats()">📊 Stats</button>
+    <button class="nav-pill" onclick="openMobileFilters()">⚙ Filters</button>
   </div>
   <div class="controls">
 
@@ -1064,22 +1061,22 @@
       <select id="gridSelect">
 
 
-        <option value="1">1?1</option>
+        <option value="1">1�1</option>
 
 
-        <option value="4" selected>2?2</option>
+        <option value="4" selected>2�2</option>
 
 
-        <option value="9">3?3</option>
+        <option value="9">3�3</option>
 
 
-        <option value="16">4?4</option>
+        <option value="16">4�4</option>
 
 
-        <option value="25">5?5</option>
+        <option value="25">5�5</option>
 
 
-        <option value="36">6?6</option>
+        <option value="36">6�6</option>
 
 
       </select>
@@ -1148,7 +1145,7 @@
       <label>Tag</label>
 
 
-      <input type="text" id="tagInput" placeholder="latina, bbw?">
+      <input type="text" id="tagInput" placeholder="latina, bbw�">
 
 
     </div>
@@ -1229,25 +1226,25 @@
           <div></div>
 
 
-          <button class="dpad-btn" id="dpad-up" title="Up (?)">?</button>
+          <button class="dpad-btn" id="dpad-up" title="Up (↑)">▲</button>
 
 
           <div></div>
 
 
-          <button class="dpad-btn" id="dpad-left" title="Left (?)">?</button>
+          <button class="dpad-btn" id="dpad-left" title="Left (←)">◀</button>
 
 
-          <div class="dpad-center" title="Current position" id="dpad-pos">?</div>
+          <div class="dpad-center" title="Current position" id="dpad-pos">�</div>
 
 
-          <button class="dpad-btn" id="dpad-right" title="Right (?)">?</button>
+          <button class="dpad-btn" id="dpad-right" title="Right (→)">▶</button>
 
 
           <div></div>
 
 
-          <button class="dpad-btn" id="dpad-down" title="Down (?)">?</button>
+          <button class="dpad-btn" id="dpad-down" title="Down (↓)">▼</button>
 
 
           <div></div>
@@ -1265,22 +1262,22 @@
 
 
 
-    <button class="btn btn-primary" onclick="loadStreams()">? Refresh</button>
+    <button class="btn btn-primary" onclick="loadStreams()">⟳ Refresh</button>
 
 
-    <button class="btn btn-loadall" id="loadAllBtn" onclick="loadAll()">? Load All</button>
+    <button class="btn btn-loadall" id="loadAllBtn" onclick="loadAll()">▶ Load All</button>
 
 
-    <button class="btn btn-pause" id="pauseAllBtn" onclick="togglePauseAll()">?? Pause All</button>
+    <button class="btn btn-pause" id="pauseAllBtn" onclick="togglePauseAll()">▮▮ Pause All</button>
 
 
-    <button class="btn btn-danger" onclick="muteAll()">?? Mute All</button>
+    <button class="btn btn-danger" onclick="muteAll()">🔇 Mute All</button>
 
 
-    <button class="btn btn-fav" onclick="toggleFavPanel()">? Favs</button>
+    <button class="btn btn-fav" onclick="toggleFavPanel()">♡ Favs</button>
 
 
-    <button class="btn btn-stats" onclick="openStats()">?? Stats</button>
+    <button class="btn btn-stats" onclick="openStats()">📊 Stats</button>
 
 
     </div><!-- /stream-controls -->
@@ -1312,7 +1309,7 @@
     <span class="live-dot"></span>
 
 
-    <span class="status-text" id="statusText">?</span>
+    <span class="status-text" id="statusText">�</span>
 
 
     <div class="refresh-progress"><div class="refresh-bar" id="refreshBar"></div></div>
@@ -1333,7 +1330,7 @@
   <div id="grid"></div>
 
 
-  <div id="empty-state"><div class="icon">??</div><div>Loading live streams?</div></div>
+  <div id="empty-state"><div class="icon">📡</div><div>Loading live streams�</div></div>
 
 
   <div id="scroll-sentinel"><span class="load-spinner"></span><span class="sentinel-text"></span></div>
@@ -1354,7 +1351,7 @@
   <div class="loadall-text">
 
 
-    <span id="loadall-label">Loading all streams?</span>
+    <span id="loadall-label">Loading all streams�</span>
 
 
     <span id="loadall-count">0 / ?</span>
@@ -1381,10 +1378,10 @@
   <div class="fav-header">
 
 
-    <div class="fav-title">? <span>Favorites</span></div>
+    <div class="fav-title">♡ <span>Favorites</span></div>
 
 
-    <button class="fav-close" onclick="toggleFavPanel()">?</button>
+    <button class="fav-close" onclick="toggleFavPanel()">✕</button>
 
 
   </div>
@@ -1393,7 +1390,7 @@
   <div class="fav-body" id="fav-body"></div>
 
 
-  <div class="fav-footer" id="fav-footer">Watching for when they come online?</div>
+  <div class="fav-footer" id="fav-footer">Watching for when they come online�</div>
 
 
 </div>
@@ -1414,10 +1411,10 @@
     <div class="stats-header">
 
 
-      <div class="stats-title">LIVE<span>GRID</span> ? Live Stats</div>
+      <div class="stats-title">LIVE<span>GRID</span> � Live Stats</div>
 
 
-      <button class="stats-close" onclick="closeStats()">?</button>
+      <button class="stats-close" onclick="closeStats()">✕</button>
 
 
     </div>
@@ -1426,7 +1423,7 @@
     <div class="stats-body" id="stats-body">
 
 
-      <div style="color:var(--muted);font-family:'Space Mono',monospace;font-size:12px;">Loading stats?</div>
+      <div style="color:var(--muted);font-family:'Space Mono',monospace;font-size:12px;">Loading stats�</div>
 
 
     </div>
@@ -1444,7 +1441,7 @@
 <script>
 
 
-// -- STATE ------------------------------------------------------------------
+// ── STATE ──────────────────────────────────────────────────────────────────
 
 
 const hlsInstances   = new Map();   // username -> Hls instance
@@ -1465,7 +1462,10 @@ let isLoadingMore    = false;
 let hasMore          = true;
 
 
-let allModels        = [];          // full fetched pool
+let allModels        = [];
+let apiOffset        = 0;           // how far into the full API we've paged
+let isBgFetching     = false;
+          // full fetched pool
 
 
 let currentFiltered  = [];          // post-filter slice
@@ -1490,15 +1490,12 @@ const BATCH          = 16;
 
 
 const API            = 'https://go.stripchat.com/api/models';
-let apiOffset        = 0;           // how far into the full API we've paged
-let isBgFetching     = false;       // silent background prefetch running
-let apiTotal         = null;        // total live models (from API count field)
 
 
 
 
 
-// -- FAVORITES (localStorage) -----------------------------------------------
+// ── FAVORITES (localStorage) ───────────────────────────────────────────────
 
 
 function getFavs() {
@@ -1606,7 +1603,7 @@ function updateFavBtn(btn, active) {
     btn.classList.add('fav-active');
 
 
-    btn.textContent = '?';
+    btn.textContent = '♥';
 
 
     btn.title = 'Remove from favorites';
@@ -1618,7 +1615,7 @@ function updateFavBtn(btn, active) {
     btn.classList.remove('fav-active');
 
 
-    btn.textContent = '?';
+    btn.textContent = '♥';
 
 
     btn.title = 'Add to favorites';
@@ -1675,7 +1672,7 @@ function renderFavPanel() {
   if (!usernames.length) {
 
 
-    body.innerHTML = '<div class="fav-empty">No favorites yet.<br>Click ? on any tile<br>to add a favorite.</div>';
+    body.innerHTML = '<div class="fav-empty">No favorites yet.<br>Click ♡ on any tile<br>to add a favorite.</div>';
 
 
     footer.textContent = '';
@@ -1780,7 +1777,7 @@ function renderFavPanel() {
       const m = allModels.find(x => x.username === username);
 
 
-      status.textContent = m ? `?? LIVE � ?? ${fmtViewers(m.viewersCount)}` : '?? LIVE';
+      status.textContent = m ? `🟢 LIVE · 👁 ${fmtViewers(m.viewersCount)}` : '🟢 LIVE';
 
 
     } else {
@@ -1792,7 +1789,7 @@ function renderFavPanel() {
       const ago = last ? fmtAgo(Date.now() - last) : 'unknown';
 
 
-      status.textContent = `? Offline � last seen ${ago}`;
+      status.textContent = `⚫ Offline · last seen ${ago}`;
 
 
     }
@@ -1807,7 +1804,7 @@ function renderFavPanel() {
     removeBtn.className = 'fav-remove';
 
 
-    removeBtn.textContent = '?';
+    removeBtn.textContent = '✕';
 
 
     removeBtn.title = 'Remove favorite';
@@ -1837,7 +1834,7 @@ function renderFavPanel() {
 
 
 
-    // Click ? open room
+    // Click → open room
 
 
     item.onclick = () => window.open(buildAffUrl(username), '_blank', 'noopener');
@@ -1855,7 +1852,7 @@ function renderFavPanel() {
   const onlineCount = usernames.filter(u => onlineSet.has(u)).length;
 
 
-  footer.textContent = `${onlineCount} / ${usernames.length} online � checks every 5min`;
+  footer.textContent = `${onlineCount} / ${usernames.length} online · checks every 5min`;
 
 
 }
@@ -1999,7 +1996,7 @@ function startFavWatcher() {
 
 
 
-// -- VIEWPORT PAUSE/RESUME -------------------------------------------------
+// ── VIEWPORT PAUSE/RESUME ─────────────────────────────────────────────────
 
 
 // When a tile scrolls out of view for >2s, pause its HLS to save bandwidth.
@@ -2152,7 +2149,7 @@ function setupViewportObserver() {
 
 
 
-// -- HELPERS ----------------------------------------------------------------
+// ── HELPERS ────────────────────────────────────────────────────────────────
 
 
 function muteAll() {
@@ -2161,7 +2158,7 @@ function muteAll() {
   document.querySelectorAll('video').forEach(v => v.muted = true);
 
 
-  document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = '??'; });
+  document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = '🔇'; });
 
 
   document.querySelectorAll('.tile').forEach(t => { t.classList.remove('active-audio'); t.style.order = ''; });
@@ -2263,7 +2260,7 @@ function buildAffUrl(username) {
   const aff = document.getElementById('affId').value.trim();
 
 
-  const safeUser = encodeURIComponent(username); return aff ? `https://stripchat.com/${safeUser}?campaign=${encodeURIComponent(aff)}` : `https://stripchat.com/${safeUser}`;
+  return aff ? `https://stripchat.com/${username}?campaign=${encodeURIComponent(aff)}` : `https://stripchat.com/${username}`;
 
 
 }
@@ -2356,7 +2353,7 @@ function setTagFilter(tag) {
 
 
 
-// -- UNMUTE TILE ------------------------------------------------------------
+// ── UNMUTE TILE ────────────────────────────────────────────────────────────
 
 
 function unmuteTile(tile, explicitBtn) {
@@ -2371,7 +2368,7 @@ function unmuteTile(tile, explicitBtn) {
   document.querySelectorAll('video').forEach(v => v.muted = true);
 
 
-  document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = '??'; });
+  document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = '🔇'; });
 
 
   document.querySelectorAll('.tile').forEach(t => { t.classList.remove('active-audio'); t.style.order = ''; });
@@ -2383,7 +2380,7 @@ function unmuteTile(tile, explicitBtn) {
   const muteBtn = explicitBtn || tile.querySelector('.tile-btn');
 
 
-  if (muteBtn) { muteBtn.classList.add('unmuted'); muteBtn.textContent = '??'; }
+  if (muteBtn) { muteBtn.classList.add('unmuted'); muteBtn.textContent = '🔊'; }
 
 
   tile.classList.add('active-audio');
@@ -2401,7 +2398,7 @@ function unmuteTile(tile, explicitBtn) {
 
 
 
-// -- D-PAD NAVIGATION ------------------------------------------------------
+// ── D-PAD NAVIGATION ──────────────────────────────────────────────────────
 
 
 function getVisibleTiles() { return [...document.querySelectorAll('#grid .tile')]; }
@@ -2422,7 +2419,7 @@ function updateDpadPos() {
   const el = document.getElementById('dpad-pos');
 
 
-  if (focusedIndex < 0 || focusedIndex >= tiles.length) { el.textContent = '?'; return; }
+  if (focusedIndex < 0 || focusedIndex >= tiles.length) { el.textContent = '�'; return; }
 
 
   const cols = getCols();
@@ -2542,7 +2539,7 @@ document.addEventListener('keydown', e => {
 
 
 
-// -- COUNTRY DROPDOWN ------------------------------------------------------
+// ── COUNTRY DROPDOWN ──────────────────────────────────────────────────────
 
 
 function populateCountryFilter(models) {
@@ -2605,7 +2602,7 @@ function applyCountryFilter(models) {
 
 
 
-// -- FETCH 1500 (3x parallel) -----------------------------------------------
+// ── FETCH 1500 (3x parallel) ───────────────────────────────────────────────
 
 
 async function loadStreams() {
@@ -2642,7 +2639,7 @@ async function loadStreams() {
 
 
     const p0 = new URLSearchParams({ ...baseParams, limit: 200, offset: 0 });
-    const data0 = await fetch(`?`, { headers: { Accept: 'application/json' } })
+    const data0 = await fetch(`${API}?${p0}`, { headers: { Accept: 'application/json' } })
       .then(r => r.ok ? r.json() : { models: [], count: 0 })
       .catch(() => ({ models: [], count: 0 }));
     if (data0.count) apiTotal = data0.count;
@@ -2714,10 +2711,10 @@ async function loadStreams() {
 
 
 
-// -- DIFF-BASED AUTO-REFRESH ------------------------------------------------
+// ── DIFF-BASED AUTO-REFRESH ────────────────────────────────────────────────
 
 
-// Background fetch, diff against current grid, only add/remove/update ? never destroyAll
+// Background fetch, diff against current grid, only add/remove/update � never destroyAll
 
 
 async function diffRefresh() {
@@ -2811,7 +2808,7 @@ async function diffRefresh() {
   // Update status text + reset bar
 
 
-  document.getElementById('statusText').textContent = `${allModels.length} streams � ${new Date().toLocaleTimeString()}`;
+  document.getElementById('statusText').textContent = `${allModels.length} streams · ${new Date().toLocaleTimeString()}`;
 
 
   const bar = document.getElementById('refreshBar');
@@ -2960,11 +2957,86 @@ async function diffRefresh() {
 
 }
 
+async function backgroundPrefetch() {
+  if (isBgFetching) return;
+  isBgFetching = true;
+  const gender = document.getElementById('genderSelect').value;
+  const sort   = document.getElementById('sortSelect').value;
+  const tag    = document.getElementById('tagInput').value.trim();
+  const baseParams = { limit: 200, sortBy: sort, ...genderParam(gender) };
+  if (tag) baseParams.tag = tag;
+  const seen = new Set(allModels.map(m => m.username));
+  for (let off = 200; off <= 800; off += 200) {
+    if (apiOffset > off) continue; // already have this page
+    try {
+      const p = new URLSearchParams({ ...baseParams, offset: off });
+      const data = await fetch(`${API}?${p}`, { headers: { Accept: 'application/json' } })
+        .then(r => r.ok ? r.json() : { models: [] })
+        .catch(() => ({ models: [] }));
+      let added = 0;
+      (data.models || []).forEach(m => {
+        if (!seen.has(m.username) && m.status === 'public' && m.stream && m.stream.urls) {
+          if (!m.country && m.modelsCountry) m.country = m.modelsCountry;
+          if (!gender || m.gender === gender) {
+            seen.add(m.username);
+            allModels.push(m);
+            added++;
+          }
+        }
+      });
+      apiOffset = off + 200;
+      if (added > 0) {
+        populateCountryFilter(allModels);
+        document.getElementById('statusText').textContent = `${allModels.length} streams · ${new Date().toLocaleTimeString()}`;
+      }
+      if (!data.models || data.models.length < 200) break; // end of data
+    } catch(e) { break; }
+  }
+  isBgFetching = false;
+}
+
+async function fetchNextApiPage() {
+  if (isBgFetching) return;
+  isBgFetching = true;
+  const gender = document.getElementById('genderSelect').value;
+  const sort   = document.getElementById('sortSelect').value;
+  const tag    = document.getElementById('tagInput').value.trim();
+  const baseParams = { limit: 200, sortBy: sort, ...genderParam(gender) };
+  if (tag) baseParams.tag = tag;
+  const seen = new Set(allModels.map(m => m.username));
+  try {
+    const p = new URLSearchParams({ ...baseParams, offset: apiOffset });
+    const data = await fetch(`${API}?${p}`, { headers: { Accept: 'application/json' } })
+      .then(r => r.ok ? r.json() : { models: [] })
+      .catch(() => ({ models: [] }));
+    let added = 0;
+    (data.models || []).forEach(m => {
+      if (!seen.has(m.username) && m.status === 'public' && m.stream && m.stream.urls) {
+        if (!m.country && m.modelsCountry) m.country = m.modelsCountry;
+        if (!gender || m.gender === gender) {
+          seen.add(m.username);
+          allModels.push(m);
+          added++;
+        }
+      }
+    });
+    apiOffset += 200;
+    if (added > 0) {
+      currentFiltered = applyCountryFilter(allModels);
+      hasMore = currentOffset < currentFiltered.length || (apiTotal ? apiOffset < apiTotal : data.models.length === 200);
+      document.getElementById('statusText').textContent = `${allModels.length} streams · ${new Date().toLocaleTimeString()}`;
+    } else {
+      hasMore = false;
+    }
+  } catch(e) { hasMore = false; }
+  isBgFetching = false;
+}
 
 
 
 
-// -- LOAD ALL (paginate until done) -----------------------------------------
+
+// ── LOAD ALL (paginate until done) ─────────────────────────────────────────
 
 
 let loadAllAbort = false;
@@ -2982,7 +3054,7 @@ async function loadAll() {
     loadAllAbort = true;
 
 
-    btn.textContent = '? Load All';
+    btn.textContent = '▶ Load All';
 
 
     document.getElementById('loadall-bar').classList.remove('active');
@@ -3000,7 +3072,7 @@ async function loadAll() {
   loadAllAbort = false;
 
 
-  btn.textContent = '? Cancel';
+  btn.textContent = '✕ Cancel';
 
 
   document.getElementById('loadall-bar').classList.add('active');
@@ -3021,7 +3093,7 @@ async function loadAll() {
   const quality = document.getElementById('qualitySelect').value;
 
 
-  const baseParams = { sortBy: sort, ...genderParam(gender) };
+  const baseParams = { limit: 500, sortBy: sort, ...genderParam(gender) };
 
 
   if (tag) baseParams.tag = tag;
@@ -3054,10 +3126,10 @@ async function loadAll() {
     document.getElementById('loadall-fill').style.width = total ? `${Math.min(100, Math.round(fetched/total*100))}%` : '50%';
 
 
-    document.getElementById('loadall-label').textContent = 'Loading all streams?';
+    document.getElementById('loadall-label').textContent = 'Loading all streams�';
 
 
-    document.getElementById('statusText').textContent = `Fetched ${fetched} streams?`;
+    document.getElementById('statusText').textContent = `Fetched ${fetched} streams�`;
 
 
   };
@@ -3153,7 +3225,7 @@ async function loadAll() {
 
 
 
-    // Check if any page returned < 500 ? we've hit the end
+    // Check if any page returned < 500 � we've hit the end
 
 
     const hitEnd = pages.some(p => (p.models || []).length < 500);
@@ -3216,7 +3288,7 @@ async function loadAll() {
     if (!anyNew || hitEnd) break;
 
 
-    offset += 2500; // 5 pages ? 500
+    offset += 2500; // 5 pages � 500
 
 
     await new Promise(r => setTimeout(r, 300)); // polite delay between batches
@@ -3231,13 +3303,13 @@ async function loadAll() {
   loadAllAbort = false;
 
 
-  btn.textContent = '? Load All';
+  btn.textContent = '▶ Load All';
 
 
   document.getElementById('loadall-bar').classList.remove('active');
 
 
-  document.getElementById('statusText').textContent = `${allModels.length} streams � ${new Date().toLocaleTimeString()}`;
+  document.getElementById('statusText').textContent = `${allModels.length} streams · ${new Date().toLocaleTimeString()}`;
 
 
   populateCountryFilter(allModels);
@@ -3249,7 +3321,7 @@ async function loadAll() {
 
 
 
-// -- RENDER GRID ------------------------------------------------------------
+// ── RENDER GRID ────────────────────────────────────────────────────────────
 
 
 function renderGrid() {
@@ -3288,7 +3360,7 @@ function renderGrid() {
   allPaused = false;
 
 
-  document.getElementById('pauseAllBtn').textContent = '?? Pause All';
+  document.getElementById('pauseAllBtn').textContent = '▮▮ Pause All';
 
 
 
@@ -3348,7 +3420,7 @@ function renderGrid() {
   sentinel.querySelector('.sentinel-text').textContent = hasMore ? 'Scroll for more' : '';
 
 
-  document.getElementById('statusText').textContent = `${currentFiltered.length} streams � ${new Date().toLocaleTimeString()}`;
+  document.getElementById('statusText').textContent = `${currentFiltered.length} streams · ${new Date().toLocaleTimeString()}`;
 
 
 
@@ -3366,88 +3438,7 @@ function renderGrid() {
 
 
 
-
-
-// -- BACKGROUND PREFETCH & API PAGINATION -----------------------------------
-
-// Silently fetch pages 2-5 into allModels after initial load
-async function backgroundPrefetch() {
-  if (isBgFetching) return;
-  isBgFetching = true;
-  const gender = document.getElementById('genderSelect').value;
-  const sort   = document.getElementById('sortSelect').value;
-  const tag    = document.getElementById('tagInput').value.trim();
-  const baseParams = { limit: 200, sortBy: sort, ...genderParam(gender) };
-  if (tag) baseParams.tag = tag;
-  const seen = new Set(allModels.map(m => m.username));
-  for (let off = 200; off <= 800; off += 200) {
-    if (apiOffset > off) continue; // already have this page
-    try {
-      const p = new URLSearchParams({ ...baseParams, offset: off });
-      const data = await fetch(${API}?, { headers: { Accept: 'application/json' } })
-        .then(r => r.ok ? r.json() : { models: [] })
-        .catch(() => ({ models: [] }));
-      let added = 0;
-      (data.models || []).forEach(m => {
-        if (!seen.has(m.username) && m.status === 'public' && m.stream && m.stream.urls) {
-          if (!m.country && m.modelsCountry) m.country = m.modelsCountry;
-          if (!gender || m.gender === gender) {
-            seen.add(m.username);
-            allModels.push(m);
-            added++;
-          }
-        }
-      });
-      apiOffset = off + 200;
-      if (added > 0) {
-        populateCountryFilter(allModels);
-        document.getElementById('statusText').textContent = ${allModels.length} streams \u2022 ;
-      }
-      if (!data.models || data.models.length < 200) break; // end of data
-    } catch(e) { break; }
-  }
-  isBgFetching = false;
-}
-
-// Fetch the next API page on demand (when infinite scroll pool is exhausted)
-async function fetchNextApiPage() {
-  if (isBgFetching) return;
-  isBgFetching = true;
-  const gender = document.getElementById('genderSelect').value;
-  const sort   = document.getElementById('sortSelect').value;
-  const tag    = document.getElementById('tagInput').value.trim();
-  const baseParams = { limit: 200, sortBy: sort, ...genderParam(gender) };
-  if (tag) baseParams.tag = tag;
-  const seen = new Set(allModels.map(m => m.username));
-  try {
-    const p = new URLSearchParams({ ...baseParams, offset: apiOffset });
-    const data = await fetch(${API}?, { headers: { Accept: 'application/json' } })
-      .then(r => r.ok ? r.json() : { models: [] })
-      .catch(() => ({ models: [] }));
-    let added = 0;
-    (data.models || []).forEach(m => {
-      if (!seen.has(m.username) && m.status === 'public' && m.stream && m.stream.urls) {
-        if (!m.country && m.modelsCountry) m.country = m.modelsCountry;
-        if (!gender || m.gender === gender) {
-          seen.add(m.username);
-          allModels.push(m);
-          added++;
-        }
-      }
-    });
-    apiOffset += 200;
-    if (added > 0) {
-      currentFiltered = applyCountryFilter(allModels);
-      hasMore = currentOffset < currentFiltered.length || (apiTotal ? apiOffset < apiTotal : data.models.length === 200);
-      document.getElementById('statusText').textContent = ${allModels.length} streams \u2022 ;
-    } else {
-      hasMore = false;
-    }
-  } catch(e) { hasMore = false; }
-  isBgFetching = false;
-}
-
-// -- INFINITE SCROLL --------------------------------------------------------
+// ── INFINITE SCROLL ────────────────────────────────────────────────────────
 
 
 function setupInfiniteScroll() {
@@ -3492,7 +3483,7 @@ async function loadMoreTiles() {
   sentinel.classList.add('loading');
 
 
-  sentinel.querySelector('.sentinel-text').textContent = 'Loading?';
+  sentinel.querySelector('.sentinel-text').textContent = 'Loading�';
 
 
   await new Promise(r => setTimeout(r, 250));
@@ -3504,17 +3495,6 @@ async function loadMoreTiles() {
   const grid = document.getElementById('grid');
 
 
-  // If local pool exhausted, fetch next API page first
-  if (currentOffset >= currentFiltered.length) {
-    await fetchNextApiPage();
-    if (!hasMore && currentOffset >= currentFiltered.length) {
-      sentinel.classList.remove('loading');
-      sentinel.querySelector('.sentinel-text').textContent = 'All ' + currentFiltered.length + ' streams loaded';
-      setTimeout(() => { sentinel.style.display = 'none'; }, 3000);
-      isLoadingMore = false;
-      return;
-    }
-  }
   const batch = currentFiltered.slice(currentOffset, currentOffset + BATCH);
 
 
@@ -3536,7 +3516,7 @@ async function loadMoreTiles() {
   currentOffset += batch.length;
 
 
-  hasMore = currentOffset < currentFiltered.length || (apiTotal ? apiOffset < apiTotal : !isBgFetching);
+  hasMore = currentOffset < currentFiltered.length;
 
 
   sentinel.classList.remove('loading');
@@ -3557,7 +3537,7 @@ async function loadMoreTiles() {
 
 
 
-// -- BUILD TILE -------------------------------------------------------------
+// ── BUILD TILE ─────────────────────────────────────────────────────────────
 
 
 function buildTile(model, quality) {
@@ -3743,7 +3723,7 @@ function buildTile(model, quality) {
   const muteBtn = document.createElement('button');
 
 
-  muteBtn.className = 'tile-btn'; muteBtn.textContent = '??'; muteBtn.title = 'Toggle audio';
+  muteBtn.className = 'tile-btn'; muteBtn.textContent = '🔇'; muteBtn.title = 'Toggle audio';
 
 
   muteBtn.onclick = e => {
@@ -3758,7 +3738,7 @@ function buildTile(model, quality) {
     else {
 
 
-      video.muted = true; muteBtn.classList.remove('unmuted'); muteBtn.textContent = '??';
+      video.muted = true; muteBtn.classList.remove('unmuted'); muteBtn.textContent = '🔇';
 
 
       tile.classList.remove('active-audio'); tile.style.order = '';
@@ -3800,7 +3780,7 @@ function buildTile(model, quality) {
   const fsBtn = document.createElement('button');
 
 
-  fsBtn.className = 'tile-btn'; fsBtn.textContent = '?'; fsBtn.title = 'Fullscreen';
+  fsBtn.className = 'tile-btn'; fsBtn.textContent = '⛶'; fsBtn.title = 'Fullscreen';
 
 
   fsBtn.onclick = e => {
@@ -3895,7 +3875,7 @@ function buildTile(model, quality) {
 
 
 
-// -- META PANEL -------------------------------------------------------------
+// ── META PANEL ─────────────────────────────────────────────────────────────
 
 
 function buildMetaPanel(model) {
@@ -3958,7 +3938,7 @@ function buildMetaPanel(model) {
 
 
 
-  addRow('??', 'Viewers', fmtViewers(model.viewersCount || 0));
+  addRow('👁', 'Viewers', fmtViewers(model.viewersCount || 0));
 
 
 
@@ -3973,34 +3953,34 @@ function buildMetaPanel(model) {
   else if (model.liveSince) onlineStr = fmtTime(Math.floor((Date.now()-new Date(model.liveSince).getTime())/1000));
 
 
-  if (onlineStr) addRow('?', 'Online', onlineStr);
+  if (onlineStr) addRow('⏱', 'Online', onlineStr);
 
 
 
 
 
-  if (model.country)    addRow('??', 'Country', `${getCountryFlag(model.country)} ${model.country.toUpperCase()}`);
+  if (model.country)    addRow('📍', 'Country', `${getCountryFlag(model.country)} ${model.country.toUpperCase()}`);
 
 
-  if (model.city)       addRow('??', 'City', model.city);
+  if (model.city)       addRow('🏙', 'City', model.city);
 
 
-  if (model.age)        addRow('??', 'Age', `${model.age}`);
+  if (model.age)        addRow('🎂', 'Age', `${model.age}`);
 
 
-  if (model.gender)     addRow('?', 'Gender', {female:'? Female',male:'? Male',couple:'? Couple',trans:'? Trans'}[model.gender] || model.gender);
+  if (model.gender)     addRow('✦', 'Gender', {female:'♀ Female',male:'♂ Male',couple:'⚤ Couple',trans:'⚧ Trans'}[model.gender] || model.gender);
 
 
-  if (model.ethnicity)  addRow('??', 'Ethnicity', model.ethnicity);
+  if (model.ethnicity)  addRow('🌐', 'Ethnicity', model.ethnicity);
 
 
-  if (model.bodyType)   addRow('?', 'Body', model.bodyType);
+  if (model.bodyType)   addRow('⚡', 'Body', model.bodyType);
 
 
-  if (model.hairColor)  addRow('??', 'Hair', model.hairColor);
+  if (model.hairColor)  addRow('💇', 'Hair', model.hairColor);
 
 
-  if (model.eyeColor)   addRow('??', 'Eyes', model.eyeColor);
+  if (model.eyeColor)   addRow('👁', 'Eyes', model.eyeColor);
 
 
 
@@ -4018,7 +3998,7 @@ function buildMetaPanel(model) {
     const qRow = document.createElement('div'); qRow.className='meta-row'; qRow.style.alignItems='center';
 
 
-    qRow.innerHTML = `<span class="meta-icon">??</span><span class="meta-label">Streams:&nbsp;</span>`;
+    qRow.innerHTML = `<span class="meta-icon">📺</span><span class="meta-label">Streams:&nbsp;</span>`;
 
 
     const qBadges = document.createElement('div'); qBadges.className='meta-quality-row';
@@ -4057,13 +4037,13 @@ function buildMetaPanel(model) {
   const langs = model.languages || model.spokenLanguages;
 
 
-  if (langs) addRow('??', 'Language', Array.isArray(langs) ? langs.join(', ') : langs);
+  if (langs) addRow('🗣', 'Language', Array.isArray(langs) ? langs.join(', ') : langs);
 
 
   const toys = model.broadcastInteractiveToy;
 
 
-  if (toys && toys.length) addRow('??', 'Toy', Array.isArray(toys) ? toys.join(', ') : toys);
+  if (toys && toys.length) addRow('📳', 'Toy', Array.isArray(toys) ? toys.join(', ') : toys);
 
 
   if (model.favoritedCount) addRow('?', 'Favorites', fmtNum(model.favoritedCount));
@@ -4081,7 +4061,7 @@ function buildMetaPanel(model) {
   if (model.isNew) extras.push('New');
 
 
-  if (extras.length) addRow('?', 'Features', extras.join(' � '));
+  if (extras.length) addRow('ℹ', 'Features', extras.join(' · '));
 
 
 
@@ -4159,7 +4139,7 @@ function buildMetaPanel(model) {
 
 
 
-// -- STATS MODAL ------------------------------------------------------------
+// ── STATS MODAL ────────────────────────────────────────────────────────────
 
 
 function openStats()  { document.getElementById('stats-modal').classList.add('open'); renderStats(); }
@@ -4183,7 +4163,7 @@ function renderStats() {
   const models = allModels;
 
 
-  if (!models.length) { body.innerHTML = '<div style="color:var(--muted);font-family:\'Space Mono\',monospace;font-size:12px;">No data ? load streams first.</div>'; return; }
+  if (!models.length) { body.innerHTML = '<div style="color:var(--muted);font-family:\'Space Mono\',monospace;font-size:12px;">No data � load streams first.</div>'; return; }
 
 
 
@@ -4474,7 +4454,7 @@ function renderStats() {
 
 
 
-// -- BOOT ------------------------------------------------------------------
+// ── BOOT ──────────────────────────────────────────────────────────────────
 
 
 ['gridSelect','genderSelect','sortSelect','qualitySelect'].forEach(id => {
@@ -4668,7 +4648,7 @@ function buildCamTile(cam) {
   return tile;
 
 }
-// -- MOBILE FILTER DRAWER -----------------------------------------------------
+// ── MOBILE FILTER DRAWER ─────────────────────────────────────────────────────
 function openMobileFilters() {
   const syncSelects = [['gridSelect','gridSelectM'],['genderSelect','genderSelectM'],
     ['sortSelect','sortSelectM'],['qualitySelect','qualitySelectM']];
@@ -4703,7 +4683,7 @@ function resetMobileFilters() {
   document.getElementById('tagInputM').value='';
 }
 
-// -- MOBILE GRID COL CAP -------------------------------------------------------
+// ── MOBILE GRID COL CAP ───────────────────────────────────────────────────────
 function getResponsiveCols() {
   const raw = Math.round(Math.sqrt(parseInt(document.getElementById('gridSelect').value)||4));
   const w = window.innerWidth;
@@ -4721,7 +4701,7 @@ window.addEventListener('resize', () => {
   if (g) g.style.gridTemplateColumns = `repeat(${getResponsiveCols()}, 1fr)`;
 });
 
-// -- FULLSCREEN SWIPE MODE -----------------------------------------------------
+// ── FULLSCREEN SWIPE MODE ─────────────────────────────────────────────────────
 let _fsHls=null, _fsList=[], _fsIdx=0, _fsFavMode=false, _fsMuted=false;
 let _fsTx=0, _fsTy=0, _fsSwiping=false;
 
@@ -4832,7 +4812,7 @@ buildTile = function(model, quality) {
           const flag = model.country ? getCountryFlag(model.country) : '';
           const ctry = model.country ? model.country.toUpperCase() : '';
           badge.innerHTML = '<span class="mmb-name">' + model.username + '</span>' +
-            (viewers ? '<span class="mmb-viewers">?? ' + viewers + '</span>' : '') +
+            (viewers ? '<span class="mmb-viewers">👁 ' + viewers + '</span>' : '') +
             (flag    ? '<span class="mmb-country">' + flag + ' ' + ctry + '</span>' : '');
           tile.appendChild(badge);
           setTimeout(() => badge.remove(), 3000);
@@ -4846,7 +4826,7 @@ buildTile = function(model, quality) {
   return tile;
 };
 
-// Wire fav panel item ? FS swipe through favs on mobile
+// Wire fav panel item → FS swipe through favs on mobile
 const _rfpOrig = renderFavPanel;
 renderFavPanel = function() {
   _rfpOrig();
@@ -4875,8 +4855,8 @@ renderFavPanel = function() {
 <!-- MOBILE FILTER DRAWER -->
 <div id="mobile-filter-drawer" class="mobile-drawer">
   <div class="mobile-drawer-header">
-    <span class="mobile-drawer-title">? Filters</span>
-    <button class="mobile-drawer-close" onclick="closeMobileFilters()">?</button>
+    <span class="mobile-drawer-title">&#9881; Filters</span>
+    <button class="mobile-drawer-close" onclick="closeMobileFilters()">&#10005;</button>
   </div>
   <div class="mobile-drawer-body">
     <div class="mf-row"><label>Grid</label>
@@ -4928,24 +4908,24 @@ renderFavPanel = function() {
 <div id="fs-overlay">
   <div id="fs-video-wrap">
     <video id="fs-video" muted autoplay playsinline></video>
-    <div class="fs-swipe-hint left">?</div>
-    <div class="fs-swipe-hint right">?</div>
+    <div class="fs-swipe-hint left">&#9664;</div>
+    <div class="fs-swipe-hint right">&#9654;</div>
   </div>
   <div id="fs-topbar">
     <div style="display:flex;align-items:center;">
       <span id="fs-counter">1 / 1</span>
-      <span id="fs-mode-badge" style="display:none;">? Favs</span>
+      <span id="fs-mode-badge" style="display:none;">&#9829; Favs</span>
     </div>
-    <button id="fs-close" onclick="closeFsOverlay()">?</button>
+    <button id="fs-close" onclick="closeFsOverlay()">&#10005;</button>
   </div>
   <div id="fs-bottombar">
     <div id="fs-info">
       <div id="fs-username"></div>
       <div id="fs-meta"></div>
     </div>
-    <button class="fs-btn" id="fs-fav-btn" onclick="fsFavToggle()">?</button>
-    <button class="fs-btn" id="fs-grid-btn" onclick="closeFsOverlay()" title="Back to grid">?</button>
-    <button class="fs-btn" id="fs-mute-btn" onclick="fsMuteToggle()">??</button>
+    <button class="fs-btn" id="fs-fav-btn" onclick="fsFavToggle()">&#9825;</button>
+    <button class="fs-btn" id="fs-grid-btn" onclick="closeFsOverlay()" title="Back to grid">&#8862;</button>
+    <button class="fs-btn" id="fs-mute-btn" onclick="fsMuteToggle()">&#128266;</button>
   </div>
 </div>
 
