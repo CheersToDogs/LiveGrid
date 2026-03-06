@@ -3453,7 +3453,7 @@ function setupInfiniteScroll() {
   infiniteObserver = new IntersectionObserver(entries => {
 
 
-    if (entries[0].isIntersecting && !isLoadingMore && hasMore) loadMoreTiles();
+    if (entries[0].isIntersecting) { if (currentSource === 'cams') loadMoreCams(); else if (!isLoadingMore && hasMore) loadMoreTiles(); }
 
 
   }, { root: document.getElementById('grid-wrapper'), rootMargin: '200px', threshold: 0.1 });
@@ -4460,7 +4460,10 @@ function renderStats() {
 ['gridSelect','genderSelect','sortSelect','qualitySelect'].forEach(id => {
 
 
-  document.getElementById(id).addEventListener('change', loadStreams);
+  document.getElementById(id).addEventListener('change', () => {
+    if (currentSource === 'cams') { stopCamRefresh(); loadCams(true); }
+    else loadStreams();
+  });
 
 
 });
@@ -4493,6 +4496,9 @@ let   currentSource = 'streams';
 let   camRefreshTimer = null;
 
 let   camTileTimers   = {};
+let   camOffset     = 0;
+let   camAllLoaded  = false;
+let   camLoading    = false;
 
 
 
@@ -4524,62 +4530,47 @@ function stopCamRefresh() {
 
 
 
-async function loadCams() {
-
-  clearTimeout(camRefreshTimer); stopCamRefresh();
-
+async function loadCams(reset=true) {
+  if (camLoading) return;
+  camLoading = true;
+  if (reset) { camOffset = 0; camAllLoaded = false; stopCamRefresh(); document.getElementById('grid').innerHTML = ''; }
   const sort    = document.getElementById('camSortSelect')?.value || 'active';
-
   const country = (document.getElementById('camCountryInput')?.value || '').trim().toLowerCase();
-
-  const count   = parseInt(document.getElementById('gridSelect').value);
-
-  const cols    = Math.sqrt(count);
-
-  document.getElementById('statusText').textContent = 'Loading cams...';
-
+  const cols    = Math.round(Math.sqrt(parseInt(document.getElementById('gridSelect').value) || 4));
+  if (reset) document.getElementById('statusText').textContent = 'Loading cams...';
   let cams = [];
-
   try {
-
-    const res = await fetch(`${VISION_API}/cams?limit=200`, { headers: { 'X-API-Key': CAM_API_KEY } });
-
-    if (!res.ok) throw new Error(`API ${res.status}`);
-
-    cams = (await res.json()).cams || [];
-
-  } catch(e) { document.getElementById('statusText').textContent = 'Cam API unavailable'; return; }
-
+    const res = await fetch(`${VISION_API}/cams?limit=100&offset=${camOffset}`, { headers: { 'X-API-Key': CAM_API_KEY } });
+    if (!res.ok) throw new Error('API ' + res.status);
+    const data = await res.json();
+    cams = data.cams || [];
+  } catch(e) {
+    document.getElementById('statusText').textContent = 'Cam API unavailable';
+    camLoading = false; return;
+  }
   if (country) cams = cams.filter(c => (c.country||'').toLowerCase().includes(country) || (c.city||'').toLowerCase().includes(country));
-
   if (sort === 'motion') cams.sort((a,b) => (b.motion_score||0) - (a.motion_score||0));
-
   else if (sort === 'recent') cams.sort((a,b) => (b.last_active||0) - (a.last_active||0));
-
-  cams = cams.slice(0, count);
-
-  const grid = document.getElementById('grid'), empty = document.getElementById('empty-state');
-
-  grid.innerHTML = '';
-
-  if (!cams.length) { empty.style.display='flex'; empty.innerHTML='<div class="icon">no signal</div><div>No cams match.</div>'; return; }
-
+  const grid = document.getElementById('grid');
+  const empty = document.getElementById('empty-state');
+  if (reset && !cams.length) { empty.style.display='flex'; empty.innerHTML='<div class="icon">no signal</div><div>No cams available.</div>'; camLoading=false; return; }
   empty.style.display = 'none';
-
-  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-
+  grid.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
   cams.forEach(cam => grid.appendChild(buildCamTile(cam)));
-
-  const active = cams.filter(c => c.status==='active').length;
-
-  document.getElementById('statusText').textContent = `${cams.length} cams - ${active} active - ${new Date().toLocaleTimeString()}`;
-
+  camOffset += cams.length;
+  if (cams.length < 100) camAllLoaded = true;
+  const active = [...grid.querySelectorAll('.badge-status.active')].length;
+  document.getElementById('statusText').textContent = camOffset + ' cams loaded \u00b7 ' + active + ' active \u00b7 ' + new Date().toLocaleTimeString();
   const bar = document.getElementById('refreshBar');
+  bar.style.animation = 'none'; bar.offsetHeight; bar.style.animation = 'drain 60s linear forwards';
+  clearTimeout(camRefreshTimer);
+  camRefreshTimer = setTimeout(() => loadCams(true), 60000);
+  camLoading = false;
+}
 
-  bar.style.animation='none'; bar.offsetHeight; bar.style.animation='drain 60s linear forwards';
-
-  camRefreshTimer = setTimeout(loadCams, 60000);
-
+async function loadMoreCams() {
+  if (camAllLoaded || camLoading || currentSource !== 'cams') return;
+  await loadCams(false);
 }
 
 
