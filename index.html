@@ -211,6 +211,8 @@
   .tile { position: relative; background: #000; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); transition: border-color .2s, box-shadow .2s, transform .25s; aspect-ratio: 16/9; }
 
 
+  .status-cb { display:flex; align-items:center; gap:3px; font-size:11px; color:var(--text); cursor:pointer; user-select:none; white-space:nowrap; }
+  .status-cb input { accent-color: var(--accent); cursor:pointer; }
   .tile:hover { border-color: rgba(0,229,255,.5); }
   .tile:hover .tile-top, .tile:hover .tile-bottom { opacity: 1; }
   .tile.active-audio .tile-top, .tile.active-audio .tile-bottom { opacity: 1; }
@@ -325,7 +327,7 @@
   /* META OVERLAY */
 
 
-  .tile-meta { position: absolute; left: 0; right: 0; bottom: 44px; max-height: calc(100% - 80px); background: rgba(4,6,12,.93); backdrop-filter: blur(10px); opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; display: flex; flex-direction: column; padding: 8px 10px 6px; gap: 4px; overflow-y: auto; overflow-x: hidden; z-index: 12; transform: translateY(4px); border-top: 1px solid rgba(255,255,255,.07); }
+  .tile-meta { position: absolute; left: 0; right: 0; bottom: 44px; max-height: calc(100% - 80px); background: rgba(4,6,12,.88); backdrop-filter: blur(8px); opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; display: flex; flex-direction: column; padding: 8px 10px 6px; gap: 4px; overflow-y: auto; overflow-x: hidden; z-index: 12; transform: translateY(4px); border-top: 1px solid rgba(255,255,255,.07); }
 
 
   .tile-meta::-webkit-scrollbar { width: 3px; }
@@ -1131,6 +1133,9 @@
         <option value="viewersCount" selected>Most Viewers</option>
 
 
+        <option value="viewersCountAsc">Least Viewers</option>
+
+
         <option value="onlineTime">Longest Online</option>
 
 
@@ -1140,6 +1145,14 @@
       </select>
 
 
+    </div>
+
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+      <label>Status</label>
+      <label class="status-cb"><input type="checkbox" name="statusFilter" value="public" checked> Public</label>
+      <label class="status-cb"><input type="checkbox" name="statusFilter" value="private"> Private</label>
+      <label class="status-cb"><input type="checkbox" name="statusFilter" value="groupShow"> Group</label>
+      <label class="status-cb"><input type="checkbox" name="statusFilter" value="p2p"> Cam2Cam</label>
     </div>
 
 
@@ -2596,6 +2609,23 @@ function applyCountryFilter(models) {
 
 }
 
+function getSelectedStatuses() {
+  const boxes = document.querySelectorAll('input[name="statusFilter"]:checked');
+  return boxes.length ? [...boxes].map(b => b.value) : ['public'];
+}
+
+function applyClientSort(models) {
+  const statuses = getSelectedStatuses();
+  let out = statuses.includes('public') && statuses.length === 1
+    ? models  // default: already filtered to public by API + existing filter
+    : models.filter(m => statuses.includes(m.status));
+  const sortRaw = document.getElementById('sortSelect').value;
+  if (sortRaw === 'viewersCountAsc') {
+    out = [...out].sort((a, b) => (a.viewersCount || 0) - (b.viewersCount || 0));
+  }
+  return out;
+}
+
 
 
 
@@ -2609,7 +2639,8 @@ async function loadStreams() {
   const gender = document.getElementById('genderSelect').value;
 
 
-  const sort   = document.getElementById('sortSelect').value;
+  const sortRaw = document.getElementById('sortSelect').value;
+  const sort   = sortRaw === 'viewersCountAsc' ? 'viewersCount' : sortRaw;
 
 
   const tag    = document.getElementById('tagInput').value.trim();
@@ -2645,7 +2676,7 @@ async function loadStreams() {
     const seen = new Set();
     let models = [];
     (data0.models || []).forEach(m => { if (!seen.has(m.username)) { seen.add(m.username); models.push(m); } });
-    models = models.filter(m => m.status === 'public' && m.stream && m.stream.urls);
+    models = models.filter(m => getSelectedStatuses().includes(m.status) && m.stream && m.stream.urls);
 
 
     models.forEach(m => { if (!m.country && m.modelsCountry) m.country = m.modelsCountry; });
@@ -2721,7 +2752,8 @@ async function diffRefresh() {
   const gender = document.getElementById('genderSelect').value;
 
 
-  const sort   = document.getElementById('sortSelect').value;
+  const sortRaw = document.getElementById('sortSelect').value;
+  const sort   = sortRaw === 'viewersCountAsc' ? 'viewersCount' : sortRaw;
 
 
   const tag    = document.getElementById('tagInput').value.trim();
@@ -2959,7 +2991,8 @@ async function backgroundPrefetch() {
   if (isBgFetching) return;
   isBgFetching = true;
   const gender = document.getElementById('genderSelect').value;
-  const sort   = document.getElementById('sortSelect').value;
+  const sortRaw = document.getElementById('sortSelect').value;
+  const sort   = sortRaw === 'viewersCountAsc' ? 'viewersCount' : sortRaw;
   const tag    = document.getElementById('tagInput').value.trim();
   const baseParams = { limit: 200, sortBy: sort, ...genderParam(gender) };
   if (tag) baseParams.tag = tag;
@@ -2997,7 +3030,8 @@ async function fetchNextApiPage() {
   if (isBgFetching) return;
   isBgFetching = true;
   const gender = document.getElementById('genderSelect').value;
-  const sort   = document.getElementById('sortSelect').value;
+  const sortRaw = document.getElementById('sortSelect').value;
+  const sort   = sortRaw === 'viewersCountAsc' ? 'viewersCount' : sortRaw;
   const tag    = document.getElementById('tagInput').value.trim();
   const baseParams = { limit: 200, sortBy: sort, ...genderParam(gender) };
   if (tag) baseParams.tag = tag;
@@ -3020,7 +3054,7 @@ async function fetchNextApiPage() {
     });
     apiOffset += 200;
     if (added > 0) {
-      currentFiltered = applyCountryFilter(allModels);
+      currentFiltered = applyClientSort(applyCountryFilter(allModels));
       hasMore = currentOffset < currentFiltered.length || (apiTotal ? apiOffset < apiTotal : data.models.length === 200);
       document.getElementById('statusText').textContent = `${allModels.length} streams · ${new Date().toLocaleTimeString()}`;
     } else {
@@ -3082,7 +3116,8 @@ async function loadAll() {
   const gender = document.getElementById('genderSelect').value;
 
 
-  const sort   = document.getElementById('sortSelect').value;
+  const sortRaw = document.getElementById('sortSelect').value;
+  const sort   = sortRaw === 'viewersCountAsc' ? 'viewersCount' : sortRaw;
 
 
   const tag    = document.getElementById('tagInput').value.trim();
@@ -3274,7 +3309,7 @@ async function loadAll() {
     });
 
 
-    currentFiltered = applyCountryFilter(allModels);
+    currentFiltered = applyClientSort(applyCountryFilter(allModels));
 
 
     currentOffset = currentFiltered.length;
@@ -3364,7 +3399,7 @@ function renderGrid() {
 
 
 
-  currentFiltered = applyCountryFilter(allModels);
+  currentFiltered = applyClientSort(applyCountryFilter(allModels));
 
 
 
@@ -3969,6 +4004,10 @@ function buildMetaPanel(model) {
   if (model.gender)     addRow('✦', 'Gender', {female:'♀ Female',male:'♂ Male',couple:'⚤ Couple',trans:'⚧ Trans'}[model.gender] || model.gender);
 
 
+  const statusLabels = { public: '🟢 Public', private: '🔴 Private', groupShow: '🟡 Group Show', p2p: '🔵 Cam2Cam' };
+  if (model.status)     addRow('📡', 'Status', statusLabels[model.status] || model.status);
+
+
   if (model.ethnicity)  addRow('🌐', 'Ethnicity', model.ethnicity);
 
 
@@ -4455,6 +4494,10 @@ function renderStats() {
 // ── BOOT ──────────────────────────────────────────────────────────────────
 
 
+document.querySelectorAll('input[name="statusFilter"]').forEach(cb => {
+  cb.addEventListener('change', () => loadStreams());
+});
+
 ['gridSelect','genderSelect','sortSelect','qualitySelect'].forEach(id => {
 
 
@@ -4914,6 +4957,7 @@ renderFavPanel = function() {
     <div class="mf-row"><label>Sort</label>
       <select id="sortSelectM">
         <option value="viewersCount" selected>Most Viewers</option>
+        <option value="viewersCountAsc">Least Viewers</option>
         <option value="onlineTime">Longest Online</option>
         <option value="new">Newest</option>
       </select>
