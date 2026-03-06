@@ -4486,6 +4486,7 @@ loadStreams();
 // CAM SOURCE ================================================================
 
 const VISION_API    = 'https://knowledge-generally-other-suffering.trycloudflare.com';
+const CAM_API_KEY   = '20ad459d2b432c1d7f0c83d647455b483cb0365d3c7858cfe36432051932cd39';
 
 let   currentSource = 'streams';
 
@@ -4515,7 +4516,7 @@ function switchSource(src) {
 
 function stopCamRefresh() {
 
-  Object.values(camTileTimers).forEach(t => clearInterval(t));
+  Object.values(camTileTimers).forEach(t => clearTimeout(t));
 
   camTileTimers = {};
 
@@ -4541,7 +4542,7 @@ async function loadCams() {
 
   try {
 
-    const res = await fetch(`${VISION_API}/cams?limit=200`);
+    const res = await fetch(`${VISION_API}/cams?limit=200`, { headers: { 'X-API-Key': CAM_API_KEY } });
 
     if (!res.ok) throw new Error(`API ${res.status}`);
 
@@ -4599,7 +4600,27 @@ function buildCamTile(cam) {
 
   img.onerror = () => { img.src=''; img.style.background='#111'; };
 
-  camTileTimers[cam.cam_id] = setInterval(() => { img.src=`${snapBase}?t=${Date.now()}`; }, 15000);
+  function _camInterval(motion) {
+    if (motion > 20) return 2000;
+    if (motion > 5)  return 5000;
+    return 15000;
+  }
+  function _scheduleRefresh(id, el, base, motion) {
+    camTileTimers[id] = setTimeout(function tick() {
+      const next = `${base}?t=${Date.now()}`;
+      const probe = new Image();
+      probe.onload = () => {
+        el.src = next;
+        fetch(`${VISION_API}/cams/${id}`, { headers: { 'X-API-Key': CAM_API_KEY } })
+          .then(r => r.json())
+          .then(d => { camTileTimers[id] = setTimeout(tick, _camInterval(d.motion_score || 0)); })
+          .catch(()  => { camTileTimers[id] = setTimeout(tick, _camInterval(motion)); });
+      };
+      probe.onerror = () => { camTileTimers[id] = setTimeout(tick, 15000); };
+      probe.src = next;
+    }, _camInterval(motion));
+  }
+  _scheduleRefresh(cam.cam_id, img, snapBase, cam.motion_score || 0);
 
   const top = document.createElement('div'); top.className='tile-top';
 
