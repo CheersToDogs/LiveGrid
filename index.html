@@ -2629,7 +2629,7 @@ async function loadStreams() {
 
 
 
-  const baseParams = { limit: 500, sortBy: sort, ...genderParam(gender) };
+  const baseParams = { sortBy: sort, ...genderParam(gender) };
 
 
   if (tag) baseParams.tag = tag;
@@ -2735,7 +2735,7 @@ async function diffRefresh() {
   const quality = document.getElementById('qualitySelect').value;
 
 
-  const baseParams = { limit: 500, sortBy: sort, ...genderParam(gender) };
+  const baseParams = { sortBy: sort, ...genderParam(gender) };
 
 
   if (tag) baseParams.tag = tag;
@@ -2751,7 +2751,7 @@ async function diffRefresh() {
 
 
     const pRef = new URLSearchParams({ ...baseParams, limit: 200, offset: 0 });
-    const dataRef = await fetch(`?`, { headers: { Accept: 'application/json' } })
+    const dataRef = await fetch(`${API}?${pRef}`, { headers: { Accept: 'application/json' } })
       .then(r => r.ok ? r.json() : { models: [] })
       .catch(() => ({ models: [] }));
     const seen = new Set();
@@ -2792,7 +2792,11 @@ async function diffRefresh() {
 
 
 
-  allModels = freshModels;
+  // MERGE: replace top-200 with fresh data, preserve deep-paged tail untouched
+  const freshMap2 = new Map(freshModels.map(m => [m.username, m]));
+  const deepTail = allModels.slice(200).filter(m => !freshMap2.has(m.username)); // deep models not in fresh top-200
+  // Fresh models first (sorted/current), then deep tail preserved as-is
+  allModels = [...freshModels, ...deepTail];
 
 
   updateFavOnlineStatus();
@@ -3017,7 +3021,7 @@ async function loadAll() {
   const quality = document.getElementById('qualitySelect').value;
 
 
-  const baseParams = { limit: 500, sortBy: sort, ...genderParam(gender) };
+  const baseParams = { sortBy: sort, ...genderParam(gender) };
 
 
   if (tag) baseParams.tag = tag;
