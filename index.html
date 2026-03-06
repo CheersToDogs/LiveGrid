@@ -4736,7 +4736,7 @@ function openFsOverlay(usernameOrModel, list, favMode) {
   ov.classList.add('open');
   document.getElementById('fs-mode-badge').style.display = _fsFavMode ? 'inline-block' : 'none';
   ov.setAttribute('tabindex', '-1');
-  ov.focus();
+  setTimeout(() => { if (document.activeElement) document.activeElement.blur(); ov.focus(); }, 0);
   _fsLoad();
 }
 // Overlay keydown - belt and suspenders in case document listener misses it
