@@ -2517,11 +2517,10 @@ document.getElementById('dpad-right').onclick = () => dpadMove('right');
 
 
 document.addEventListener('keydown', e => {
-  // If fullscreen overlay is open, arrows navigate streams
   const fsOpen = document.getElementById('fs-overlay')?.classList.contains('open');
   if (fsOpen) {
-    if (e.key === 'ArrowLeft')  { e.preventDefault(); _fsIdx = Math.max(0, _fsIdx-1); _fsLoad(); return; }
-    if (e.key === 'ArrowRight') { e.preventDefault(); _fsIdx = Math.min(_fsList.length-1, _fsIdx+1); _fsLoad(); return; }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); _fsNav(-1); return; }
+    if (e.key === 'ArrowRight') { e.preventDefault(); _fsNav(1);  return; }
     if (e.key === 'Escape')     { e.preventDefault(); closeFsOverlay(); return; }
     return;
   }
@@ -4727,15 +4726,33 @@ function openFsOverlay(usernameOrModel, list, favMode) {
   const uname = typeof usernameOrModel==='string' ? usernameOrModel : usernameOrModel.username;
   _fsIdx = _fsList.findIndex(m => m.username===uname);
   if (_fsIdx < 0) _fsIdx = 0;
-  document.getElementById('fs-overlay').classList.add('open');
+  // Mute all grid tiles - fs takes over audio
+  document.querySelectorAll('#grid video').forEach(v => { v.muted = true; v.pause(); });
+  document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = '\uD83D\uDD07'; });
+  document.querySelectorAll('.tile').forEach(t => t.classList.remove('active-audio'));
+  document.getElementById('grid-wrapper').classList.remove('has-active-audio');
+  _fsMuted = false;
+  const ov = document.getElementById('fs-overlay');
+  ov.classList.add('open');
   document.getElementById('fs-mode-badge').style.display = _fsFavMode ? 'inline-block' : 'none';
+  ov.setAttribute('tabindex', '-1');
+  ov.focus();
   _fsLoad();
 }
+// Overlay keydown - belt and suspenders in case document listener misses it
+document.getElementById('fs-overlay').addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); _fsNav(-1); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); _fsNav(1);  }
+  if (e.key === 'Escape')     { e.preventDefault(); closeFsOverlay(); }
+});
+
 function closeFsOverlay() {
   document.getElementById('fs-overlay').classList.remove('open');
   if (_fsHls) { try{_fsHls.destroy();}catch(e){} _fsHls=null; }
   const v=document.getElementById('fs-video');
   v.pause(); v.src=''; v.removeAttribute('src');
+  // Resume grid videos (muted)
+  document.querySelectorAll('#grid video').forEach(v => { try { v.play().catch(()=>{}); } catch(e){} });
 }
 function _fsLoad() {
   const m=_fsList[_fsIdx]; if(!m) return;
@@ -4753,13 +4770,15 @@ function _fsLoad() {
   const q=document.getElementById('qualitySelect').value;
   const url=m.stream?.urls?.[q]||m.stream?.urls?.original||m.stream?.url;
   if(!url) return;
-  v.muted=_fsMuted;
+  v.muted=true;  // always start muted to satisfy autoplay policy, unmute after play starts
   if(Hls.isSupported()){
     _fsHls=new Hls({strictManifestParsing:false,maxBufferLength:30});
     _fsHls.loadSource(url); _fsHls.attachMedia(v);
-    _fsHls.on(Hls.Events.MANIFEST_PARSED,()=>v.play().catch(()=>{}));
+    _fsHls.on(Hls.Events.MANIFEST_PARSED,()=>{
+      v.play().then(()=>{ v.muted=_fsMuted; }).catch(()=>{});
+    });
   } else if(v.canPlayType('application/vnd.apple.mpegurl')){
-    v.src=url; v.play().catch(()=>{});
+    v.src=url; v.play().then(()=>{ v.muted=_fsMuted; }).catch(()=>{});
   }
   document.getElementById('fs-mute-btn').textContent=_fsMuted?'\uD83D\uDD07':'\uD83D\uDD0A';
 }
@@ -4807,10 +4826,15 @@ function fsMuteToggle() {
   });
 })();
 
-// Mobile tile interactions: single tap = meta badge, double tap = fullscreen
+// Tile interactions: mobile double-tap OR desktop double-click = fullscreen
 const _btOrig = buildTile;
 buildTile = function(model, quality) {
   const tile = _btOrig(model, quality);
+  // Desktop: double-click opens fullscreen overlay
+  tile.addEventListener('dblclick', e => {
+    if (e.target.closest('.tile-btn, .cta-link')) return;
+    openFsOverlay(model, currentFiltered, false);
+  });
   if (window.innerWidth <= 900) {
     let tapTimer = null, tapCount = 0;
     tile.addEventListener('click', e => {
