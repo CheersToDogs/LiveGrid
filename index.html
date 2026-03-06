@@ -4508,7 +4508,7 @@ function switchSource(src) {
 
   if (src === 'streams') { clearTimeout(camRefreshTimer); stopCamRefresh(); loadStreams(); }
 
-  else { destroyAll(); loadCams(); }
+  else { clearTimeout(refreshTimer); refreshTimer = null; destroyAll(); loadCams(); }
 
 }
 
