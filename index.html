@@ -3806,51 +3806,7 @@ function buildTile(model, quality) {
 
   fsBtn.onclick = e => {
     e.stopPropagation();
-
-    // --- FULLSCREEN ENTER: stop all other HLS loads, monopolize bandwidth ---
-    const fsUsername = model.username;
-    hlsInstances.forEach((h, uname) => {
-      if (uname !== fsUsername) {
-        try { h.stopLoad(); } catch(err) {}
-      }
-    });
-    // Pause other videos visually too
-    document.querySelectorAll('video').forEach(v => { if (v !== video) v.pause(); });
-
-    // Boost buffer targets on the fullscreen tile
-    const fsHls = hlsInstances.get(fsUsername);
-    if (fsHls) {
-      fsHls.config.maxBufferLength    = 60;
-      fsHls.config.maxMaxBufferLength = 120;
-      try { fsHls.startLoad(); } catch(err) {}
-    }
-
-    // --- FULLSCREEN EXIT: restore all HLS loads ---
-    const onExit = () => {
-      if (!document.fullscreenElement) {
-        // Restore buffer targets on fullscreen tile
-        if (fsHls) {
-          fsHls.config.maxBufferLength    = 30;
-          fsHls.config.maxMaxBufferLength = 60;
-        }
-        // Resume all other instances
-        hlsInstances.forEach((h, uname) => {
-          if (uname !== fsUsername) {
-            try { h.startLoad(); } catch(err) {}
-          }
-        });
-        // Resume video playback on visible tiles
-        if (!allPaused) {
-          document.querySelectorAll('video').forEach(v => {
-            if (v !== video) v.play().catch(() => {});
-          });
-        }
-        document.removeEventListener('fullscreenchange', onExit);
-      }
-    };
-
-    document.addEventListener('fullscreenchange', onExit);
-    (video.requestFullscreen || video.webkitRequestFullscreen).call(video);
+    openFsOverlay(model, currentFiltered, false);
   };
 
 
@@ -4760,11 +4716,12 @@ function openFsOverlay(usernameOrModel, list, favMode) {
   const uname = typeof usernameOrModel==='string' ? usernameOrModel : usernameOrModel.username;
   _fsIdx = _fsList.findIndex(m => m.username===uname);
   if (_fsIdx < 0) _fsIdx = 0;
-  // Mute all grid tiles - fs takes over audio
+  // Mute all grid tiles & stop HLS loads - fs overlay monopolizes bandwidth
   document.querySelectorAll('#grid video').forEach(v => { v.muted = true; v.pause(); });
   document.querySelectorAll('.tile-btn.unmuted').forEach(b => { b.classList.remove('unmuted'); b.textContent = '\uD83D\uDD07'; });
   document.querySelectorAll('.tile').forEach(t => t.classList.remove('active-audio'));
   document.getElementById('grid-wrapper').classList.remove('has-active-audio');
+  hlsInstances.forEach(h => { try { h.stopLoad(); } catch(e){} });
   _fsMuted = false;
   const ov = document.getElementById('fs-overlay');
   ov.classList.add('open');
@@ -4784,7 +4741,8 @@ function closeFsOverlay() {
   if (_fsHls) { try{_fsHls.destroy();}catch(e){} _fsHls=null; }
   const v=document.getElementById('fs-video');
   v.pause(); v.src=''; v.removeAttribute('src');
-  // Resume grid videos (muted)
+  // Resume grid HLS loads and video playback (muted)
+  hlsInstances.forEach(h => { try { h.startLoad(); } catch(e){} });
   document.querySelectorAll('#grid video').forEach(v => { try { v.play().catch(()=>{}); } catch(e){} });
 }
 function _fsLoad() {
