@@ -3628,10 +3628,11 @@ function buildTile(model, quality) {
   if (Hls.isSupported()) {
 
 
+    const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const hls = new Hls({
 
 
-      maxBufferLength: 30, maxMaxBufferLength: 60, enableWorker: true,
+      maxBufferLength: isMobileDevice ? 8 : 30, maxMaxBufferLength: isMobileDevice ? 16 : 60, enableWorker: true,
 
 
       strictManifestParsing: false,
@@ -4694,7 +4695,7 @@ function resetMobileFilters() {
   document.getElementById('gridSelectM').value='4';
   document.getElementById('genderSelectM').value='female';
   document.getElementById('sortSelectM').value='viewersCount';
-  document.getElementById('qualitySelectM').value='original';
+  document.getElementById('qualitySelectM').value=(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)?'480p':'original');
   document.getElementById('countrySelectM').value='';
   document.getElementById('tagInputM').value='';
 }
