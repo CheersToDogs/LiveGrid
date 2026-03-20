@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 
 <html lang="en">
@@ -4926,7 +4926,8 @@ renderFavPanel = function() {
 };
 
 
-﻿// ── WEBRTC SCANNER + PROBE ────────────────────────────────────────────────────
+
+// ── WEBRTC SCANNER + PROBE ────────────────────────────────────────────────────
 var WRS = {
   running: false,
   publicOnly: true,
@@ -4955,8 +4956,7 @@ function wrsTogglePublic(btn) {
 }
 
 async function wrsStart() {
-  document.getElementById('wrs-title').textContent = 'wrsStart called — running=' + WRS.running;
-  if (WRS.running) { document.getElementById('wrs-title').textContent = 'Already running — click Stop first'; return; }
+  if (WRS.running) return;
   WRS.running = true;
   var titleEl = document.getElementById('wrs-title');
   var totalEl = document.getElementById('wrs-total');
