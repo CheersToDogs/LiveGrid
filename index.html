@@ -5250,17 +5250,21 @@ function openWebRTCModal(model) {
   startProbe();
 }
 
-document.getElementById('wr-probe-modal-close').onclick = function() {
-  document.getElementById('wr-probe-modal').classList.remove('open');
-  if (_wrProbe) {
-    try { _wrProbe.ws && _wrProbe.ws.close(); } catch(e) {}
-    try { _wrProbe.pc && _wrProbe.pc.close(); } catch(e) {}
-    _wrProbe = null;
-  }
-};
-document.getElementById('wr-probe-modal').addEventListener('click', function(e) {
-  if (e.target === document.getElementById('wr-probe-modal'))
-    document.getElementById('wr-probe-modal-close').click();
+document.addEventListener('DOMContentLoaded', function() {
+  var closeBtn = document.getElementById('wr-probe-modal-close');
+  var probeModal = document.getElementById('wr-probe-modal');
+  if (closeBtn) closeBtn.onclick = function() {
+    probeModal.classList.remove('open');
+    if (_wrProbe) {
+      try { _wrProbe.ws && _wrProbe.ws.close(); } catch(e) {}
+      try { _wrProbe.pc && _wrProbe.pc.close(); } catch(e) {}
+      _wrProbe = null;
+    }
+  };
+  if (probeModal) probeModal.addEventListener('click', function(e) {
+    if (e.target === probeModal)
+      document.getElementById('wr-probe-modal-close').click();
+  });
 });
 
 </script>
