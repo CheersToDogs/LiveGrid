@@ -212,70 +212,7 @@
 
 
   .status-cb { display:flex; align-items:center; gap:3px; font-size:11px; color:var(--text); cursor:pointer; user-select:none; white-space:nowrap; }
-  .status-cb input { accent-color: var(--accent); cursor:pointer; }
-  .mode-toggle { display:flex; border:1px solid var(--border); border-radius:4px; overflow:hidden; }
-  .mode-btn { background:var(--surface2); color:var(--muted); border:none; padding:3px 8px; font-size:11px; font-family:inherit; cursor:pointer; transition:background .15s,color .15s; }
-  .mode-btn.active { background:var(--accent); color:#000; font-weight:700; }
-  .badge-webrtc { background:#7c3aed; color:#fff; font-size:9px; padding:1px 4px; border-radius:3px; font-weight:700; letter-spacing:.5px; }
-  .badge-status { position:absolute; top:4px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,.75); color:var(--accent2); font-size:9px; padding:2px 6px; border-radius:3px; font-weight:700; z-index:15; white-space:nowrap; pointer-events:none; }
-  .webrtc-log { position:absolute; bottom:28px; left:0; right:0; background:rgba(0,0,0,.88); color:#0f0; font-size:8px; font-family:monospace; padding:4px; max-height:60px; overflow-y:auto; z-index:20; display:none; pointer-events:none; white-space:pre-wrap; word-break:break-all; }
-  .tile:hover .webrtc-log { display:block; }
-  #webrtc-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:9000; align-items:center; justify-content:center; }
-  #webrtc-modal.open { display:flex; }
-  #webrtc-modal-inner { background:var(--surface); border:1px solid var(--accent); border-radius:8px; width:min(700px,95vw); max-height:90vh; display:flex; flex-direction:column; overflow:hidden; }
-  #webrtc-modal-header { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-bottom:1px solid var(--border); flex-shrink:0; }
-  #webrtc-modal-header h3 { margin:0; font-size:13px; color:var(--accent); font-family:'Space Mono',monospace; }
-  #webrtc-modal-close { background:none; border:none; color:var(--muted); font-size:18px; cursor:pointer; line-height:1; }
-  #webrtc-modal-close:hover { color:var(--text); }
-  #webrtc-modal-body { display:grid; grid-template-columns:1fr 1fr; gap:0; flex:1; overflow:hidden; min-height:0; }
-  #webrtc-modal-video-wrap { background:#000; display:flex; align-items:center; justify-content:center; position:relative; border-right:1px solid var(--border); }
-  #webrtc-modal-video-wrap video { width:100%; height:100%; object-fit:contain; }
-  #webrtc-modal-video-wrap .snap-cover { position:absolute; inset:0; background-size:cover; background-position:center; }
-  #webrtc-modal-log-wrap { display:flex; flex-direction:column; overflow:hidden; min-height:0; }
-  #webrtc-modal-log-tabs { display:flex; border-bottom:1px solid var(--border); flex-shrink:0; }
-  .wrtab { background:none; border:none; border-bottom:2px solid transparent; color:var(--muted); font-size:10px; font-family:'Space Mono',monospace; padding:6px 10px; cursor:pointer; }
-  .wrtab.active { color:var(--accent); border-bottom-color:var(--accent); }
-  #webrtc-modal-log { flex:1; overflow-y:auto; padding:8px; font-size:10px; font-family:'Space Mono',monospace; color:#0f0; background:var(--surface2); white-space:pre-wrap; word-break:break-all; min-height:0; }
-  #webrtc-modal-sdp { flex:1; overflow-y:auto; padding:8px; font-size:9px; font-family:'Space Mono',monospace; color:#adf; background:var(--surface2); white-space:pre-wrap; word-break:break-all; min-height:0; display:none; }
-  #webrtc-modal-status { padding:6px 14px; font-size:10px; font-family:'Space Mono',monospace; border-top:1px solid var(--border); flex-shrink:0; display:flex; gap:10px; align-items:center; }
-  .wr-state { padding:2px 6px; border-radius:3px; font-size:9px; font-weight:700; }
-  .wr-state.connecting { background:#7c3aed; color:#fff; }
-  .wr-state.open { background:#059669; color:#fff; }
-  .wr-state.closed { background:#dc2626; color:#fff; }
-  .wr-state.track { background:var(--accent); color:#000; }
-  .tile-btn-wr { color:#a78bfa; }
-  #wr-scanner { display:none; position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:9100; flex-direction:column; }
-  #wr-scanner.open { display:flex; }
-  #wr-scanner-header { display:flex; align-items:center; gap:10px; padding:10px 16px; border-bottom:1px solid var(--border); flex-shrink:0; background:var(--surface); }
-  #wr-scanner-header h3 { margin:0; font-size:13px; color:#a78bfa; font-family:'Space Mono',monospace; flex:1; }
-  #wr-scanner-controls { display:flex; gap:8px; align-items:center; }
-  .wrs-btn { background:var(--surface2); border:1px solid var(--border); color:var(--text); font-size:11px; padding:4px 10px; border-radius:4px; cursor:pointer; font-family:inherit; }
-  .wrs-btn:hover { border-color:var(--accent); color:var(--accent); }
-  .wrs-btn.primary { background:#7c3aed; border-color:#7c3aed; color:#fff; }
-  #wr-scanner-stats { display:flex; gap:16px; font-size:10px; font-family:'Space Mono',monospace; padding:6px 16px; background:var(--surface2); border-bottom:1px solid var(--border); flex-shrink:0; }
-  .wrs-stat { display:flex; gap:4px; align-items:center; }
-  .wrs-stat-val { font-weight:700; }
-  .wrs-stat-val.ok { color:#10b981; }
-  .wrs-stat-val.err { color:#ef4444; }
-  .wrs-stat-val.pending { color:#f59e0b; }
-  .wrs-stat-val.purple { color:#a78bfa; }
-  #wr-scanner-body { flex:1; overflow-y:auto; padding:8px 16px; }
-  .wrs-row { display:grid; grid-template-columns:140px 80px 80px 1fr 60px; gap:8px; align-items:center; padding:4px 0; border-bottom:1px solid rgba(255,255,255,.04); font-size:10px; font-family:'Space Mono',monospace; }
-  .wrs-row-header { color:var(--muted); font-weight:700; border-bottom:1px solid var(--border) !important; padding-bottom:6px; margin-bottom:2px; }
-  .wrs-username { color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer; }
-  .wrs-username:hover { color:var(--accent); }
-  .wrs-pill { display:inline-block; padding:1px 6px; border-radius:3px; font-size:9px; font-weight:700; }
-  .wrs-pill.public { background:#065f46; color:#6ee7b7; }
-  .wrs-pill.private { background:#7f1d1d; color:#fca5a5; }
-  .wrs-pill.group { background:#1e3a5f; color:#93c5fd; }
-  .wrs-pill.p2p { background:#4c1d95; color:#c4b5fd; }
-  .wrs-ws { font-size:9px; }
-  .wrs-ws.ok { color:#10b981; }
-  .wrs-ws.err { color:#ef4444; }
-  .wrs-ws.pending { color:#f59e0b; }
-  .wrs-msg { color:#6b7280; font-size:9px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .wrs-open-btn { background:none; border:1px solid #7c3aed; color:#a78bfa; font-size:9px; padding:1px 6px; border-radius:3px; cursor:pointer; }
-  .wrs-open-btn:hover { background:#7c3aed; color:#fff; }
+  .status-cb input { accent-color: var(--accent); cursor:pointer; }
   .tile:hover { border-color: rgba(0,229,255,.5); }
   .tile:hover .tile-top, .tile:hover .tile-bottom { opacity: 1; }
   .tile.active-audio .tile-top, .tile.active-audio .tile-bottom { opacity: 1; }
@@ -1125,7 +1062,6 @@
     <button class="nav-pill" onclick="togglePauseAll()">▮▮ Pause</button>
     <button class="nav-pill" onclick="muteAll()">🔇 Mute</button>
     <button class="nav-pill" onclick="toggleFavPanel()">♡ Favs</button>
-    <button class="nav-pill" onclick="openWRScanner()" title="WebRTC Scanner" style="color:#a78bfa;">⚡ WebRTC</button>
     <button class="nav-pill" onclick="openStats()">📊 Stats</button>
     <button class="nav-pill" onclick="openMobileFilters()">⚙ Filters</button>
   </div>
@@ -1289,14 +1225,6 @@
     <div style="display:flex;align-items:center;gap:5px;">
 
 
-      <label>Mode</label>
-      <div id="streamModeToggle" class="mode-toggle">
-        <button class="mode-btn active" data-mode="hls">HLS</button>
-        <button class="mode-btn" data-mode="webrtc">WebRTC ⚡</button>
-      </div>
-    </div>
-
-    <div style="display:flex;align-items:center;gap:5px;">
       <label>Aff.</label>
 
 
@@ -1587,10 +1515,7 @@ const vpPauseDelay   = new Map();   // username -> setTimeout id for deferred pa
 let favWatchTimer    = null;
 
 
-const BATCH          = 16;
-let streamMode = 'hls'; // 'hls' | 'webrtc'
-const WEBRTC_CDN = 'doppiocdn.com';
-const webrtcInstances = new Map(); // username -> {pc, ws}
+const BATCH          = 16;
 
 
 const API            = 'https://go.stripchat.com/api/models';
@@ -2403,8 +2328,7 @@ function genderParam(val) {
 
 
 
-function destroyAll() {
-  webrtcInstances.forEach((_, username) => destroyWebRTC(username));
+function destroyAll() {
 
 
   // Cancel all pending viewport pauses
@@ -3656,126 +3580,6 @@ async function loadMoreTiles() {
 // ── BUILD TILE ─────────────────────────────────────────────────────────────
 
 
-// ── WEBRTC INIT ────────────────────────────────────────────────────────────
-function getShowType(status) {
-  const s = (status || '').toLowerCase();
-  if (s === 'public') return { label: null, paid: false };
-  if (s.includes('private') || s === 'p2p') return { label: s === 'p2p' ? 'Cam2Cam' : 'Private Show', paid: true };
-  if (s.includes('group')) return { label: 'Group Show', paid: true };
-  return { label: status, paid: true };
-}
-
-function destroyWebRTC(username) {
-  const inst = webrtcInstances.get(username);
-  if (!inst) return;
-  try { inst.ws && inst.ws.close(); } catch {}
-  try { inst.pc && inst.pc.close(); } catch {}
-  webrtcInstances.delete(username);
-}
-
-function initWebRTC(tile, video, snap, model) {
-  const { label: statusLabel, paid } = getShowType(model.status);
-
-  // Status badge
-  if (statusLabel) {
-    const badge = document.createElement('div');
-    badge.className = 'badge-status';
-    badge.style.cssText = 'position:absolute;top:4px;left:50%;transform:translateX(-50%);z-index:15;';
-    badge.textContent = '🔒 ' + statusLabel;
-    tile.appendChild(badge);
-  }
-
-  // WebRTC log overlay (shows WS messages on hover)
-  const logDiv = document.createElement('div');
-  logDiv.className = 'webrtc-log';
-  tile.appendChild(logDiv);
-  let logLines = [];
-  const log = (msg) => {
-    logLines.push(msg);
-    if (logLines.length > 12) logLines.shift();
-    logDiv.textContent = logLines.join('\n');
-    console.log(`[WebRTC:${model.username}] ${msg}`);
-  };
-
-  const isPrivatePath = paid;
-  const wsUrl = `wss://edge-webrtc.${WEBRTC_CDN}:443${isPrivatePath ? '/private' : ''}`;
-
-  log(`Connecting → ${wsUrl}`);
-
-  let ws, pc;
-  try {
-    ws = new WebSocket(wsUrl);
-  } catch(err) {
-    log('WS create error: ' + err.message);
-    return;
-  }
-
-  pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-  webrtcInstances.set(model.username, { ws, pc });
-
-  ws.onopen = async () => {
-    log('✅ WS OPEN');
-    // Send minimal join — format TBD from protocol capture
-    // For now send a probe join to see server response
-    try {
-      ws.send(JSON.stringify({ action: 'join', room: model.username, streamId: model.username }));
-      log('→ Sent join probe');
-    } catch(e) { log('Send err: ' + e.message); }
-
-    // Create and send offer
-    try {
-      pc.addTransceiver('video', { direction: 'recvonly' });
-      pc.addTransceiver('audio', { direction: 'recvonly' });
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      ws.send(JSON.stringify({ type: 'offer', sdp: offer.sdp }));
-      log('→ Sent SDP offer');
-    } catch(e) { log('Offer err: ' + e.message); }
-  };
-
-  ws.onmessage = async (e) => {
-    log('← ' + e.data.substring(0, 80));
-    try {
-      const msg = JSON.parse(e.data);
-      if (msg.type === 'answer' || msg.sdp) {
-        await pc.setRemoteDescription(new RTCSessionDescription(msg));
-        log('✅ Remote SDP set');
-      } else if (msg.candidate || msg.type === 'candidate') {
-        await pc.addIceCandidate(new RTCIceCandidate(msg.candidate || msg));
-        log('✅ ICE candidate added');
-      } else if (msg.error || msg.type === 'error') {
-        log('❌ Server error: ' + (msg.error || msg.message || JSON.stringify(msg)));
-      }
-    } catch {}
-  };
-
-  ws.onclose = (e) => {
-    log(`WS closed (${e.code})`);
-  };
-
-  ws.onerror = () => log('❌ WS error');
-
-  pc.ontrack = (e) => {
-    log('🎥 Track received — playing!');
-    video.srcObject = e.streams[0];
-    video.play().catch(()=>{});
-    snap.classList.add('hidden');
-  };
-
-  pc.onicecandidate = (e) => {
-    if (e.candidate && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: 'candidate', candidate: e.candidate }));
-    }
-  };
-
-  pc.onconnectionstatechange = () => {
-    log('PC state: ' + pc.connectionState);
-    if (pc.connectionState === 'connected') {
-      snap.classList.add('hidden');
-    }
-  };
-}
-
 function buildTile(model, quality) {
 
 
@@ -4021,10 +3825,7 @@ function buildTile(model, quality) {
 
 
 
-  const wrBtn = document.createElement('button');
-  wrBtn.className = 'tile-btn tile-btn-wr'; wrBtn.textContent = '⚡'; wrBtn.title = 'WebRTC probe';
-  wrBtn.onclick = e => { e.stopPropagation(); openWebRTCModal(model); };
-  ctrlEl.appendChild(muteBtn); ctrlEl.appendChild(favBtn); ctrlEl.appendChild(wrBtn); ctrlEl.appendChild(fsBtn);
+  ctrlEl.appendChild(muteBtn); ctrlEl.appendChild(favBtn); ctrlEl.appendChild(fsBtn);
 
 
   bot.appendChild(nameEl); bot.appendChild(viewEl); bot.appendChild(ctrlEl);
@@ -4665,23 +4466,7 @@ document.querySelectorAll('input[name="statusFilter"]').forEach(cb => {
 });
 
 
-document.getElementById('countrySelect').addEventListener('change', renderGrid);
-
-  // Stream mode toggle — applies on next loadStreams(), not immediately (avoids killing live HLS)
-  document.getElementById('streamModeToggle').addEventListener('click', e => {
-    const btn = e.target.closest('.mode-btn');
-    if (!btn) return;
-    const prev = streamMode;
-    streamMode = btn.dataset.mode;
-    document.querySelectorAll('#streamModeToggle .mode-btn').forEach(b => b.classList.toggle('active', b === btn));
-    const mToggle = document.getElementById('streamModeToggleM');
-    if (mToggle) mToggle.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === streamMode));
-    if (prev !== streamMode) {
-      // Mode applies on next natural load — does NOT disrupt running streams
-      const st = document.getElementById('statusText');
-      if (st) st.textContent = streamMode.toUpperCase() + ' mode set — applies on next load';
-    }
-  });
+document.getElementById('countrySelect').addEventListener('change', renderGrid);
 
 
 document.getElementById('tagInput').addEventListener('keydown', e => { if (e.key==='Enter') loadStreams(); });
@@ -5093,326 +4878,6 @@ renderFavPanel = function() {
   });
 };
 
-
-// ── WEBRTC SCANNER ───────────────────────────────────────────────────────────
-let _wrsRunning = false;
-let _wrsQueue   = [];
-let _wrsPublicOnly = true;
-const _wrsResults = new Map(); // username -> result obj
-
-function openWRScanner() {
-  document.getElementById('wr-scanner').classList.add('open');
-  // Pre-populate with current allModels
-  wrsBuild();
-}
-function closeWRScanner() {
-  wrsStop();
-  document.getElementById('wr-scanner').classList.remove('open');
-}
-function wrsTogglePublic(btn) {
-  _wrsPublicOnly = !_wrsPublicOnly;
-  btn.textContent = 'Public only ' + (_wrsPublicOnly ? '✓' : '✗');
-  wrsBuild();
-}
-
-function wrsBuild() {
-  const models = (typeof allModels !== 'undefined' ? allModels : [])
-    .filter(m => _wrsPublicOnly ? m.status === 'public' : true);
-  document.getElementById('wrs-total').textContent = models.length;
-  document.getElementById('wrs-title').textContent = models.length + ' models loaded';
-  _wrsQueue = [...models];
-  // Add rows for any not yet in results
-  models.forEach(m => {
-    if (!_wrsResults.has(m.username)) wrsAddRow(m, 'pending', '—', '');
-  });
-}
-
-function wrsAddRow(model, wsState, firstMsg, trackState) {
-  const rows = document.getElementById('wrs-rows');
-  let row = document.getElementById('wrs-row-' + model.username);
-  if (!row) {
-    row = document.createElement('div');
-    row.className = 'wrs-row';
-    row.id = 'wrs-row-' + model.username;
-    rows.prepend(row);
-  }
-  const statusClass = { public:'public', private:'private', groupShow:'group', p2p:'p2p' }[model.status] || 'public';
-  row.innerHTML = `
-    <div class="wrs-username" onclick="openWebRTCModal(wrsGetModel('${model.username}'))">${model.username}</div>
-    <div><span class="wrs-pill ${statusClass}">${model.status || 'public'}</span></div>
-    <div class="wrs-ws ${wsState}">${wsState}</div>
-    <div class="wrs-msg" title="${firstMsg}">${firstMsg}</div>
-    <div><button class="wrs-open-btn" onclick="openWebRTCModal(wrsGetModel('${model.username}'))">probe</button></div>`;
-}
-
-function wrsGetModel(username) {
-  return (typeof allModels !== 'undefined' ? allModels : []).find(m => m.username === username) || { username };
-}
-
-function wrsUpdateStats() {
-  let wsOk=0, answered=0, track=0, err=0, scanned=0;
-  _wrsResults.forEach(r => {
-    scanned++;
-    if (r.wsOk) wsOk++;
-    if (r.answered) answered++;
-    if (r.track) track++;
-    if (r.wsErr) err++;
-  });
-  document.getElementById('wrs-scanned').textContent  = scanned;
-  document.getElementById('wrs-ws-ok').textContent    = wsOk;
-  document.getElementById('wrs-answered').textContent = answered;
-  document.getElementById('wrs-track').textContent    = track;
-  document.getElementById('wrs-err').textContent      = err;
-}
-
-async function wrsScanOne(model) {
-  return new Promise(resolve => {
-    const result = { wsOk: false, wsErr: false, answered: false, track: false, firstMsg: '' };
-    _wrsResults.set(model.username, result);
-    wrsAddRow(model, 'pending', 'connecting…', '');
-
-    const { paid } = getShowType(model.status);
-    const wsUrl = `wss://edge-webrtc.${WEBRTC_CDN}:443${paid ? '/private' : ''}`;
-    let ws, resolved = false;
-    const done = () => { if (!resolved) { resolved = true; try{ws&&ws.close();}catch{} resolve(result); } };
-    const timeout = setTimeout(done, 8000);
-
-    try { ws = new WebSocket(wsUrl); } catch(e) {
-      result.wsErr = true;
-      wrsAddRow(model, 'err', 'WS create failed', '');
-      wrsUpdateStats(); clearTimeout(timeout); resolve(result); return;
-    }
-
-    ws.onopen = async () => {
-      result.wsOk = true;
-      wrsAddRow(model, 'ok', 'WS open — sending offer…', '');
-      wrsUpdateStats();
-      try {
-        ws.send(JSON.stringify({ action: 'join', room: model.username, streamId: model.username }));
-        const pc = new RTCPeerConnection({ iceServers: [] });
-        pc.addTransceiver('video', { direction: 'recvonly' });
-        pc.addTransceiver('audio', { direction: 'recvonly' });
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        ws.send(JSON.stringify({ type: 'offer', sdp: offer.sdp }));
-        wrsAddRow(model, 'ok', 'offer sent — waiting…', '');
-        pc.ontrack = () => { result.track = true; wrsAddRow(model, 'ok', '🎥 TRACK RECEIVED', '✅'); wrsUpdateStats(); clearTimeout(timeout); done(); };
-        ws.onmessage = async (e) => {
-          const raw = e.data;
-          result.firstMsg = raw.substring(0, 100);
-          try {
-            const msg = JSON.parse(raw);
-            if (msg.type === 'answer' || msg.sdp) {
-              result.answered = true;
-              wrsAddRow(model, 'ok', '✅ SDP answer: ' + raw.substring(0,80), '');
-              wrsUpdateStats();
-              await pc.setRemoteDescription(new RTCSessionDescription({ type:'answer', sdp: msg.sdp || msg }));
-            } else {
-              wrsAddRow(model, 'ok', raw.substring(0,100), '');
-            }
-          } catch { wrsAddRow(model, 'ok', raw.substring(0,100), ''); }
-          wrsUpdateStats();
-        };
-      } catch(e) { wrsAddRow(model, 'err', 'offer error: '+e.message, ''); wrsUpdateStats(); done(); }
-    };
-    ws.onclose = (e) => { if (!result.answered) { wrsAddRow(model, result.wsOk?'ok':'err', 'closed:'+e.code, ''); wrsUpdateStats(); } done(); };
-    ws.onerror = () => { result.wsErr=!result.wsOk; wrsAddRow(model, 'err', 'WS error', ''); wrsUpdateStats(); done(); };
-  });
-}
-
-async function wrsStart() {
-  if (_wrsRunning) return;
-  _wrsRunning = true;
-  wrsBuild();
-  const concurrency = parseInt(document.getElementById('wrs-concurrency').value) || 5;
-  const queue = [..._wrsQueue];
-  let i = 0;
-  const prog = document.getElementById('wrs-progress');
-  const worker = async () => {
-    while (_wrsRunning && i < queue.length) {
-      const m = queue[i++];
-      prog.textContent = i + '/' + queue.length;
-      await wrsScanOne(m);
-    }
-  };
-  const workers = Array.from({length: concurrency}, worker);
-  await Promise.all(workers);
-  _wrsRunning = false;
-  prog.textContent = 'done';
-  document.getElementById('wrs-title').textContent = 'Scan complete';
-}
-
-function wrsStop() { _wrsRunning = false; }
-function wrsClear() { _wrsResults.clear(); document.getElementById('wrs-rows').innerHTML = ''; wrsUpdateStats(); wrsBuild(); }
-
-// ── WEBRTC PROBE MODAL ────────────────────────────────────────────────────────
-let _wrProbe = null; // { ws, pc }
-
-function openWebRTCModal(model) {
-  const modal = document.getElementById('webrtc-modal');
-  const vid   = document.getElementById('webrtc-modal-vid');
-  const snap  = document.getElementById('webrtc-modal-snap');
-  const log   = document.getElementById('webrtc-modal-log');
-  const sdp   = document.getElementById('webrtc-modal-sdp');
-  const wsState = document.getElementById('webrtc-modal-ws-state');
-  const pcState = document.getElementById('webrtc-modal-pc-state');
-
-  // Reset
-  if (_wrProbe) {
-    try { _wrProbe.ws && _wrProbe.ws.close(); } catch {}
-    try { _wrProbe.pc && _wrProbe.pc.close(); } catch {}
-    _wrProbe = null;
-  }
-  vid.srcObject = null;
-  log.textContent = '';
-  sdp.textContent = '';
-  document.getElementById('webrtc-modal-username').textContent = model.username;
-  document.getElementById('webrtc-modal-show-type').textContent = model.status || 'public';
-  snap.style.backgroundImage = `url(${model.snapshotUrl || model.widgetPreviewUrl || ''})`;
-  snap.style.display = 'block';
-
-  // Tab state store
-  const tabs = { log: '', offer: '', answer: '', ice: '' };
-  let activeTab = 'log';
-
-  const setTab = (t) => {
-    activeTab = t;
-    document.querySelectorAll('.wrtab').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
-    log.style.display = t === 'log' ? 'block' : 'none';
-    sdp.style.display = t !== 'log' ? 'block' : 'none';
-    sdp.textContent = tabs[t] || '(none yet)';
-  };
-  document.querySelectorAll('.wrtab').forEach(b => b.onclick = () => setTab(b.dataset.tab));
-  setTab('log');
-
-  const addLog = (msg) => {
-    const ts = new Date().toISOString().substr(11,12);
-    tabs.log += `[${ts}] ${msg}
-`;
-    if (activeTab === 'log') log.textContent = tabs.log;
-    log.scrollTop = log.scrollHeight;
-    console.log(`[WRModal:${model.username}] ${msg}`);
-  };
-
-  const setWS = (s, cls) => { wsState.textContent = 'WS: ' + s; wsState.className = 'wr-state ' + cls; };
-  const setPC = (s, cls) => { pcState.textContent = 'PC: ' + s; pcState.className = 'wr-state ' + cls; };
-  setWS('connecting', 'connecting'); setPC('new', 'connecting');
-
-  const { paid } = getShowType(model.status);
-  const wsUrl = `wss://edge-webrtc.${WEBRTC_CDN}:443${paid ? '/private' : ''}`;
-  document.getElementById('webrtc-modal-cdn').textContent = wsUrl;
-  addLog(`→ Connecting to ${wsUrl}`);
-
-  const startProbe = () => {
-    if (_wrProbe) {
-      try { _wrProbe.ws && _wrProbe.ws.close(); } catch {}
-      try { _wrProbe.pc && _wrProbe.pc.close(); } catch {}
-    }
-
-    const ws = new WebSocket(wsUrl);
-    const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-    _wrProbe = { ws, pc };
-
-    ws.onopen = async () => {
-      setWS('OPEN', 'open');
-      addLog('✅ WebSocket OPEN');
-
-      // Send join probe
-      const joinMsg = JSON.stringify({ action: 'join', room: model.username, streamId: model.username });
-      ws.send(joinMsg);
-      addLog('→ SENT join: ' + joinMsg);
-
-      // Build offer
-      pc.addTransceiver('video', { direction: 'recvonly' });
-      pc.addTransceiver('audio', { direction: 'recvonly' });
-      try {
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        tabs.offer = offer.sdp;
-        if (activeTab === 'offer') sdp.textContent = tabs.offer;
-        const offerMsg = JSON.stringify({ type: 'offer', sdp: offer.sdp });
-        ws.send(offerMsg);
-        addLog('→ SENT SDP offer (' + offer.sdp.split('
-').length + ' lines) — see Offer tab');
-      } catch(e) { addLog('❌ Offer error: ' + e.message); }
-    };
-
-    ws.onmessage = async (e) => {
-      const raw = e.data;
-      addLog('← RECV (' + raw.length + 'B): ' + raw.substring(0, 120) + (raw.length > 120 ? '…' : ''));
-      try {
-        const msg = JSON.parse(raw);
-        if (msg.type === 'answer' || (msg.sdp && msg.type !== 'offer')) {
-          tabs.answer = msg.sdp || JSON.stringify(msg, null, 2);
-          if (activeTab === 'answer') sdp.textContent = tabs.answer;
-          addLog('✅ Got SDP answer — see Answer tab');
-          await pc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: msg.sdp || msg }));
-          setPC('have-remote', 'open');
-        } else if (msg.candidate || msg.type === 'candidate') {
-          const cand = msg.candidate || msg;
-          tabs.ice += JSON.stringify(cand) + '
-';
-          if (activeTab === 'ice') sdp.textContent = tabs.ice;
-          addLog('✅ ICE candidate: ' + (cand.candidate || '').substring(0, 60));
-          await pc.addIceCandidate(new RTCIceCandidate(cand));
-        } else if (msg.error || msg.type === 'error') {
-          addLog('❌ Server error: ' + JSON.stringify(msg));
-        } else {
-          addLog('ℹ️ Server msg: ' + JSON.stringify(msg).substring(0, 200));
-        }
-      } catch { addLog('ℹ️ Non-JSON: ' + raw.substring(0, 200)); }
-    };
-
-    ws.onclose = (e) => {
-      setWS('CLOSED ' + e.code, 'closed');
-      addLog(`WS closed — code:${e.code} reason:${e.reason || 'none'}`);
-    };
-    ws.onerror = () => { setWS('ERROR', 'closed'); addLog('❌ WS error'); };
-
-    pc.ontrack = (e) => {
-      setPC('TRACK ✅', 'track');
-      addLog('🎥 Track received — kind:' + e.track.kind + ' streams:' + e.streams.length);
-      vid.srcObject = e.streams[0];
-      vid.play().catch(()=>{});
-      snap.style.display = 'none';
-    };
-
-    pc.onicecandidate = (e) => {
-      if (e.candidate && ws.readyState === WebSocket.OPEN) {
-        const msg = JSON.stringify({ type: 'candidate', candidate: e.candidate });
-        ws.send(msg);
-        addLog('→ SENT ICE: ' + e.candidate.candidate.substring(0, 60));
-      }
-    };
-
-    pc.onconnectionstatechange = () => {
-      setPC(pc.connectionState, pc.connectionState === 'connected' ? 'track' : pc.connectionState === 'failed' ? 'closed' : 'open');
-      addLog('PC state → ' + pc.connectionState);
-    };
-    pc.onsignalingstatechange = () => addLog('Signaling → ' + pc.signalingState);
-    pc.oniceconnectionstatechange = () => addLog('ICE → ' + pc.iceConnectionState);
-  };
-
-  document.getElementById('webrtc-modal-reconnect').onclick = () => {
-    addLog('--- RECONNECT ---');
-    startProbe();
-  };
-
-  modal.classList.add('open');
-  startProbe();
-}
-
-document.getElementById('webrtc-modal-close').onclick = () => {
-  document.getElementById('webrtc-modal').classList.remove('open');
-  if (_wrProbe) {
-    try { _wrProbe.ws && _wrProbe.ws.close(); } catch {}
-    try { _wrProbe.pc && _wrProbe.pc.close(); } catch {}
-    _wrProbe = null;
-  }
-};
-document.getElementById('webrtc-modal').addEventListener('click', e => {
-  if (e.target === document.getElementById('webrtc-modal')) document.getElementById('webrtc-modal-close').click();
-});
 </script>
 
 
@@ -5500,73 +4965,6 @@ document.getElementById('webrtc-modal').addEventListener('click', e => {
   </div>
 </div>
 
-
-<!-- WEBRTC SCANNER MODAL -->
-<div id="wr-scanner">
-  <div id="wr-scanner-header">
-    <h3>⚡ WebRTC Scanner — <span id="wrs-title">idle</span></h3>
-    <div id="wr-scanner-controls">
-      <span id="wrs-progress" style="font-size:10px;font-family:'Space Mono',monospace;color:var(--muted);"></span>
-      <button class="wrs-btn primary" id="wrs-start-btn" onclick="wrsStart()">▶ Scan All</button>
-      <button class="wrs-btn" onclick="wrsStop()">■ Stop</button>
-      <button class="wrs-btn" onclick="wrsClear()">↺ Clear</button>
-      <button class="wrs-btn" id="wrs-public-only" onclick="wrsTogglePublic(this)">Public only ✓</button>
-      <button class="wrs-btn" onclick="closeWRScanner()">✕ Close</button>
-    </div>
-  </div>
-  <div id="wr-scanner-stats">
-    <div class="wrs-stat">Models: <span class="wrs-stat-val" id="wrs-total">0</span></div>
-    <div class="wrs-stat">Scanned: <span class="wrs-stat-val pending" id="wrs-scanned">0</span></div>
-    <div class="wrs-stat">WS Open: <span class="wrs-stat-val ok" id="wrs-ws-ok">0</span></div>
-    <div class="wrs-stat">Got Answer: <span class="wrs-stat-val purple" id="wrs-answered">0</span></div>
-    <div class="wrs-stat">Track ✅: <span class="wrs-stat-val ok" id="wrs-track">0</span></div>
-    <div class="wrs-stat">WS Error: <span class="wrs-stat-val err" id="wrs-err">0</span></div>
-    <div class="wrs-stat">Concurrency: <input id="wrs-concurrency" type="number" min="1" max="20" value="5" style="width:40px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:10px;padding:1px 4px;border-radius:3px;text-align:center;"></div>
-  </div>
-  <div id="wr-scanner-body">
-    <div class="wrs-row wrs-row-header">
-      <div>Username</div><div>Status</div><div>WS</div><div>Server message</div><div>Probe</div>
-    </div>
-    <div id="wrs-rows"></div>
-  </div>
-</div>
-
-<!-- WEBRTC PROBE MODAL -->
-<div id="webrtc-modal">
-  <div id="webrtc-modal-inner">
-    <div id="webrtc-modal-header">
-      <h3 id="webrtc-modal-title">⚡ WebRTC Probe — <span id="webrtc-modal-username"></span></h3>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <span id="webrtc-modal-ws-state" class="wr-state connecting">WS: —</span>
-        <span id="webrtc-modal-pc-state" class="wr-state connecting">PC: —</span>
-        <button id="webrtc-modal-reconnect" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:10px;padding:3px 8px;border-radius:4px;cursor:pointer;">↺ Reconnect</button>
-        <button id="webrtc-modal-close">✕</button>
-      </div>
-    </div>
-    <div id="webrtc-modal-body">
-      <div id="webrtc-modal-video-wrap">
-        <div id="webrtc-modal-snap" class="snap-cover"></div>
-        <video id="webrtc-modal-vid" autoplay playsinline muted></video>
-      </div>
-      <div id="webrtc-modal-log-wrap">
-        <div id="webrtc-modal-log-tabs">
-          <button class="wrtab active" data-tab="log">WS Log</button>
-          <button class="wrtab" data-tab="offer">SDP Offer</button>
-          <button class="wrtab" data-tab="answer">SDP Answer</button>
-          <button class="wrtab" data-tab="ice">ICE</button>
-        </div>
-        <div id="webrtc-modal-log"></div>
-        <div id="webrtc-modal-sdp"></div>
-      </div>
-    </div>
-    <div id="webrtc-modal-status">
-      <span style="color:var(--muted);font-size:9px;">STATUS</span>
-      <span id="webrtc-modal-show-type" style="color:var(--accent2);font-size:10px;"></span>
-      <span style="margin-left:auto;color:var(--muted);font-size:9px;" id="webrtc-modal-cdn"></span>
-    </div>
-  </div>
-</div>
-
 </body>
 
 
