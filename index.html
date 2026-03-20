@@ -4955,7 +4955,8 @@ function wrsTogglePublic(btn) {
 }
 
 async function wrsStart() {
-  if (WRS.running) return;
+  document.getElementById('wrs-title').textContent = 'wrsStart called — running=' + WRS.running;
+  if (WRS.running) { document.getElementById('wrs-title').textContent = 'Already running — click Stop first'; return; }
   WRS.running = true;
   var titleEl = document.getElementById('wrs-title');
   var totalEl = document.getElementById('wrs-total');
