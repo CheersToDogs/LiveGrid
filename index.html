@@ -4618,15 +4618,21 @@ document.querySelectorAll('input[name="statusFilter"]').forEach(cb => {
 
 document.getElementById('countrySelect').addEventListener('change', renderGrid);
 
-  // Stream mode toggle
+  // Stream mode toggle — applies on next loadStreams(), not immediately (avoids killing live HLS)
   document.getElementById('streamModeToggle').addEventListener('click', e => {
     const btn = e.target.closest('.mode-btn');
     if (!btn) return;
+    const prev = streamMode;
     streamMode = btn.dataset.mode;
     document.querySelectorAll('#streamModeToggle .mode-btn').forEach(b => b.classList.toggle('active', b === btn));
     const mToggle = document.getElementById('streamModeToggleM');
     if (mToggle) mToggle.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === streamMode));
-    renderGrid();
+    if (prev !== streamMode) {
+      // Show brief status nudge, then reload streams
+      const st = document.getElementById('statusText');
+      if (st) { st.textContent = 'Switching to ' + streamMode.toUpperCase() + '…'; }
+      setTimeout(() => loadStreams(), 300);
+    }
   });
 
 
