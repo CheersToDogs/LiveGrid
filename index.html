@@ -4937,10 +4937,11 @@ var WRS = {
 };
 
 function openWRScanner() {
+  WRS.running = false;  // always reset on open
   document.getElementById('wr-scanner').classList.add('open');
   var n = (typeof allModels !== 'undefined' ? allModels.length : 0);
   document.getElementById('wrs-title').textContent = n > 0
-    ? n + ' models in grid — click Scan All'
+    ? n + ' models ready — click Scan All'
     : 'Click Scan All to fetch and scan';
   document.getElementById('wrs-total').textContent = n;
 }
@@ -4956,7 +4957,8 @@ function wrsTogglePublic(btn) {
 }
 
 async function wrsStart() {
-  if (WRS.running) return;
+  document.getElementById('wrs-title').textContent = 'Starting... running=' + WRS.running;
+  if (WRS.running) { document.getElementById('wrs-title').textContent = 'Stuck! Click Stop first.'; return; }
   WRS.running = true;
   var titleEl = document.getElementById('wrs-title');
   var totalEl = document.getElementById('wrs-total');
