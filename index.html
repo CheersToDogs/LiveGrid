@@ -327,7 +327,50 @@
   /* META OVERLAY */
 
 
-  .tile-restricted { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,.7); color: #fff; font-size: 12px; font-family: 'Space Mono',monospace; text-align: center; gap: 4px; z-index: 5; pointer-events: none; }
+  /* WR Scanner */
+  #wr-scanner{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9100;align-items:flex-start;justify-content:center;padding-top:60px;}
+  #wr-scanner.open{display:flex;}
+  #wrs-inner{background:var(--surface);border:1px solid #7c3aed;border-radius:8px;width:min(1100px,96vw);max-height:80vh;display:flex;flex-direction:column;overflow:hidden;}
+  #wrs-header{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface);}
+  #wrs-header h3{margin:0;font-size:13px;color:#a78bfa;font-family:'Space Mono',monospace;flex:1;}
+  .wrs-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:11px;padding:3px 9px;border-radius:4px;cursor:pointer;font-family:inherit;}
+  .wrs-btn:hover{border-color:#a78bfa;color:#a78bfa;}
+  .wrs-btn.primary{background:#7c3aed;border-color:#7c3aed;color:#fff;}
+  #wrs-stats{display:flex;gap:14px;font-size:10px;font-family:'Space Mono',monospace;padding:5px 14px;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
+  #wrs-body{flex:1;overflow-y:auto;padding:6px 14px;}
+  .wrs-row{display:grid;grid-template-columns:150px 90px 70px 1fr 55px;gap:6px;align-items:center;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:10px;font-family:'Space Mono',monospace;}
+  .wrs-row-hdr{color:var(--muted);font-weight:700;border-bottom:1px solid var(--border)!important;padding-bottom:5px;margin-bottom:2px;}
+  .wrs-un{color:var(--accent);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .wrs-un:hover{text-decoration:underline;}
+  .wrs-pill{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700;}
+  .wrs-pill.public{background:#065f46;color:#6ee7b7;}.wrs-pill.private{background:#7f1d1d;color:#fca5a5;}
+  .wrs-pill.group{background:#1e3a5f;color:#93c5fd;}.wrs-pill.p2p{background:#4c1d95;color:#c4b5fd;}
+  .wrs-ws{font-size:9px;}.wrs-ws.ok,.wrs-ws.track{color:#10b981;}.wrs-ws.err{color:#ef4444;}.wrs-ws.closed,.wrs-ws.queued,.wrs-ws.pending{color:#6b7280;}
+  .wrs-msg{color:#6b7280;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .wrs-probe-btn{background:none;border:1px solid #7c3aed;color:#a78bfa;font-size:9px;padding:1px 5px;border-radius:3px;cursor:pointer;}
+  .wrs-probe-btn:hover{background:#7c3aed;color:#fff;}
+  /* WR Probe Modal */
+  #wr-probe-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9200;align-items:center;justify-content:center;}
+  #wr-probe-modal.open{display:flex;}
+  #wrp-inner{background:var(--surface);border:1px solid #7c3aed;border-radius:8px;width:min(720px,95vw);max-height:90vh;display:flex;flex-direction:column;overflow:hidden;}
+  #wrp-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+  #wrp-header h3{margin:0;font-size:12px;color:#a78bfa;font-family:'Space Mono',monospace;}
+  #wrp-body{display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden;min-height:200px;}
+  #wrp-vid-wrap{background:#000;display:flex;align-items:center;justify-content:center;position:relative;border-right:1px solid var(--border);}
+  #wrp-vid-wrap video{width:100%;height:100%;object-fit:contain;}
+  #wrp-snap{position:absolute;inset:0;background-size:cover;background-position:center;}
+  #wrp-log-wrap{display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+  #wrp-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+  .wrp-tab{background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-size:10px;font-family:'Space Mono',monospace;padding:5px 10px;cursor:pointer;}
+  .wrp-tab.active{color:#a78bfa;border-bottom-color:#a78bfa;}
+  #wrp-log{flex:1;overflow-y:auto;padding:8px;font-size:10px;font-family:'Space Mono',monospace;color:#0f0;background:var(--surface2);white-space:pre-wrap;word-break:break-all;display:block;}
+  #wrp-sdp{flex:1;overflow-y:auto;padding:8px;font-size:9px;font-family:'Space Mono',monospace;color:#adf;background:var(--surface2);white-space:pre-wrap;word-break:break-all;display:none;}
+  #wrp-footer{padding:6px 14px;font-size:10px;font-family:'Space Mono',monospace;border-top:1px solid var(--border);flex-shrink:0;display:flex;gap:10px;align-items:center;}
+  .wr-state{padding:2px 6px;border-radius:3px;font-size:9px;font-weight:700;background:var(--surface2);color:var(--muted);}
+  .wr-state.open{background:#065f46;color:#6ee7b7;}.wr-state.closed{background:#7f1d1d;color:#fca5a5;}.wr-state.track{background:#a78bfa;color:#000;}
+  .tile-btn-wr{color:#a78bfa;font-size:11px;}
+  .tile-restricted {
+ position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,.7); color: #fff; font-size: 12px; font-family: 'Space Mono',monospace; text-align: center; gap: 4px; z-index: 5; pointer-events: none; }
   .tile-meta { position: absolute; left: 0; right: 0; bottom: 44px; max-height: calc(100% - 80px); background: linear-gradient(to top, rgba(0,0,0,.55) 0%, rgba(0,0,0,.15) 100%); backdrop-filter: blur(2px); opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; display: flex; flex-direction: column; padding: 8px 10px 6px; gap: 4px; overflow-y: auto; overflow-x: hidden; z-index: 12; transform: translateY(4px); border-top: none; }
 
 
@@ -1306,6 +1349,7 @@
     <button class="btn btn-fav" onclick="toggleFavPanel()">♡ Favs</button>
 
 
+    <button class="btn btn-stats" style="border-color:#a78bfa;color:#a78bfa;" onclick="openWRScanner()">&#9889; WebRTC</button>
     <button class="btn btn-stats" onclick="openStats()">📊 Stats</button>
 
 
@@ -3825,7 +3869,10 @@ function buildTile(model, quality) {
 
 
 
-  ctrlEl.appendChild(muteBtn); ctrlEl.appendChild(favBtn); ctrlEl.appendChild(fsBtn);
+  var wrBtn = document.createElement('button');
+  wrBtn.className = 'tile-btn tile-btn-wr'; wrBtn.textContent = 'WR'; wrBtn.title = 'WebRTC probe';
+  wrBtn.onclick = function(e) { e.stopPropagation(); openWRProbe(model.username); };
+  ctrlEl.appendChild(muteBtn); ctrlEl.appendChild(favBtn); ctrlEl.appendChild(wrBtn); ctrlEl.appendChild(fsBtn);
 
 
   bot.appendChild(nameEl); bot.appendChild(viewEl); bot.appendChild(ctrlEl);
@@ -4878,6 +4925,350 @@ renderFavPanel = function() {
   });
 };
 
+
+﻿// ── WEBRTC SCANNER + PROBE ────────────────────────────────────────────────────
+var WRS = {
+  running: false,
+  publicOnly: true,
+  results: new Map(),
+  CDN: 'doppiocdn.com',
+  probe: null
+};
+
+function openWRScanner() {
+  document.getElementById('wr-scanner').classList.add('open');
+  var n = (typeof allModels !== 'undefined' ? allModels.length : 0);
+  document.getElementById('wrs-title').textContent = n > 0
+    ? n + ' models in grid — click Scan All'
+    : 'Click Scan All to fetch and scan';
+  document.getElementById('wrs-total').textContent = n;
+}
+
+function closeWRScanner() {
+  WRS.running = false;
+  document.getElementById('wr-scanner').classList.remove('open');
+}
+
+function wrsTogglePublic(btn) {
+  WRS.publicOnly = !WRS.publicOnly;
+  btn.textContent = 'Public only ' + (WRS.publicOnly ? 'ON' : 'OFF');
+}
+
+async function wrsStart() {
+  if (WRS.running) return;
+  WRS.running = true;
+  var titleEl = document.getElementById('wrs-title');
+  var totalEl = document.getElementById('wrs-total');
+  var prog    = document.getElementById('wrs-progress');
+
+  titleEl.textContent = 'Fetching from API...';
+  prog.textContent = '';
+
+  var scanModels = [];
+  try {
+    var statuses = WRS.publicOnly ? ['public'] : ['public','private','groupShow','p2p'];
+    var gEl = document.getElementById('genderSelect');
+    var gender = gEl ? gEl.value : '';
+    var fetches = statuses.map(function(st) {
+      var p = new URLSearchParams({ limit: 200, sortBy: 'viewersCount', status: st });
+      if (gender) p.set('gender', gender);
+      return fetch('https://go.stripchat.com/api/models?' + p, { headers: { Accept: 'application/json' } })
+        .then(function(r) { return r.ok ? r.json() : { models: [] }; })
+        .catch(function() { return { models: [] }; });
+    });
+    var results = await Promise.all(fetches);
+    var seen = new Set();
+    results.forEach(function(d) {
+      (d.models || []).forEach(function(m) {
+        if (!seen.has(m.username) && m.stream && m.stream.urls) {
+          seen.add(m.username);
+          scanModels.push(m);
+        }
+      });
+    });
+  } catch(e) {
+    titleEl.textContent = 'Fetch error: ' + e.message;
+    WRS.running = false;
+    return;
+  }
+
+  if (scanModels.length === 0) {
+    titleEl.textContent = 'No models returned';
+    WRS.running = false;
+    return;
+  }
+
+  // Build rows
+  WRS.results.clear();
+  var rowsEl = document.getElementById('wrs-rows');
+  rowsEl.innerHTML = '';
+  scanModels.forEach(function(m) { wrsAddRow(m, 'queued', ''); });
+  totalEl.textContent = scanModels.length;
+  titleEl.textContent = 'Scanning ' + scanModels.length + ' models...';
+
+  var i = 0;
+  var concurrency = parseInt(document.getElementById('wrs-concurrency').value) || 5;
+  prog.textContent = '0/' + scanModels.length;
+
+  var worker = async function() {
+    while (WRS.running && i < scanModels.length) {
+      var m = scanModels[i++];
+      prog.textContent = i + '/' + scanModels.length;
+      await wrsScanOne(m);
+    }
+  };
+  await Promise.all(Array.from({ length: concurrency }, worker));
+  WRS.running = false;
+  prog.textContent = 'done';
+  titleEl.textContent = 'Scan complete — ' + scanModels.length + ' models';
+}
+
+function wrsStop() { WRS.running = false; }
+
+function wrsAddRow(model, wsState, msg) {
+  var rowsEl = document.getElementById('wrs-rows');
+  var row = document.getElementById('wrs-row-' + model.username);
+  if (!row) {
+    row = document.createElement('div');
+    row.className = 'wrs-row';
+    row.id = 'wrs-row-' + model.username;
+    rowsEl.appendChild(row);
+  }
+  var sc = ({ public:'public', private:'private', groupShow:'group', p2p:'p2p' })[model.status] || 'public';
+  var safeMsg = (msg || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').substring(0, 120);
+  row.innerHTML =
+    '<div class="wrs-un" data-u="' + model.username + '">' + model.username + '</div>' +
+    '<div><span class="wrs-pill ' + sc + '">' + (model.status || 'public') + '</span></div>' +
+    '<div class="wrs-ws ' + wsState + '">' + wsState + '</div>' +
+    '<div class="wrs-msg">' + safeMsg + '</div>' +
+    '<div><button class="wrs-probe-btn" data-u="' + model.username + '">probe</button></div>';
+}
+
+function wrsUpdateStats() {
+  var wsOk = 0, answered = 0, track = 0, err = 0, scanned = 0;
+  WRS.results.forEach(function(r) {
+    scanned++;
+    if (r.wsOk) wsOk++;
+    if (r.answered) answered++;
+    if (r.track) track++;
+    if (r.err) err++;
+  });
+  document.getElementById('wrs-scanned').textContent  = scanned;
+  document.getElementById('wrs-ws-ok').textContent    = wsOk;
+  document.getElementById('wrs-answered').textContent = answered;
+  document.getElementById('wrs-track').textContent    = track;
+  document.getElementById('wrs-err').textContent      = err;
+}
+
+function wrsScanOne(model) {
+  return new Promise(function(resolve) {
+    var r = { wsOk: false, err: false, answered: false, track: false };
+    WRS.results.set(model.username, r);
+    var paid = model.status && model.status !== 'public';
+    var wsUrl = 'wss://edge-webrtc.' + WRS.CDN + ':443' + (paid ? '/private' : '');
+    var ws, done = false;
+    var finish = function() {
+      if (!done) { done = true; try { ws && ws.close(); } catch(e) {} resolve(r); }
+    };
+    var timeout = setTimeout(finish, 8000);
+    try { ws = new WebSocket(wsUrl); } catch(e) {
+      r.err = true; wrsAddRow(model, 'err', 'WS failed'); wrsUpdateStats();
+      clearTimeout(timeout); resolve(r); return;
+    }
+    ws.onopen = async function() {
+      r.wsOk = true; wrsAddRow(model, 'ok', 'open — sending offer...'); wrsUpdateStats();
+      try {
+        ws.send(JSON.stringify({ action: 'join', room: model.username }));
+        var pc = new RTCPeerConnection({ iceServers: [] });
+        pc.addTransceiver('video', { direction: 'recvonly' });
+        pc.addTransceiver('audio', { direction: 'recvonly' });
+        var offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        ws.send(JSON.stringify({ type: 'offer', sdp: offer.sdp }));
+        wrsAddRow(model, 'ok', 'offer sent — waiting...'); wrsUpdateStats();
+        pc.ontrack = function() {
+          r.track = true; wrsAddRow(model, 'track', 'TRACK RECEIVED'); wrsUpdateStats();
+          clearTimeout(timeout); finish();
+        };
+        ws.onmessage = async function(e) {
+          var raw = e.data;
+          try {
+            var msg = JSON.parse(raw);
+            if (msg.type === 'answer' || msg.sdp) {
+              r.answered = true;
+              wrsAddRow(model, 'ok', 'SDP answer: ' + raw.substring(0, 80)); wrsUpdateStats();
+              await pc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: msg.sdp }));
+            } else {
+              wrsAddRow(model, 'ok', raw.substring(0, 100)); wrsUpdateStats();
+            }
+          } catch(ex) { wrsAddRow(model, 'ok', raw.substring(0, 100)); wrsUpdateStats(); }
+        };
+      } catch(e) { r.err = true; wrsAddRow(model, 'err', e.message); wrsUpdateStats(); finish(); }
+    };
+    ws.onclose = function(e) {
+      if (!r.answered && !r.track) {
+        wrsAddRow(model, r.wsOk ? 'closed' : 'err', 'closed:' + e.code); wrsUpdateStats();
+      }
+      finish();
+    };
+    ws.onerror = function() { r.err = true; wrsAddRow(model, 'err', 'WS error'); wrsUpdateStats(); finish(); };
+  });
+}
+
+function openWRProbe(username) {
+  var model = (typeof allModels !== 'undefined' ? allModels : []).find(function(m) { return m.username === username; })
+    || { username: username, status: 'public' };
+  openWRProbeModal(model);
+}
+
+// ── PROBE MODAL ───────────────────────────────────────────────────────────────
+function openWRProbeModal(model) {
+  var modal   = document.getElementById('wr-probe-modal');
+  var vid     = document.getElementById('wrp-vid');
+  var snapEl  = document.getElementById('wrp-snap');
+  var logEl   = document.getElementById('wrp-log');
+  var sdpEl   = document.getElementById('wrp-sdp');
+  var wsState = document.getElementById('wrp-ws-state');
+  var pcState = document.getElementById('wrp-pc-state');
+
+  if (WRS.probe) {
+    try { WRS.probe.ws && WRS.probe.ws.close(); } catch(e) {}
+    try { WRS.probe.pc && WRS.probe.pc.close(); } catch(e) {}
+    WRS.probe = null;
+  }
+  vid.srcObject = null;
+  logEl.textContent = '';
+  sdpEl.textContent = '';
+  document.getElementById('wrp-username').textContent = model.username;
+  document.getElementById('wrp-show-type').textContent = model.status || 'public';
+  snapEl.style.backgroundImage = 'url(' + (model.snapshotUrl || model.widgetPreviewUrl || '') + ')';
+  snapEl.style.display = 'block';
+
+  var tabs = { log: '', offer: '', answer: '', ice: '' };
+  var activeTab = 'log';
+  var setTab = function(t) {
+    activeTab = t;
+    document.querySelectorAll('.wrp-tab').forEach(function(b) { b.classList.toggle('active', b.dataset.tab === t); });
+    logEl.style.display = t === 'log' ? 'block' : 'none';
+    sdpEl.style.display = t !== 'log' ? 'block' : 'none';
+    sdpEl.textContent = tabs[t] || '(none yet)';
+  };
+  document.querySelectorAll('.wrp-tab').forEach(function(b) { b.onclick = function() { setTab(b.dataset.tab); }; });
+  setTab('log');
+
+  var addLog = function(msg) {
+    var ts = new Date().toISOString().substr(11, 12);
+    tabs.log += '[' + ts + '] ' + msg + '\n';
+    if (activeTab === 'log') { logEl.textContent = tabs.log; logEl.scrollTop = logEl.scrollHeight; }
+    console.log('[WRProbe:' + model.username + '] ' + msg);
+  };
+  var setWS = function(s, cls) { wsState.textContent = 'WS: ' + s; wsState.className = 'wr-state ' + cls; };
+  var setPC = function(s, cls) { pcState.textContent = 'PC: ' + s; pcState.className = 'wr-state ' + cls; };
+  setWS('--', 'idle'); setPC('--', 'idle');
+
+  var paid = model.status && model.status !== 'public';
+  var wsUrl = 'wss://edge-webrtc.' + WRS.CDN + ':443' + (paid ? '/private' : '');
+  document.getElementById('wrp-cdn').textContent = wsUrl;
+
+  var startProbe = function() {
+    if (WRS.probe) {
+      try { WRS.probe.ws && WRS.probe.ws.close(); } catch(e) {}
+      try { WRS.probe.pc && WRS.probe.pc.close(); } catch(e) {}
+    }
+    addLog('Connecting: ' + wsUrl);
+    var ws = new WebSocket(wsUrl);
+    var pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+    WRS.probe = { ws: ws, pc: pc };
+
+    ws.onopen = async function() {
+      setWS('OPEN', 'open'); addLog('WebSocket OPEN');
+      try {
+        var join = JSON.stringify({ action: 'join', room: model.username });
+        ws.send(join); addLog('SENT join: ' + join);
+        pc.addTransceiver('video', { direction: 'recvonly' });
+        pc.addTransceiver('audio', { direction: 'recvonly' });
+        var offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        tabs.offer = offer.sdp;
+        if (activeTab === 'offer') sdpEl.textContent = tabs.offer;
+        ws.send(JSON.stringify({ type: 'offer', sdp: offer.sdp }));
+        addLog('SENT SDP offer (' + offer.sdp.split('\n').length + ' lines) — see Offer tab');
+      } catch(e) { addLog('Error: ' + e.message); }
+    };
+    ws.onmessage = async function(e) {
+      var raw = e.data;
+      addLog('RECV (' + raw.length + 'B): ' + raw.substring(0, 120));
+      try {
+        var msg = JSON.parse(raw);
+        if (msg.type === 'answer' || (msg.sdp && msg.type !== 'offer')) {
+          tabs.answer = msg.sdp || JSON.stringify(msg, null, 2);
+          if (activeTab === 'answer') sdpEl.textContent = tabs.answer;
+          addLog('GOT SDP answer — see Answer tab');
+          await pc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: msg.sdp }));
+          setPC('have-remote', 'open');
+        } else if (msg.candidate || msg.type === 'candidate') {
+          var cand = msg.candidate || msg;
+          tabs.ice += JSON.stringify(cand) + '\n';
+          if (activeTab === 'ice') sdpEl.textContent = tabs.ice;
+          addLog('ICE: ' + (cand.candidate || '').substring(0, 60));
+          await pc.addIceCandidate(new RTCIceCandidate(cand));
+        } else {
+          addLog('Server: ' + JSON.stringify(msg).substring(0, 200));
+        }
+      } catch(ex) { addLog('Non-JSON: ' + raw.substring(0, 200)); }
+    };
+    ws.onclose = function(ev) { setWS('CLOSED ' + ev.code, 'closed'); addLog('WS closed: ' + ev.code); };
+    ws.onerror = function() { setWS('ERROR', 'closed'); addLog('WS error'); };
+    pc.ontrack = function(ev) {
+      setPC('TRACK', 'track'); addLog('Track received: ' + ev.track.kind);
+      vid.srcObject = ev.streams[0]; vid.play().catch(function() {});
+      snapEl.style.display = 'none';
+    };
+    pc.onicecandidate = function(ev) {
+      if (ev.candidate && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'candidate', candidate: ev.candidate }));
+        addLog('SENT ICE: ' + ev.candidate.candidate.substring(0, 60));
+      }
+    };
+    pc.onconnectionstatechange = function() {
+      var s = pc.connectionState;
+      setPC(s, s === 'connected' ? 'track' : s === 'failed' ? 'closed' : 'open');
+      addLog('PC: ' + s);
+    };
+    pc.onsignalingstatechange    = function() { addLog('Signaling: ' + pc.signalingState); };
+    pc.oniceconnectionstatechange = function() { addLog('ICE state: ' + pc.iceConnectionState); };
+  };
+
+  document.getElementById('wrp-reconnect').onclick = function() { addLog('--- RECONNECT ---'); startProbe(); };
+  modal.classList.add('open');
+  startProbe();
+}
+
+// Wire up close buttons after DOM ready
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('wr-probe-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeWRProbeModal();
+  });
+  document.getElementById('wr-probe-modal-close').onclick = closeWRProbeModal;
+  document.getElementById('wr-scanner').addEventListener('click', function(e) {
+    if (e.target === this) closeWRScanner();
+  });
+  // Probe buttons in scanner rows (delegated)
+  document.getElementById('wrs-rows').addEventListener('click', function(e) {
+    var btn = e.target.closest('.wrs-probe-btn, .wrs-un');
+    if (btn) openWRProbe(btn.dataset.u);
+  });
+});
+
+function closeWRProbeModal() {
+  document.getElementById('wr-probe-modal').classList.remove('open');
+  if (WRS.probe) {
+    try { WRS.probe.ws && WRS.probe.ws.close(); } catch(e) {}
+    try { WRS.probe.pc && WRS.probe.pc.close(); } catch(e) {}
+    WRS.probe = null;
+  }
+}
+
 </script>
 
 
@@ -4965,6 +5356,68 @@ renderFavPanel = function() {
   </div>
 </div>
 
+
+<!-- WR SCANNER -->
+<div id="wr-scanner">
+  <div id="wrs-inner">
+    <div id="wrs-header">
+      <h3>WebRTC Scanner &mdash; <span id="wrs-title">idle</span></h3>
+      <span id="wrs-progress" style="font-size:10px;font-family:'Space Mono',monospace;color:var(--muted);"></span>
+      <button class="wrs-btn primary" onclick="wrsStart()">Scan All</button>
+      <button class="wrs-btn" onclick="wrsStop()">Stop</button>
+      <button class="wrs-btn" onclick="document.getElementById('wrs-rows').innerHTML='';WRS.results.clear();">Reset</button>
+      <button class="wrs-btn" id="wrs-pub-btn" onclick="wrsTogglePublic(this)">Public only ON</button>
+      <label style="font-size:10px;color:var(--muted);">Concurrency&nbsp;<input id="wrs-concurrency" type="number" min="1" max="20" value="5" style="width:34px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:10px;padding:1px 3px;border-radius:3px;"></label>
+      <button class="wrs-btn" onclick="closeWRScanner()">&#10005; Close</button>
+    </div>
+    <div id="wrs-stats">
+      <span>Models:&nbsp;<b id="wrs-total">0</b></span>
+      <span>Scanned:&nbsp;<b id="wrs-scanned" style="color:#f59e0b;">0</b></span>
+      <span>WS Open:&nbsp;<b id="wrs-ws-ok" style="color:#10b981;">0</b></span>
+      <span>SDP Answer:&nbsp;<b id="wrs-answered" style="color:#a78bfa;">0</b></span>
+      <span>Track:&nbsp;<b id="wrs-track" style="color:#10b981;">0</b></span>
+      <span>Errors:&nbsp;<b id="wrs-err" style="color:#ef4444;">0</b></span>
+    </div>
+    <div id="wrs-body">
+      <div class="wrs-row wrs-row-hdr"><div>Username</div><div>Status</div><div>WS</div><div>Server response</div><div></div></div>
+      <div id="wrs-rows"></div>
+    </div>
+  </div>
+</div>
+
+<!-- WR PROBE MODAL -->
+<div id="wr-probe-modal">
+  <div id="wrp-inner">
+    <div id="wrp-header">
+      <h3>WebRTC Probe &mdash; <span id="wrp-username"></span></h3>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span id="wrp-ws-state" class="wr-state">WS: --</span>
+        <span id="wrp-pc-state" class="wr-state">PC: --</span>
+        <button class="wrs-btn" id="wrp-reconnect">Reconnect</button>
+        <button class="wrs-btn" id="wr-probe-modal-close">&#10005;</button>
+      </div>
+    </div>
+    <div id="wrp-body">
+      <div id="wrp-vid-wrap"><div id="wrp-snap"></div><video id="wrp-vid" autoplay playsinline muted></video></div>
+      <div id="wrp-log-wrap">
+        <div id="wrp-tabs">
+          <button class="wrp-tab active" data-tab="log">WS Log</button>
+          <button class="wrp-tab" data-tab="offer">SDP Offer</button>
+          <button class="wrp-tab" data-tab="answer">SDP Answer</button>
+          <button class="wrp-tab" data-tab="ice">ICE</button>
+        </div>
+        <div id="wrp-log"></div>
+        <div id="wrp-sdp"></div>
+      </div>
+    </div>
+    <div id="wrp-footer">
+      <span style="color:var(--muted);">Status:</span>
+      <span id="wrp-show-type" style="color:var(--accent2);"></span>
+      <span id="wrp-cdn" style="margin-left:auto;color:var(--muted);font-size:9px;"></span>
+    </div>
+  </div>
+</div>
+
 </body>
 
 
