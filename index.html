@@ -5095,7 +5095,7 @@ function openWRScanner() {
   document.getElementById('wr-scanner').classList.add('open');
   var n = (typeof allModels !== 'undefined' ? allModels.length : 0);
   document.getElementById('wrs-title').textContent = n > 0
-    ? n + ' models ready — click Scan All'
+    ? n + ' models ready  -  click Scan All'
     : 'Click Scan All to fetch and scan';
   document.getElementById('wrs-total').textContent = n;
 }
@@ -5177,7 +5177,7 @@ async function wrsStart() {
   await Promise.all(Array.from({ length: concurrency }, worker));
   WRS.running = false;
   prog.textContent = 'done';
-  titleEl.textContent = 'Scan complete — ' + scanModels.length + ' models';
+  titleEl.textContent = 'Scan complete  -  ' + scanModels.length + ' models';
 }
 
 function wrsStop() { WRS.running = false; }
@@ -5233,7 +5233,7 @@ function wrsScanOne(model) {
       clearTimeout(timeout); resolve(r); return;
     }
     ws.onopen = async function() {
-      r.wsOk = true; wrsAddRow(model, 'ok', 'open — sending offer...'); wrsUpdateStats();
+      r.wsOk = true; wrsAddRow(model, 'ok', 'open  -  sending offer...'); wrsUpdateStats();
       try {
         ws.send(JSON.stringify({ action: 'join', room: model.username }));
         var pc = new RTCPeerConnection({ iceServers: [] });
@@ -5242,7 +5242,7 @@ function wrsScanOne(model) {
         var offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
         ws.send(JSON.stringify({ type: 'offer', sdp: offer.sdp }));
-        wrsAddRow(model, 'ok', 'offer sent — waiting...'); wrsUpdateStats();
+        wrsAddRow(model, 'ok', 'offer sent  -  waiting...'); wrsUpdateStats();
         pc.ontrack = function() {
           r.track = true; wrsAddRow(model, 'track', 'TRACK RECEIVED'); wrsUpdateStats();
           clearTimeout(timeout); finish();
@@ -5349,7 +5349,7 @@ function openWRProbeModal(model) {
         tabs.offer = offer.sdp;
         if (activeTab === 'offer') sdpEl.textContent = tabs.offer;
         ws.send(JSON.stringify({ type: 'offer', sdp: offer.sdp }));
-        addLog('SENT SDP offer (' + offer.sdp.split('\n').length + ' lines) — see Offer tab');
+        addLog('SENT SDP offer (' + offer.sdp.split('\n').length + ' lines)  -  see Offer tab');
       } catch(e) { addLog('Error: ' + e.message); }
     };
     ws.onmessage = async function(e) {
@@ -5360,7 +5360,7 @@ function openWRProbeModal(model) {
         if (msg.type === 'answer' || (msg.sdp && msg.type !== 'offer')) {
           tabs.answer = msg.sdp || JSON.stringify(msg, null, 2);
           if (activeTab === 'answer') sdpEl.textContent = tabs.answer;
-          addLog('GOT SDP answer — see Answer tab');
+          addLog('GOT SDP answer  -  see Answer tab');
           await pc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: msg.sdp }));
           setPC('have-remote', 'open');
         } else if (msg.candidate || msg.type === 'candidate') {
