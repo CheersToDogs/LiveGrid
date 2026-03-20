@@ -5072,37 +5072,61 @@ async function wrsStart() {
   if (_wrsRunning) return;
   _wrsRunning = true;
   var prog = document.getElementById('wrs-progress');
-  // Fetch if empty
-  if (!allModels || allModels.length === 0) {
-    document.getElementById('wrs-title').textContent = 'Fetching streams...';
-    prog.textContent = 'loading...';
-    await loadStreams();
-  }
-  var concurrency = parseInt(document.getElementById('wrs-concurrency').value) || 5;
-  var models = allModels.filter(function(m) { return _wrsPublicOnly ? m.status === 'public' : true; });
-  if (models.length === 0) {
-    document.getElementById('wrs-title').textContent = 'No models found — check filters';
+  var titleEl = document.getElementById('wrs-title');
+  var totalEl = document.getElementById('wrs-total');
+
+  // Always fetch fresh from API directly — don't depend on allModels state
+  titleEl.textContent = 'Fetching models from API...';
+  prog.textContent = 'loading...';
+  var scanModels = [];
+  try {
+    var statuses = _wrsPublicOnly ? ['public'] : ['public','private','groupShow','p2p'];
+    var fetches = statuses.map(function(st) {
+      var p = new URLSearchParams({ limit:200, sortBy:'viewersCount', status:st });
+      var g = document.getElementById('genderSelect');
+      if (g && g.value) p.set('gender', g.value);
+      return fetch('https://go.stripchat.com/api/models?' + p, { headers:{ Accept:'application/json' } })
+        .then(function(r) { return r.ok ? r.json() : { models:[] }; })
+        .catch(function() { return { models:[] }; });
+    });
+    var results = await Promise.all(fetches);
+    var seen = new Set();
+    results.forEach(function(d) {
+      (d.models||[]).forEach(function(m) {
+        if (!seen.has(m.username) && m.stream && m.stream.urls) {
+          seen.add(m.username); scanModels.push(m);
+        }
+      });
+    });
+  } catch(e) {
+    titleEl.textContent = 'API fetch failed: ' + e.message;
     _wrsRunning = false; return;
   }
-  // Build rows fresh
+
+  if (scanModels.length === 0) {
+    titleEl.textContent = 'No models returned from API';
+    _wrsRunning = false; return;
+  }
+
+  var concurrency = parseInt(document.getElementById('wrs-concurrency').value) || 5;
   document.getElementById('wrs-rows').innerHTML = '';
   _wrsResults.clear();
-  models.forEach(function(m) { wrsAddRow(m, 'pending', 'queued', ''); });
-  document.getElementById('wrs-total').textContent = models.length;
-  document.getElementById('wrs-title').textContent = 'Scanning ' + models.length + ' models...';
+  scanModels.forEach(function(m) { wrsAddRow(m, 'pending', 'queued', ''); });
+  totalEl.textContent = scanModels.length;
+  titleEl.textContent = 'Scanning ' + scanModels.length + ' models...';
   var i = 0;
-  prog.textContent = '0/' + models.length;
+  prog.textContent = '0/' + scanModels.length;
   var worker = async function() {
-    while (_wrsRunning && i < models.length) {
-      var m = models[i++];
-      prog.textContent = i + '/' + models.length;
+    while (_wrsRunning && i < scanModels.length) {
+      var m = scanModels[i++];
+      prog.textContent = i + '/' + scanModels.length;
       await wrsScanOne(m);
     }
   };
   await Promise.all(Array.from({ length: concurrency }, worker));
   _wrsRunning = false;
   prog.textContent = 'done';
-  document.getElementById('wrs-title').textContent = 'Scan complete - ' + models.length + ' models';
+  document.getElementById('wrs-title').textContent = 'Scan complete - ' + scanModels.length + ' models';
 }
 
 function wrsStop() { _wrsRunning = false; }
