@@ -4939,12 +4939,15 @@ function openWRScanner() {
   var modal = document.getElementById('wr-scanner');
   modal.classList.add('open');
   // Populate count from current allModels
-  var models = (typeof allModels !== 'undefined' ? allModels : [])
-    .filter(function(m) { return _wrsPublicOnly ? m.status === 'public' : true; });
-  document.getElementById('wrs-total').textContent = models.length;
-  document.getElementById('wrs-title').textContent = models.length + ' models ready — click Scan All';
-  // Pre-populate rows if not already done
-  if (document.getElementById('wrs-rows').children.length === 0) wrsBuild();
+  var mcount = (typeof allModels !== 'undefined' ? allModels : [])
+    .filter(function(m) { return _wrsPublicOnly ? m.status === 'public' : true; }).length;
+  document.getElementById('wrs-total').textContent = mcount;
+  if (mcount === 0) {
+    document.getElementById('wrs-title').textContent = 'No models loaded yet — click Scan All to fetch + scan';
+  } else {
+    document.getElementById('wrs-title').textContent = mcount + ' models ready — click Scan All';
+    if (document.getElementById('wrs-rows').children.length === 0) wrsBuild();
+  }
 }
 function closeWRScanner() {
   wrsStop();
@@ -5068,6 +5071,11 @@ function wrsScanOne(model) {
 async function wrsStart() {
   if (_wrsRunning) return;
   _wrsRunning = true;
+  // If allModels empty, fetch first
+  if (!allModels || allModels.length === 0) {
+    document.getElementById('wrs-title').textContent = 'Fetching streams...';
+    await loadStreams();
+  }
   wrsBuild();
   var concurrency = parseInt(document.getElementById('wrs-concurrency').value) || 5;
   var models = (typeof allModels !== 'undefined' ? allModels : [])
