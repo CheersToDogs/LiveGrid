@@ -328,8 +328,9 @@
 
 
   /* WR Scanner */
-  #wr-scanner{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9100;flex-direction:column;}
+  #wr-scanner{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9100;align-items:flex-start;justify-content:center;padding-top:60px;}
   #wr-scanner.open{display:flex;}
+  #wr-scanner-inner{background:var(--surface);border:1px solid #7c3aed;border-radius:8px;width:min(1100px,96vw);max-height:80vh;display:flex;flex-direction:column;overflow:hidden;}
   #wr-scanner-header{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface);}
   #wr-scanner-header h3{margin:0;font-size:13px;color:#a78bfa;font-family:'Space Mono',monospace;flex:1;}
   .wrs-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;}
@@ -4935,8 +4936,15 @@ const _wrsResults = new Map();
 const WEBRTC_CDN = 'doppiocdn.com';
 
 function openWRScanner() {
-  document.getElementById('wr-scanner').classList.add('open');
-  wrsBuild();
+  var modal = document.getElementById('wr-scanner');
+  modal.classList.add('open');
+  // Populate count from current allModels
+  var models = (typeof allModels !== 'undefined' ? allModels : [])
+    .filter(function(m) { return _wrsPublicOnly ? m.status === 'public' : true; });
+  document.getElementById('wrs-total').textContent = models.length;
+  document.getElementById('wrs-title').textContent = models.length + ' models ready — click Scan All';
+  // Pre-populate rows if not already done
+  if (document.getElementById('wrs-rows').children.length === 0) wrsBuild();
 }
 function closeWRScanner() {
   wrsStop();
@@ -5303,7 +5311,8 @@ document.getElementById('wr-probe-modal').addEventListener('click', function(e) 
 
 
 <!-- WR SCANNER MODAL -->
-<div id="wr-scanner">
+<div id="wr-scanner" onclick="if(event.target===this)closeWRScanner()">
+  <div id="wr-scanner-inner">
   <div id="wr-scanner-header">
     <h3>WebRTC Scanner &mdash; <span id="wrs-title">idle</span></h3>
     <div style="display:flex;gap:8px;align-items:center;">
@@ -5327,6 +5336,7 @@ document.getElementById('wr-probe-modal').addEventListener('click', function(e) 
   <div id="wr-scanner-body">
     <div class="wrs-row wrs-row-header"><div>Username</div><div>Status</div><div>WS</div><div>Server response</div><div></div></div>
     <div id="wrs-rows"></div>
+  </div>
   </div>
 </div>
 
