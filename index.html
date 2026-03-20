@@ -3774,21 +3774,6 @@ function buildTile(model, quality) {
   }
 
   if (streamMode === 'webrtc') {
-    // Start HLS immediately so tile isn't blank while WebRTC negotiates
-    if (Hls.isSupported()) {
-      const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      const hlsFb = new Hls({
-        maxBufferLength: isMobileDevice ? 8 : 30, maxMaxBufferLength: isMobileDevice ? 16 : 60,
-        enableWorker: true, strictManifestParsing: false,
-        manifestLoadingTimeOut: 10000, manifestLoadingMaxRetry: 2,
-        levelLoadingTimeOut: 10000, fragLoadingTimeOut: 20000, fragLoadingMaxRetry: 3
-      });
-      hlsFb.loadSource(streamUrl);
-      hlsFb.attachMedia(video);
-      hlsFb.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(()=>{}); snap.classList.add('hidden'); });
-      hlsFb.on(Hls.Events.ERROR, (_, d) => { if (d.fatal) hlsFb.destroy(); });
-      hlsInstances.set(model.username + '__fb', hlsFb);
-    }
     initWebRTC(tile, video, snap, model);
   } else if (Hls.isSupported()) {
 
