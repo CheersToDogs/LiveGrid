@@ -212,7 +212,14 @@
 
 
   .status-cb { display:flex; align-items:center; gap:3px; font-size:11px; color:var(--text); cursor:pointer; user-select:none; white-space:nowrap; }
-  .status-cb input { accent-color: var(--accent); cursor:pointer; }
+  .status-cb input { accent-color: var(--accent); cursor:pointer; }
+  .mode-toggle { display:flex; border:1px solid var(--border); border-radius:4px; overflow:hidden; }
+  .mode-btn { background:var(--surface2); color:var(--muted); border:none; padding:3px 8px; font-size:11px; font-family:inherit; cursor:pointer; transition:background .15s,color .15s; }
+  .mode-btn.active { background:var(--accent); color:#000; font-weight:700; }
+  .badge-webrtc { background:#7c3aed; color:#fff; font-size:9px; padding:1px 4px; border-radius:3px; font-weight:700; letter-spacing:.5px; }
+  .badge-status { position:absolute; top:4px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,.75); color:var(--accent2); font-size:9px; padding:2px 6px; border-radius:3px; font-weight:700; z-index:15; white-space:nowrap; pointer-events:none; }
+  .webrtc-log { position:absolute; bottom:28px; left:0; right:0; background:rgba(0,0,0,.88); color:#0f0; font-size:8px; font-family:monospace; padding:4px; max-height:60px; overflow-y:auto; z-index:20; display:none; pointer-events:none; white-space:pre-wrap; word-break:break-all; }
+  .tile:hover .webrtc-log { display:block; }
   .tile:hover { border-color: rgba(0,229,255,.5); }
   .tile:hover .tile-top, .tile:hover .tile-bottom { opacity: 1; }
   .tile.active-audio .tile-top, .tile.active-audio .tile-bottom { opacity: 1; }
@@ -1225,6 +1232,14 @@
     <div style="display:flex;align-items:center;gap:5px;">
 
 
+      <label>Mode</label>
+      <div id="streamModeToggle" class="mode-toggle">
+        <button class="mode-btn active" data-mode="hls">HLS</button>
+        <button class="mode-btn" data-mode="webrtc">WebRTC ⚡</button>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:5px;">
       <label>Aff.</label>
 
 
@@ -1515,7 +1530,10 @@ const vpPauseDelay   = new Map();   // username -> setTimeout id for deferred pa
 let favWatchTimer    = null;
 
 
-const BATCH          = 16;
+const BATCH          = 16;
+let streamMode = 'hls'; // 'hls' | 'webrtc'
+const WEBRTC_CDN = 'doppiocdn.com';
+const webrtcInstances = new Map(); // username -> {pc, ws}
 
 
 const API            = 'https://go.stripchat.com/api/models';
@@ -2328,7 +2346,8 @@ function genderParam(val) {
 
 
 
-function destroyAll() {
+function destroyAll() {
+  webrtcInstances.forEach((_, username) => destroyWebRTC(username));
 
 
   // Cancel all pending viewport pauses
@@ -3580,6 +3599,126 @@ async function loadMoreTiles() {
 // ── BUILD TILE ─────────────────────────────────────────────────────────────
 
 
+// ── WEBRTC INIT ────────────────────────────────────────────────────────────
+function getShowType(status) {
+  const s = (status || '').toLowerCase();
+  if (s === 'public') return { label: null, paid: false };
+  if (s.includes('private') || s === 'p2p') return { label: s === 'p2p' ? 'Cam2Cam' : 'Private Show', paid: true };
+  if (s.includes('group')) return { label: 'Group Show', paid: true };
+  return { label: status, paid: true };
+}
+
+function destroyWebRTC(username) {
+  const inst = webrtcInstances.get(username);
+  if (!inst) return;
+  try { inst.ws && inst.ws.close(); } catch {}
+  try { inst.pc && inst.pc.close(); } catch {}
+  webrtcInstances.delete(username);
+}
+
+function initWebRTC(tile, video, snap, model) {
+  const { label: statusLabel, paid } = getShowType(model.status);
+
+  // Status badge
+  if (statusLabel) {
+    const badge = document.createElement('div');
+    badge.className = 'badge-status';
+    badge.style.cssText = 'position:absolute;top:4px;left:50%;transform:translateX(-50%);z-index:15;';
+    badge.textContent = '🔒 ' + statusLabel;
+    tile.appendChild(badge);
+  }
+
+  // WebRTC log overlay (shows WS messages on hover)
+  const logDiv = document.createElement('div');
+  logDiv.className = 'webrtc-log';
+  tile.appendChild(logDiv);
+  let logLines = [];
+  const log = (msg) => {
+    logLines.push(msg);
+    if (logLines.length > 12) logLines.shift();
+    logDiv.textContent = logLines.join('\n');
+    console.log(`[WebRTC:${model.username}] ${msg}`);
+  };
+
+  const isPrivatePath = paid;
+  const wsUrl = `wss://edge-webrtc.${WEBRTC_CDN}:443${isPrivatePath ? '/private' : ''}`;
+
+  log(`Connecting → ${wsUrl}`);
+
+  let ws, pc;
+  try {
+    ws = new WebSocket(wsUrl);
+  } catch(err) {
+    log('WS create error: ' + err.message);
+    return;
+  }
+
+  pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+  webrtcInstances.set(model.username, { ws, pc });
+
+  ws.onopen = async () => {
+    log('✅ WS OPEN');
+    // Send minimal join — format TBD from protocol capture
+    // For now send a probe join to see server response
+    try {
+      ws.send(JSON.stringify({ action: 'join', room: model.username, streamId: model.username }));
+      log('→ Sent join probe');
+    } catch(e) { log('Send err: ' + e.message); }
+
+    // Create and send offer
+    try {
+      pc.addTransceiver('video', { direction: 'recvonly' });
+      pc.addTransceiver('audio', { direction: 'recvonly' });
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      ws.send(JSON.stringify({ type: 'offer', sdp: offer.sdp }));
+      log('→ Sent SDP offer');
+    } catch(e) { log('Offer err: ' + e.message); }
+  };
+
+  ws.onmessage = async (e) => {
+    log('← ' + e.data.substring(0, 80));
+    try {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'answer' || msg.sdp) {
+        await pc.setRemoteDescription(new RTCSessionDescription(msg));
+        log('✅ Remote SDP set');
+      } else if (msg.candidate || msg.type === 'candidate') {
+        await pc.addIceCandidate(new RTCIceCandidate(msg.candidate || msg));
+        log('✅ ICE candidate added');
+      } else if (msg.error || msg.type === 'error') {
+        log('❌ Server error: ' + (msg.error || msg.message || JSON.stringify(msg)));
+      }
+    } catch {}
+  };
+
+  ws.onclose = (e) => {
+    log(`WS closed (${e.code})`);
+  };
+
+  ws.onerror = () => log('❌ WS error');
+
+  pc.ontrack = (e) => {
+    log('🎥 Track received — playing!');
+    video.srcObject = e.streams[0];
+    video.play().catch(()=>{});
+    snap.classList.add('hidden');
+  };
+
+  pc.onicecandidate = (e) => {
+    if (e.candidate && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: 'candidate', candidate: e.candidate }));
+    }
+  };
+
+  pc.onconnectionstatechange = () => {
+    log('PC state: ' + pc.connectionState);
+    if (pc.connectionState === 'connected') {
+      snap.classList.add('hidden');
+    }
+  };
+}
+
 function buildTile(model, quality) {
 
 
@@ -3625,7 +3764,18 @@ function buildTile(model, quality) {
 
 
 
-  if (Hls.isSupported()) {
+  // ── STREAM INIT: dispatch to HLS or WebRTC ─────────────────────────────
+  // Add mode badge to tile top-right
+  if (streamMode === 'webrtc') {
+    const wbadge = document.createElement('span');
+    wbadge.className = 'badge-webrtc';
+    wbadge.textContent = 'WR';
+    tile.querySelector('.tile-top')?.querySelector('div:last-child')?.appendChild(wbadge);
+  }
+
+  if (streamMode === 'webrtc') {
+    initWebRTC(tile, video, snap, model);
+  } else if (Hls.isSupported()) {
 
 
     const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -4466,7 +4616,18 @@ document.querySelectorAll('input[name="statusFilter"]').forEach(cb => {
 });
 
 
-document.getElementById('countrySelect').addEventListener('change', renderGrid);
+document.getElementById('countrySelect').addEventListener('change', renderGrid);
+
+  // Stream mode toggle
+  document.getElementById('streamModeToggle').addEventListener('click', e => {
+    const btn = e.target.closest('.mode-btn');
+    if (!btn) return;
+    streamMode = btn.dataset.mode;
+    document.querySelectorAll('#streamModeToggle .mode-btn').forEach(b => b.classList.toggle('active', b === btn));
+    const mToggle = document.getElementById('streamModeToggleM');
+    if (mToggle) mToggle.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === streamMode));
+    renderGrid();
+  });
 
 
 document.getElementById('tagInput').addEventListener('keydown', e => { if (e.key==='Enter') loadStreams(); });
