@@ -4930,6 +4930,157 @@ renderFavPanel = function() {
 
 
 
+</script>
+
+
+
+<!-- MOBILE FILTER DRAWER BACKDROP -->
+<div id="mobile-drawer-backdrop" class="mobile-drawer-backdrop" onclick="closeMobileFilters()"></div>
+
+<!-- MOBILE FILTER DRAWER -->
+<div id="mobile-filter-drawer" class="mobile-drawer">
+  <div class="mobile-drawer-header">
+    <span class="mobile-drawer-title">&#9881; Filters</span>
+    <button class="mobile-drawer-close" onclick="closeMobileFilters()">&#10005;</button>
+  </div>
+  <div class="mobile-drawer-body">
+    <div class="mf-row"><label>Grid</label>
+      <select id="gridSelectM">
+        <option value="1">1&#xD7;1</option>
+        <option value="4" selected>2&#xD7;2</option>
+        <option value="9">3&#xD7;3</option>
+        <option value="16">4&#xD7;4</option>
+      </select>
+    </div>
+    <div class="mf-row"><label>Gender</label>
+      <select id="genderSelectM">
+        <option value="">All</option><option value="female" selected>Female</option>
+        <option value="male">Male</option><option value="couple">Couple</option>
+        <option value="trans">Trans</option>
+      </select>
+    </div>
+    <div class="mf-row"><label>Sort</label>
+      <select id="sortSelectM">
+        <option value="viewersCount" selected>Most Viewers</option>
+        <option value="viewersCountAsc">Least Viewers</option>
+        <option value="onlineTime">Longest Online</option>
+        <option value="new">Newest</option>
+      </select>
+    </div>
+    <div class="mf-row"><label>Tag</label>
+      <input type="text" id="tagInputM" placeholder="latina, bbw&#x2026;">
+    </div>
+    <div class="mf-row"><label>Quality</label>
+      <select id="qualitySelectM">
+        <option value="original">Original (Max)</option>
+        <option value="720p">720p</option><option value="480p">480p</option>
+        <option value="240p">240p</option><option value="160p">160p</option>
+      </select>
+    </div>
+    <div class="mf-row"><label>Country</label>
+      <select id="countrySelectM"><option value="">All</option></select>
+    </div>
+    <div class="mf-row"><label>Aff.</label>
+      <input type="text" id="affIdM" placeholder="campaign-id">
+    </div>
+    <div class="mf-actions">
+      <button class="mf-apply" onclick="applyMobileFilters()">Apply</button>
+      <button class="mf-reset" onclick="resetMobileFilters()">Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- FULLSCREEN SWIPE OVERLAY -->
+<div id="fs-overlay" tabindex="-1" style="outline:none">
+  <div id="fs-video-wrap">
+    <video id="fs-video" muted autoplay playsinline tabindex="-1" style="pointer-events:none"></video>
+    <div class="fs-swipe-hint left">&#9664;</div>
+    <div class="fs-swipe-hint right">&#9654;</div>
+  </div>
+  <div id="fs-topbar">
+    <div style="display:flex;align-items:center;">
+      <span id="fs-counter">1 / 1</span>
+      <span id="fs-mode-badge" style="display:none;">&#9829; Favs</span>
+    </div>
+    <button id="fs-close" onclick="closeFsOverlay()">&#10005;</button>
+  </div>
+  <button class="fs-nav-btn fs-nav-prev" onclick="_fsNav(-1)">&#9664;</button>
+<button class="fs-nav-btn fs-nav-next" onclick="_fsNav(1)">&#9654;</button>
+<div id="fs-bottombar">
+    <div id="fs-info">
+      <div id="fs-username"></div>
+      <div id="fs-meta"></div>
+    </div>
+    <button class="fs-btn" id="fs-fav-btn" onclick="fsFavToggle()">&#9825;</button>
+    <button class="fs-btn" id="fs-grid-btn" onclick="closeFsOverlay()" title="Back to grid">&#8862;</button>
+    <button class="fs-btn" id="fs-mute-btn" onclick="fsMuteToggle()">&#128266;</button>
+  </div>
+</div>
+
+
+<!-- WR SCANNER -->
+<div id="wr-scanner">
+  <div id="wrs-inner">
+    <div id="wrs-header">
+      <h3>WebRTC Scanner &mdash; <span id="wrs-title">idle</span></h3>
+      <span id="wrs-progress" style="font-size:10px;font-family:'Space Mono',monospace;color:var(--muted);"></span>
+      <button class="wrs-btn primary" onclick="wrsStart()">Scan All</button>
+      <button class="wrs-btn" onclick="wrsStop()">Stop</button>
+      <button class="wrs-btn" onclick="document.getElementById('wrs-rows').innerHTML='';WRS.results.clear();">Reset</button>
+      <button class="wrs-btn" id="wrs-pub-btn" onclick="wrsTogglePublic(this)">Public only ON</button>
+      <label style="font-size:10px;color:var(--muted);">Concurrency&nbsp;<input id="wrs-concurrency" type="number" min="1" max="20" value="5" style="width:34px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:10px;padding:1px 3px;border-radius:3px;"></label>
+      <button class="wrs-btn" onclick="closeWRScanner()">&#10005; Close</button>
+    </div>
+    <div id="wrs-stats">
+      <span>Models:&nbsp;<b id="wrs-total">0</b></span>
+      <span>Scanned:&nbsp;<b id="wrs-scanned" style="color:#f59e0b;">0</b></span>
+      <span>WS Open:&nbsp;<b id="wrs-ws-ok" style="color:#10b981;">0</b></span>
+      <span>SDP Answer:&nbsp;<b id="wrs-answered" style="color:#a78bfa;">0</b></span>
+      <span>Track:&nbsp;<b id="wrs-track" style="color:#10b981;">0</b></span>
+      <span>Errors:&nbsp;<b id="wrs-err" style="color:#ef4444;">0</b></span>
+    </div>
+    <div id="wrs-body">
+      <div class="wrs-row wrs-row-hdr"><div>Username</div><div>Status</div><div>WS</div><div>Server response</div><div></div></div>
+      <div id="wrs-rows"></div>
+    </div>
+  </div>
+</div>
+
+<!-- WR PROBE MODAL -->
+<div id="wr-probe-modal">
+  <div id="wrp-inner">
+    <div id="wrp-header">
+      <h3>WebRTC Probe &mdash; <span id="wrp-username"></span></h3>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span id="wrp-ws-state" class="wr-state">WS: --</span>
+        <span id="wrp-pc-state" class="wr-state">PC: --</span>
+        <button class="wrs-btn" id="wrp-reconnect">Reconnect</button>
+        <button class="wrs-btn" id="wr-probe-modal-close">&#10005;</button>
+      </div>
+    </div>
+    <div id="wrp-body">
+      <div id="wrp-vid-wrap"><div id="wrp-snap"></div><video id="wrp-vid" autoplay playsinline muted></video></div>
+      <div id="wrp-log-wrap">
+        <div id="wrp-tabs">
+          <button class="wrp-tab active" data-tab="log">WS Log</button>
+          <button class="wrp-tab" data-tab="offer">SDP Offer</button>
+          <button class="wrp-tab" data-tab="answer">SDP Answer</button>
+          <button class="wrp-tab" data-tab="ice">ICE</button>
+        </div>
+        <div id="wrp-log"></div>
+        <div id="wrp-sdp"></div>
+      </div>
+    </div>
+    <div id="wrp-footer">
+      <span style="color:var(--muted);">Status:</span>
+      <span id="wrp-show-type" style="color:var(--accent2);"></span>
+      <span id="wrp-cdn" style="margin-left:auto;color:var(--muted);font-size:9px;"></span>
+    </div>
+  </div>
+</div>
+
+
+<script>
 // ── WEBRTC SCANNER + PROBE ────────────────────────────────────────────────────
 var WRS = {
   running: false,
@@ -5274,159 +5425,5 @@ function closeWRProbeModal() {
     WRS.probe = null;
   }
 }
-
-</script>
-
-
-
-<!-- MOBILE FILTER DRAWER BACKDROP -->
-<div id="mobile-drawer-backdrop" class="mobile-drawer-backdrop" onclick="closeMobileFilters()"></div>
-
-<!-- MOBILE FILTER DRAWER -->
-<div id="mobile-filter-drawer" class="mobile-drawer">
-  <div class="mobile-drawer-header">
-    <span class="mobile-drawer-title">&#9881; Filters</span>
-    <button class="mobile-drawer-close" onclick="closeMobileFilters()">&#10005;</button>
-  </div>
-  <div class="mobile-drawer-body">
-    <div class="mf-row"><label>Grid</label>
-      <select id="gridSelectM">
-        <option value="1">1&#xD7;1</option>
-        <option value="4" selected>2&#xD7;2</option>
-        <option value="9">3&#xD7;3</option>
-        <option value="16">4&#xD7;4</option>
-      </select>
-    </div>
-    <div class="mf-row"><label>Gender</label>
-      <select id="genderSelectM">
-        <option value="">All</option><option value="female" selected>Female</option>
-        <option value="male">Male</option><option value="couple">Couple</option>
-        <option value="trans">Trans</option>
-      </select>
-    </div>
-    <div class="mf-row"><label>Sort</label>
-      <select id="sortSelectM">
-        <option value="viewersCount" selected>Most Viewers</option>
-        <option value="viewersCountAsc">Least Viewers</option>
-        <option value="onlineTime">Longest Online</option>
-        <option value="new">Newest</option>
-      </select>
-    </div>
-    <div class="mf-row"><label>Tag</label>
-      <input type="text" id="tagInputM" placeholder="latina, bbw&#x2026;">
-    </div>
-    <div class="mf-row"><label>Quality</label>
-      <select id="qualitySelectM">
-        <option value="original">Original (Max)</option>
-        <option value="720p">720p</option><option value="480p">480p</option>
-        <option value="240p">240p</option><option value="160p">160p</option>
-      </select>
-    </div>
-    <div class="mf-row"><label>Country</label>
-      <select id="countrySelectM"><option value="">All</option></select>
-    </div>
-    <div class="mf-row"><label>Aff.</label>
-      <input type="text" id="affIdM" placeholder="campaign-id">
-    </div>
-    <div class="mf-actions">
-      <button class="mf-apply" onclick="applyMobileFilters()">Apply</button>
-      <button class="mf-reset" onclick="resetMobileFilters()">Reset</button>
-    </div>
-  </div>
-</div>
-
-<!-- FULLSCREEN SWIPE OVERLAY -->
-<div id="fs-overlay" tabindex="-1" style="outline:none">
-  <div id="fs-video-wrap">
-    <video id="fs-video" muted autoplay playsinline tabindex="-1" style="pointer-events:none"></video>
-    <div class="fs-swipe-hint left">&#9664;</div>
-    <div class="fs-swipe-hint right">&#9654;</div>
-  </div>
-  <div id="fs-topbar">
-    <div style="display:flex;align-items:center;">
-      <span id="fs-counter">1 / 1</span>
-      <span id="fs-mode-badge" style="display:none;">&#9829; Favs</span>
-    </div>
-    <button id="fs-close" onclick="closeFsOverlay()">&#10005;</button>
-  </div>
-  <button class="fs-nav-btn fs-nav-prev" onclick="_fsNav(-1)">&#9664;</button>
-<button class="fs-nav-btn fs-nav-next" onclick="_fsNav(1)">&#9654;</button>
-<div id="fs-bottombar">
-    <div id="fs-info">
-      <div id="fs-username"></div>
-      <div id="fs-meta"></div>
-    </div>
-    <button class="fs-btn" id="fs-fav-btn" onclick="fsFavToggle()">&#9825;</button>
-    <button class="fs-btn" id="fs-grid-btn" onclick="closeFsOverlay()" title="Back to grid">&#8862;</button>
-    <button class="fs-btn" id="fs-mute-btn" onclick="fsMuteToggle()">&#128266;</button>
-  </div>
-</div>
-
-
-<!-- WR SCANNER -->
-<div id="wr-scanner">
-  <div id="wrs-inner">
-    <div id="wrs-header">
-      <h3>WebRTC Scanner &mdash; <span id="wrs-title">idle</span></h3>
-      <span id="wrs-progress" style="font-size:10px;font-family:'Space Mono',monospace;color:var(--muted);"></span>
-      <button class="wrs-btn primary" onclick="wrsStart()">Scan All</button>
-      <button class="wrs-btn" onclick="wrsStop()">Stop</button>
-      <button class="wrs-btn" onclick="document.getElementById('wrs-rows').innerHTML='';WRS.results.clear();">Reset</button>
-      <button class="wrs-btn" id="wrs-pub-btn" onclick="wrsTogglePublic(this)">Public only ON</button>
-      <label style="font-size:10px;color:var(--muted);">Concurrency&nbsp;<input id="wrs-concurrency" type="number" min="1" max="20" value="5" style="width:34px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:10px;padding:1px 3px;border-radius:3px;"></label>
-      <button class="wrs-btn" onclick="closeWRScanner()">&#10005; Close</button>
-    </div>
-    <div id="wrs-stats">
-      <span>Models:&nbsp;<b id="wrs-total">0</b></span>
-      <span>Scanned:&nbsp;<b id="wrs-scanned" style="color:#f59e0b;">0</b></span>
-      <span>WS Open:&nbsp;<b id="wrs-ws-ok" style="color:#10b981;">0</b></span>
-      <span>SDP Answer:&nbsp;<b id="wrs-answered" style="color:#a78bfa;">0</b></span>
-      <span>Track:&nbsp;<b id="wrs-track" style="color:#10b981;">0</b></span>
-      <span>Errors:&nbsp;<b id="wrs-err" style="color:#ef4444;">0</b></span>
-    </div>
-    <div id="wrs-body">
-      <div class="wrs-row wrs-row-hdr"><div>Username</div><div>Status</div><div>WS</div><div>Server response</div><div></div></div>
-      <div id="wrs-rows"></div>
-    </div>
-  </div>
-</div>
-
-<!-- WR PROBE MODAL -->
-<div id="wr-probe-modal">
-  <div id="wrp-inner">
-    <div id="wrp-header">
-      <h3>WebRTC Probe &mdash; <span id="wrp-username"></span></h3>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <span id="wrp-ws-state" class="wr-state">WS: --</span>
-        <span id="wrp-pc-state" class="wr-state">PC: --</span>
-        <button class="wrs-btn" id="wrp-reconnect">Reconnect</button>
-        <button class="wrs-btn" id="wr-probe-modal-close">&#10005;</button>
-      </div>
-    </div>
-    <div id="wrp-body">
-      <div id="wrp-vid-wrap"><div id="wrp-snap"></div><video id="wrp-vid" autoplay playsinline muted></video></div>
-      <div id="wrp-log-wrap">
-        <div id="wrp-tabs">
-          <button class="wrp-tab active" data-tab="log">WS Log</button>
-          <button class="wrp-tab" data-tab="offer">SDP Offer</button>
-          <button class="wrp-tab" data-tab="answer">SDP Answer</button>
-          <button class="wrp-tab" data-tab="ice">ICE</button>
-        </div>
-        <div id="wrp-log"></div>
-        <div id="wrp-sdp"></div>
-      </div>
-    </div>
-    <div id="wrp-footer">
-      <span style="color:var(--muted);">Status:</span>
-      <span id="wrp-show-type" style="color:var(--accent2);"></span>
-      <span id="wrp-cdn" style="margin-left:auto;color:var(--muted);font-size:9px;"></span>
-    </div>
-  </div>
-</div>
-
-</body>
-
-
-</html>
-
-
+</script>
+</body>
