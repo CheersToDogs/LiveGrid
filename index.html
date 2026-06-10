@@ -832,7 +832,7 @@
 
 
 
-  .tile-top { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 8px; background: linear-gradient(to bottom,rgba(0,0,0,.75),transparent); pointer-events: none; z-index: 20; opacity: 0; transition: opacity .2s; }
+  .tile-top { position: absolute; top: 0; left: 20%; right: 20%; border-radius: 0 0 8px 8px; display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 8px; background: linear-gradient(to bottom,rgba(0,0,0,.75),transparent); pointer-events: none; z-index: 20; opacity: 0; transition: opacity .2s; }
 
 
 
@@ -886,7 +886,7 @@
 
 
 
-  .tile-bottom { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 8px; background: linear-gradient(to top,rgba(0,0,0,.85),transparent); z-index: 20; opacity: 0; transition: opacity .2s; }
+  .tile-bottom { position: absolute; bottom: 0; left: 20%; right: 20%; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 8px; background: linear-gradient(to top,rgba(0,0,0,.85),transparent); z-index: 20; opacity: 0; transition: opacity .2s; }
 
 
 
@@ -950,6 +950,9 @@
 
 
   .tile-btn.unmuted { background: rgba(0,229,255,.3); border-color: var(--accent); }
+.badge-source { font-family: 'Space Mono',monospace; font-size: 9px; font-weight: 700; padding: 2px 5px; border-radius: 3px; letter-spacing: .5px; pointer-events: none; }
+.badge-source.sc { background: rgba(229,57,53,.25); border: 1px solid rgba(229,57,53,.6); color: #ff6b6b; }
+.badge-source.xh { background: rgba(255,152,0,.2); border: 1px solid rgba(255,152,0,.5); color: #ffb74d; }
 
 
 
@@ -2332,6 +2335,10 @@
 
   body.source-cams .stream-controls { display:none; }
   .xhl-controls { display:none; align-items:center; gap:6px; flex-wrap:wrap; }
+.source-pills { display:flex; gap:3px; align-items:center; }
+.source-pill { font-family:'Space Mono',monospace; font-size:10px; font-weight:700; letter-spacing:.5px; padding:4px 10px; border-radius:4px; border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; transition:all .15s; text-transform:uppercase; }
+.source-pill.active { background:var(--accent); color:#000; border-color:var(--accent); }
+.source-pill:not(.active):hover { color:var(--text); border-color:var(--text); }
   body.source-xhl .xhl-controls { display:flex; }
   body.source-xhl .stream-controls { display:none; }
   body.source-xhl .cam-controls { display:none; }
@@ -3228,749 +3235,14 @@
     <button class="nav-pill" onclick="toggleFavPanel()">♡ Favs</button>
 
 
-    <button class="nav-pill" onclick="openStats()">📊 Stats</button>
-
-
-    <button class="nav-pill" onclick="openMobileFilters()">⚙ Filters</button>
-
-
-  </div>
-
-
-  <div class="controls">
-
-
-
-
-
-    <div class="stream-controls" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1;">
-
-
-
-
-
-
-
-
-    <div style="display:flex;align-items:center;gap:5px;">
-
-
-
-
-
-
-
-
-      <label>Grid</label>
-
-
-
-
-
-
-
-
-      <select id="gridSelect">
-
-
-
-
-
-
-
-
-        <option value="1">1�1</option>
-
-
-
-
-
-
-
-
-        <option value="4" selected>2�2</option>
-
-
-
-
-
-
-
-
-        <option value="9">3�3</option>
-
-
-
-
-
-
-
-
-        <option value="16">4�4</option>
-
-
-
-
-
-
-
-
-        <option value="25">5�5</option>
-
-
-
-
-
-
-
-
-        <option value="36">6�6</option>
-
-
-
-
-
-
-
-
-      </select>
-
-
-
-
-
-
-
-
-    </div>
-
-
-
-
-
-
-
-
-    <div style="display:flex;align-items:center;gap:5px;">
-
-
-
-
-
-
-
-
-      <label>Gender</label>
-
-
-
-
-
-
-
-
-      <select id="genderSelect">
-
-
-
-
-
-
-
-
-        <option value="">All</option>
-
-
-
-
-
-
-
-
-        <option value="female" selected>Female</option>
-
-
-
-
-
-
-
-
-        <option value="male">Male</option>
-
-
-
-
-
-
-
-
-        <option value="couple">Couple</option>
-
-
-
-
-
-
-
-
-        <option value="trans">Trans</option>
-
-
-
-
-
-
-
-
-      </select>
-
-
-
-
-
-
-
-
-    </div>
-
-
-
-
-
-
-
-
-    <div style="display:flex;align-items:center;gap:5px;">
-
-
-
-
-
-
-
-
-      <label>Sort</label>
-
-
-
-
-
-
-
-
-      <select id="sortSelect">
-
-
-
-
-
-
-
-
-        <option value="viewersCount" selected>Most Viewers</option>
-
-
-
-
-
-
-
-
-        <option value="viewersCountAsc">Least Viewers</option>
-
-
-
-
-
-
-
-
-        <option value="onlineTime">Longest Online</option>
-
-
-
-
-
-
-
-
-        <option value="new">Newest</option>
-
-
-
-
-
-
-
-
-      </select>
-
-
-
-
-
-
-
-
-    </div>
-
-
-
-
-
-    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-
-
-      <label>Status</label>
-
-
-      <label class="status-cb"><input type="checkbox" name="statusFilter" value="public" checked> Public</label>
-
-
-      <label class="status-cb"><input type="checkbox" name="statusFilter" value="private"> Private</label>
-
-
-      <label class="status-cb"><input type="checkbox" name="statusFilter" value="groupShow"> Group</label>
-
-
-      <label class="status-cb"><input type="checkbox" name="statusFilter" value="p2p"> Cam2Cam</label>
-
-
-    </div>
-
-
-
-
-
-
-
-
-    <div style="display:flex;align-items:center;gap:5px;">
-
-
-
-
-
-
-
-
-      <label>Tag</label>
-
-
-
-
-
-
-
-
-      <input type="text" id="tagInput" placeholder="latina, bbw�">
-
-
-
-
-
-
-
-
-    </div>
-
-
-
-
-
-
-
-
-    <div style="display:flex;align-items:center;gap:5px;">
-
-
-
-
-
-
-
-
-      <label>Country</label>
-
-
-
-
-
-
-
-
-      <select id="countrySelect"><option value="">All</option></select>
-
-
-
-
-
-
-
-
-    </div>
-
-
-
-
-
-
-
-
-    <div style="display:flex;align-items:center;gap:5px;">
-
-
-
-
-
-
-
-
-      <label>Quality</label>
-
-
-
-
-
-
-
-
-      <select id="qualitySelect">
-
-
-
-
-
-
-
-
-        <option value="original">Original (Max)</option>
-
-
-
-
-
-
-
-
-        <option value="720p">720p</option>
-
-
-
-
-
-
-
-
-        <option value="480p">480p</option>
-
-
-
-
-
-
-
-
-        <option value="240p">240p</option>
-
-
-
-
-
-
-
-
-        <option value="160p">160p</option>
-
-
-
-
-
-
-
-
-      </select>
-
-
-
-
-
-
-
-
-    </div>
-
-
-
-
-
-
-
-
-    <div style="display:flex;align-items:center;gap:5px;">
-
-
-
-
-
-
-
-
-      <label>Aff.</label>
-
-
-
-
-
-
-
-
-      <input type="text" id="affId" class="aff-input" placeholder="campaign-id">
-
-
-
-
-
-
-
-
-    </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <!-- D-PAD NAVIGATOR -->
-
-
-
-
-
-
-
-
-    <div class="dpad-container" style="display:flex;align-items:center;gap:5px;">
-
-
-
-
-
-
-
-
-      <label>Nav</label>
-
-
-
-
-
-
-
-
-      <div class="dpad">
-
-
-
-
-
-
-
-
-        <div style="display:grid;grid-template-columns:repeat(3,24px);grid-template-rows:repeat(3,24px);gap:2px;">
-
-
-
-
-
-
-
-
-          <div></div>
-
-
-
-
-
-
-
-
-          <button class="dpad-btn" id="dpad-up" title="Up (↑)">▲</button>
-
-
-
-
-
-
-
-
-          <div></div>
-
-
-
-
-
-
-
-
-          <button class="dpad-btn" id="dpad-left" title="Left (←)">◀</button>
-
-
-
-
-
-
-
-
-          <div class="dpad-center" title="Current position" id="dpad-pos">�</div>
-
-
-
-
-
-
-
-
-          <button class="dpad-btn" id="dpad-right" title="Right (→)">▶</button>
-
-
-
-
-
-
-
-
-          <div></div>
-
-
-
-
-
-
-
-
-          <button class="dpad-btn" id="dpad-down" title="Down (↓)">▼</button>
-
-
-
-
-
-
-
-
-          <div></div>
-
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
-
-      </div>
-
-
-
-
-
-
-
-
-    </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <button class="btn btn-primary" onclick="loadStreams()">⟳ Refresh</button>
-
-
-
-
-
-
-
-
-    <button class="btn btn-loadall" id="loadAllBtn" onclick="loadAll()">▶ Load All</button>
-
-
-
-
-
-
-
-
-    <button class="btn btn-pause" id="pauseAllBtn" onclick="togglePauseAll()">▮▮ Pause All</button>
-
-
-
-
-
-
-
-
-    <button class="btn btn-danger" onclick="muteAll()">🔇 Mute All</button>
-
-
-
-
-
-
-
-
-    <button class="btn btn-fav" onclick="toggleFavPanel()">♡ Favs</button>
-
-
-
-
-
-
-
-
     <button class="btn btn-stats" style="border-color:#a78bfa;color:#a78bfa;" onclick="openWRScanner()">&#9889; WebRTC</button>
-    <button class="btn btn-stats" onclick="openStats()">📊 Stats</button>
-
-
-
-
-
-
-
-
-    </div><!-- /stream-controls -->
+    <button class="btn btn-stats" onclick="openStats()">&#128202; Stats</button>
+    <div class="source-pills" id="sourcePills">
+      <button class="source-pill active" data-src="all"    onclick="setSourceFilter('all')">ALL</button>
+      <button class="source-pill"        data-src="sc"     onclick="setSourceFilter('sc')">&#9654; SC</button>
+      <button class="source-pill"        data-src="xh"     onclick="setSourceFilter('xh')">&#128308; XH</button>
+    </div>
+  </div><!-- /stream-controls -->
 
 
 
@@ -10841,6 +10113,7 @@ function buildTile(model, quality) {
 
 
   tile.dataset.username = model.username;
+  tile.dataset.source = 'sc';
 
 
 
@@ -11225,6 +10498,7 @@ function buildTile(model, quality) {
 
 
   const topRight = document.createElement('div'); topRight.style.cssText='display:flex;gap:4px;align-items:center;pointer-events:none;';
+  const srcBadge = document.createElement('span'); srcBadge.className='badge-source sc'; srcBadge.textContent='SC'; topRight.appendChild(srcBadge);
 
 
 
@@ -14061,6 +13335,82 @@ function buildCamTile(cam) {
 
 
 
+
+// SOURCE FILTER ===============================================================
+let currentSourceFilter = 'all'; // 'all' | 'sc' | 'xh'
+
+function setSourceFilter(src) {
+  currentSourceFilter = src;
+  // Update pill active states
+  document.querySelectorAll('.source-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.src === src);
+  });
+  // Filter visible tiles instantly (no re-fetch)
+  document.querySelectorAll('#grid .tile').forEach(t => {
+    const ts = t.dataset.source;
+    const show = src === 'all' || ts === src;
+    t.style.display = show ? '' : 'none';
+  });
+}
+
+// Combined load: fetch SC + XH in parallel, merge by viewersCount
+async function loadCombined(reset = true) {
+  const grid  = document.getElementById('grid');
+  const empty = document.getElementById('empty-state');
+  if (reset) {
+    destroyAll();
+    grid.innerHTML = '';
+    document.getElementById('statusText').textContent = 'Loading streams...';
+  }
+  const cols = Math.round(Math.sqrt(parseInt(document.getElementById('gridSelect').value) || 4));
+  grid.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+
+  const gender  = document.getElementById('genderSelect')?.value || 'female';
+  const sortRaw = document.getElementById('sortSelect')?.value || 'viewersCount';
+  const tag     = gender === 'female' ? 'girls' : gender === 'male' ? 'men' : gender === 'couple' ? 'couples' : 'trans';
+
+  // Fetch both in parallel
+  const [scData, xhData] = await Promise.allSettled([
+    // SC: reuse existing fetch pattern
+    fetch('https://go.stripchat.com/api/models?' + new URLSearchParams({
+      limit: 50, offset: 0, sortBy: sortRaw,
+      'filters[gender][0]': gender,
+      'filters[isBroadcasting]': 'true',
+    }), { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : Promise.reject(r.status)),
+    // XH: via proxy
+    fetch('/api/xhl/models?' + new URLSearchParams({
+      primaryTag: tag, online: 'true', limit: 50, offset: 0,
+    }), { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : Promise.reject(r.status)),
+  ]);
+
+  const scModels = scData.status === 'fulfilled' ? (scData.value.models || []) : [];
+  const xhModels = xhData.status === 'fulfilled' ? (xhData.value.models || []) : [];
+
+  // Build tiles
+  const scTiles = scModels.map(m => ({ viewers: m.viewersCount || 0, el: buildTile(m, 'auto') }));
+  const xhTiles = xhModels.map(m => ({ viewers: m.viewersCount || 0, el: buildXhlTile(m) }));
+
+  // Merge + sort by viewers desc
+  const merged = [...scTiles, ...xhTiles].sort((a, b) => b.viewers - a.viewers);
+
+  merged.forEach(({ el }) => grid.appendChild(el));
+
+  // Apply current source filter
+  if (currentSourceFilter !== 'all') {
+    grid.querySelectorAll('.tile').forEach(t => {
+      t.style.display = t.dataset.source === currentSourceFilter ? '' : 'none';
+    });
+  }
+
+  const total = merged.length;
+  const scCnt = scTiles.length, xhCnt = xhTiles.length;
+  document.getElementById('statusText').textContent =
+    `${total} streams (SC:${scCnt} XH:${xhCnt}) · ${new Date().toLocaleTimeString()}`;
+
+  if (scData.status === 'rejected') console.warn('SC fetch failed:', scData.reason);
+  if (xhData.status === 'rejected') console.warn('XH fetch failed:', xhData.reason);
+}
+
 // XHL SOURCE ================================================================
 
 const XHL_API  = '/api/xhl/models';
@@ -14129,7 +13479,7 @@ async function loadMoreXhl() {
 function buildXhlTile(m) {
   const tile  = document.createElement('div');
   tile.className = 'tile';
-
+  tile.dataset.source = 'xh';
   // Snapshot (shown while idle)
   const img = document.createElement('img');
   img.className = 'tile-snap';
@@ -14186,7 +13536,8 @@ function buildXhlTile(m) {
   if (m.isHd)      { const b = document.createElement('span'); b.className='badge-hd'; b.textContent='HD'; top.appendChild(b); }
   if (m.isLovense) { const b = document.createElement('span'); b.className='badge-hd'; b.style.background='#e91e8c'; b.textContent='LVS'; top.appendChild(b); }
   if (m.isNew)     { const b = document.createElement('span'); b.className='badge-hd'; b.style.background='#4caf50'; b.textContent='NEW'; top.appendChild(b); }
-
+  // Source badge
+  { const b = document.createElement('span'); b.className='badge-source xh'; b.textContent='XH'; top.appendChild(b); }
   // Bottom bar
   const bot    = document.createElement('div'); bot.className = 'tile-bottom';
   const nameEl = document.createElement('div'); nameEl.className = 'tile-username';
