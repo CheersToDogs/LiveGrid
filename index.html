@@ -7272,6 +7272,8 @@ function applyClientSort(models) {
 
 
 async function loadStreams() {
+  if (typeof loadCombined === "function") { loadCombined(); return; }
+
 
 
 
