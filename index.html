@@ -14222,8 +14222,8 @@ function buildXhlTile(m) {
   video.autoplay    = false;
   video.style.cssText = 'display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
 
-  // Strip _240p suffix for max quality
-  const hlsUrl = (m.hlsPlaylist || '').replace(/_\d+p\.m3u8$/, '.m3u8');
+  // Use hlsPlaylist as-is (240p starts faster for grid tiles; master is overkill)
+  const hlsUrl = m.hlsPlaylist || '';
 
   let tileHls = null;
 
