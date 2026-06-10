@@ -14085,7 +14085,7 @@ async function loadXhl(reset = true) {
   const filterK= document.getElementById('xhlFilterSelect')?.value || '';
   const minV   = parseInt(document.getElementById('xhlMinViewers')?.value || '0', 10) || 0;
   const cols   = Math.round(Math.sqrt(parseInt(document.getElementById('gridSelect').value) || 4));
-  const limit  = 100;
+  const limit  = 50;   // xHL API cap is 90; 50 is safe
   let batch    = [];
   try {
     const url = `${XHL_API}?primaryTag=${tag}&online=true&limit=${limit}&offset=${xhlOffset}`;
