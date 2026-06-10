@@ -3195,7 +3195,11 @@
 
 
       <button class="source-tab" id="tabCams" onclick="switchSource('cams')">CAMS</button>
-      <button class="source-tab" id="tabXhl" onclick="switchSource('xhl')"">xHAMSTER</button>
+      <div style="width:1px;background:var(--border);margin:2px 6px;align-self:stretch;opacity:.5;"></div>
+      <button class="source-pill active" data-src="all" onclick="setSourceFilter('all')" style="padding:3px 9px;font-size:10px;">ALL</button>
+      <button class="source-pill" data-src="sc" onclick="setSourceFilter('sc')" style="padding:3px 9px;font-size:10px;">&#9654; SC</button>
+      <button class="source-pill" data-src="xh" onclick="setSourceFilter('xh')" style="padding:3px 9px;font-size:10px;">&#128308; XH</button>
+
 
 
     </div>
@@ -3214,10 +3218,13 @@
 
 
     <button class="nav-pill active" onclick="switchSource('streams')">🎥 Streams</button>
+    <button class="nav-pill source-pill active" data-src="all" onclick="setSourceFilter('all')">ALL</button>
+    <button class="nav-pill source-pill" data-src="sc" onclick="setSourceFilter('sc')">SC</button>
+    <button class="nav-pill source-pill" data-src="xh" onclick="setSourceFilter('xh')">XH</button>
 
 
     <button class="nav-pill" onclick="switchSource('cams')">📷 Cams</button>
-    <button class=\"nav-pill\" onclick=\"switchSource('xhl')\">&#128308; xHamster</button>
+
 
 
     <button class="nav-pill" onclick="loadStreams()">↻ Refresh</button>
@@ -3969,19 +3976,6 @@
 
     <button class="btn btn-stats" style="border-color:#a78bfa;color:#a78bfa;" onclick="openWRScanner()">&#9889; WebRTC</button>
     <button class="btn btn-stats" onclick="openStats()">📊 Stats</button>
-
-
-
-
-
-
-
-
-    <div class="source-pills" id="sourcePills">
-      <button class="source-pill active" data-src="all" onclick="setSourceFilter('all')">ALL</button>
-      <button class="source-pill" data-src="sc" onclick="setSourceFilter('sc')">&#9654; SC</button>
-      <button class="source-pill" data-src="xh" onclick="setSourceFilter('xh')">&#128308; XH</button>
-    </div>
     </div><!-- /stream-controls -->
 
 
