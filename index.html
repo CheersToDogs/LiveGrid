@@ -14198,70 +14198,62 @@ async function loadMoreXhl() {
 }
 
 function buildXhlTile(m) {
-  const tile  = document.createElement('div');
+  const tile = document.createElement('div');
   tile.className = 'tile';
   tile.dataset.source = 'xh';
-  // Snapshot (shown while idle)
-  const img = document.createElement('img');
-  img.className = 'tile-snap';
-  img.src = m.previewUrlThumbSmall || '';
-  img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
-  img.onerror = () => { img.style.display = 'none'; };
+  tile.dataset.username = m.username;
 
-  // HLS video element
+  // Snapshot div — same pattern as SC buildTile
+  const snap = document.createElement('div');
+  snap.className = 'tile-snapshot';
+  if (m.previewUrlThumbSmall) snap.style.backgroundImage = 'url(' + m.previewUrlThumbSmall + ')';
+
+  // Video — autoplay true, starts loading immediately
   const video = document.createElement('video');
-  video.className   = 'tile-video';
-  video.muted       = true;
-  video.playsInline = true;
-  video.autoplay    = false;
-  video.style.cssText = 'display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
+  video.muted = true; video.autoplay = true; video.playsInline = true;
 
-  // Use hlsPlaylist as-is (240p starts faster for grid tiles; master is overkill)
   const hlsUrl = m.hlsPlaylist || '';
 
-  let tileHls = null;
-
-  function startHls() {
-    if (tileHls || !hlsUrl) return;
-    if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-      tileHls = new Hls({ strictManifestParsing: false, enableWorker: false,
-        maxBufferLength: 8, maxMaxBufferLength: 16 });
-      tileHls.loadSource(hlsUrl);
-      tileHls.attachMedia(video);
-      tileHls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = hlsUrl;
-      video.play().catch(() => {});
-    }
-    img.style.display   = 'none';
-    video.style.display = 'block'; video.style.position = 'absolute';
+  if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+    const hls = new Hls({
+      strictManifestParsing: false, enableWorker: true,
+      maxBufferLength: 8, maxMaxBufferLength: 16,
+      manifestLoadingTimeOut: 10000, manifestLoadingMaxRetry: 3,
+      levelLoadingTimeOut: 10000, levelLoadingMaxRetry: 3,
+      fragLoadingTimeOut: 20000, fragLoadingMaxRetry: 4,
+    });
+    hls.loadSource(hlsUrl);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); snap.classList.add('hidden'); });
+    hls.on(Hls.Events.ERROR, (_, data) => {
+      if (!data.fatal) return;
+      if (data.type === Hls.ErrorTypes.MEDIA_ERROR) { hls.recoverMediaError(); }
+      else { hls.destroy(); }
+    });
+    video.addEventListener('waiting', () => { try { hls.startLoad(); } catch {} });
+    hlsInstances.set(m.username, hls);
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = hlsUrl;
+    video.addEventListener('loadeddata', () => snap.classList.add('hidden'));
   }
 
-  function stopHls() {
-    if (tileHls) { tileHls.destroy(); tileHls = null; }
-    video.pause();
-    video.removeAttribute('src'); video.load();
-    video.style.display = 'none';
-    img.style.display   = 'block'; img.style.position = 'absolute';
-  }
-
-  tile.addEventListener('mouseenter', startHls);
-  tile.addEventListener('mouseleave', stopHls);
-  tile._hlsDestroy = stopHls;
-
-  // Badges
+  // TOP BAR
   const top = document.createElement('div'); top.className = 'tile-top';
-  if (m.isHd)      { const b = document.createElement('span'); b.className='badge-hd'; b.textContent='HD'; top.appendChild(b); }
-  if (m.isLovense) { const b = document.createElement('span'); b.className='badge-hd'; b.style.background='#e91e8c'; b.textContent='LVS'; top.appendChild(b); }
-  if (m.isNew)     { const b = document.createElement('span'); b.className='badge-hd'; b.style.background='#4caf50'; b.textContent='NEW'; top.appendChild(b); }
-  { const b=document.createElement('span'); b.className='badge-source xh'; b.textContent='XH'; top.appendChild(b); }
-  // Bottom bar
-  const bot    = document.createElement('div'); bot.className = 'tile-bottom';
+  const topLeft = document.createElement('div'); topLeft.style.cssText = 'display:flex;gap:4px;align-items:center;pointer-events:none;';
+  if (m.isHd)      { const b = document.createElement('span'); b.className='badge-hd'; b.textContent='HD'; topLeft.appendChild(b); }
+  if (m.isLovense) { const b = document.createElement('span'); b.className='badge-hd'; b.style.background='#e91e8c'; b.textContent='LVS'; topLeft.appendChild(b); }
+  if (m.isNew)     { const b = document.createElement('span'); b.className='badge-hd'; b.style.background='#4caf50'; b.textContent='NEW'; topLeft.appendChild(b); }
+  const topRight = document.createElement('div'); topRight.style.cssText = 'display:flex;gap:4px;align-items:center;pointer-events:none;';
+  const srcBadge = document.createElement('span'); srcBadge.className='badge-source xh'; srcBadge.textContent='XH'; topRight.appendChild(srcBadge);
+  if (m.country) { const c = document.createElement('span'); c.className='badge-country'; c.textContent=m.country.toUpperCase(); topRight.appendChild(c); }
+  top.appendChild(topLeft); top.appendChild(topRight);
+
+  // BOTTOM BAR
+  const bot = document.createElement('div'); bot.className = 'tile-bottom';
   const nameEl = document.createElement('div'); nameEl.className = 'tile-username';
   nameEl.textContent = m.username || '?';
   const viewEl = document.createElement('div'); viewEl.className = 'tile-viewers';
-  viewEl.textContent = (m.viewersCount || 0).toLocaleString() + ' viewers';
-  if (m.country) { const cc = document.createElement('span'); cc.className='tile-country'; cc.textContent=' ' + m.country.toUpperCase(); viewEl.appendChild(cc); }
+  viewEl.textContent = (m.viewersCount || 0).toLocaleString();
   bot.appendChild(nameEl); bot.appendChild(viewEl);
 
   tile.onclick = e => {
@@ -14270,12 +14262,9 @@ function buildXhlTile(m) {
   };
   tile.style.cursor = 'pointer';
 
-  tile.appendChild(img); tile.appendChild(video); tile.appendChild(top); tile.appendChild(bot);
+  tile.appendChild(snap); tile.appendChild(video); tile.appendChild(top); tile.appendChild(bot);
   return tile;
 }
-
-// ── MOBILE FILTER DRAWER ─────────────────────────────────────────────────────
-
 
 function openMobileFilters() {
 
