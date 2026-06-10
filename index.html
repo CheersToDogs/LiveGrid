@@ -14211,7 +14211,7 @@ function buildXhlTile(m) {
   const img = document.createElement('img');
   img.className = 'tile-snap';
   img.src = m.previewUrlThumbSmall || '';
-  img.style.width = '100%'; img.style.height = '100%'; img.style.objectFit = 'cover';
+  img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
   img.onerror = () => { img.style.display = 'none'; };
 
   // HLS video element
@@ -14220,10 +14220,7 @@ function buildXhlTile(m) {
   video.muted       = true;
   video.playsInline = true;
   video.autoplay    = false;
-  video.style.display = 'none';
-  video.style.width   = '100%';
-  video.style.height  = '100%';
-  video.style.objectFit = 'cover';
+  video.style.cssText = 'display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
 
   // Strip _240p suffix for max quality
   const hlsUrl = (m.hlsPlaylist || '').replace(/_\d+p\.m3u8$/, '.m3u8');
@@ -14243,7 +14240,7 @@ function buildXhlTile(m) {
       video.play().catch(() => {});
     }
     img.style.display   = 'none';
-    video.style.display = 'block';
+    video.style.display = 'block'; video.style.position = 'absolute';
   }
 
   function stopHls() {
@@ -14251,7 +14248,7 @@ function buildXhlTile(m) {
     video.pause();
     video.removeAttribute('src'); video.load();
     video.style.display = 'none';
-    img.style.display   = 'block';
+    img.style.display   = 'block'; img.style.position = 'absolute';
   }
 
   tile.addEventListener('mouseenter', startHls);
