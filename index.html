@@ -14133,6 +14133,12 @@ async function loadCombined(reset = true) {
 
   if (scData.status==='rejected') console.warn('SC failed:', scData.reason);
   if (xhData.status==='rejected') console.warn('XH failed:', xhData.reason);
+
+  // Refresh bar animation + 60s auto-reload (same as old loadStreams)
+  const bar = document.getElementById('refreshBar');
+  if (bar) { bar.style.animation='none'; bar.offsetHeight; bar.style.animation='drain 60s linear forwards'; }
+  clearTimeout(window._combinedRefreshTimer);
+  window._combinedRefreshTimer = setTimeout(() => { if (currentSource==='streams') loadCombined(true); }, 60000);
 }
 
 // XHL SOURCE ================================================================
