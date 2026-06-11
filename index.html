@@ -14221,7 +14221,8 @@ function buildXhlTile(m) {
   const video = document.createElement('video');
   video.muted = true; video.playsInline = true; video.autoplay = false;
 
-  const hlsUrl = m.hlsPlaylist || '';
+  // Swap doppiocdn (CPA-encrypted) → saawsedge (plain segments, same stream)
+  const hlsUrl = (m.hlsPlaylist || '').replace('edge-hls.doppiocdn.com', 'edge-hls.saawsedge.com');
   let tileHls = null;
 
   function startHls() {
