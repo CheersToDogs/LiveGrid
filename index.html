@@ -14111,9 +14111,12 @@ async function loadCombined(reset = true) {
   const scModels = scData.status==='fulfilled' ? (scData.value.models||[]) : [];
   const xhModels = xhData.status==='fulfilled' ? (xhData.value.models||[]) : [];
 
+  // Dedup: SC is authoritative — drop XH models with same username
+  const scUsernames = new Set(scModels.map(m => m.username.toLowerCase()));
+  const xhUniq = xhModels.filter(m => !scUsernames.has(m.username.toLowerCase()));
   const merged = [
     ...scModels.map(m => ({ viewers: m.viewersCount||0, el: buildTile(m,'auto') })),
-    ...xhModels.map(m => ({ viewers: m.viewersCount||0, el: buildXhlTile(m) })),
+    ...xhUniq.map(m  => ({ viewers: m.viewersCount||0, el: buildXhlTile(m) })),
   ].sort((a,b) => b.viewers - a.viewers);
 
   if (reset && !merged.length) {
@@ -14126,7 +14129,7 @@ async function loadCombined(reset = true) {
   if (currentSourceFilter !== 'all') setSourceFilter(currentSourceFilter);
 
   const st = document.getElementById('statusText');
-  if (st) st.textContent = `${merged.length} streams (SC:${scModels.length} XH:${xhModels.length}) \u00b7 ${new Date().toLocaleTimeString()}`;
+  if (st) st.textContent = `${merged.length} streams (SC:${scModels.length} XH:${xhUniq.length}) \u00b7 ${new Date().toLocaleTimeString()}`;
 
   if (scData.status==='rejected') console.warn('SC failed:', scData.reason);
   if (xhData.status==='rejected') console.warn('XH failed:', xhData.reason);
@@ -14203,63 +14206,70 @@ function buildXhlTile(m) {
   tile.dataset.source = 'xh';
   tile.dataset.username = m.username;
 
-  // Snapshot div — same pattern as SC buildTile
+  // Snapshot — same tile-snapshot div pattern as SC, fills tile via CSS
   const snap = document.createElement('div');
   snap.className = 'tile-snapshot';
   if (m.previewUrlThumbSmall) snap.style.backgroundImage = 'url(' + m.previewUrlThumbSmall + ')';
 
-  // Video — autoplay true, starts loading immediately
+  // Video — hidden at rest, shown on hover
   const video = document.createElement('video');
-  video.muted = true; video.autoplay = true; video.playsInline = true;
+  video.muted = true; video.playsInline = true; video.autoplay = false;
 
   const hlsUrl = m.hlsPlaylist || '';
+  let tileHls = null;
 
-  if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-    const hls = new Hls({
-      strictManifestParsing: false, enableWorker: true,
-      maxBufferLength: 8, maxMaxBufferLength: 16,
-      manifestLoadingTimeOut: 10000, manifestLoadingMaxRetry: 3,
-      levelLoadingTimeOut: 10000, levelLoadingMaxRetry: 3,
-      fragLoadingTimeOut: 20000, fragLoadingMaxRetry: 4,
-    });
-    hls.loadSource(hlsUrl);
-    hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); snap.classList.add('hidden'); });
-    hls.on(Hls.Events.ERROR, (_, data) => {
-      if (!data.fatal) return;
-      if (data.type === Hls.ErrorTypes.MEDIA_ERROR) { hls.recoverMediaError(); }
-      else { hls.destroy(); }
-    });
-    video.addEventListener('waiting', () => { try { hls.startLoad(); } catch {} });
-    hlsInstances.set(m.username, hls);
-  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = hlsUrl;
-    video.addEventListener('loadeddata', () => snap.classList.add('hidden'));
+  function startHls() {
+    if (tileHls || !hlsUrl) return;
+    if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+      tileHls = new Hls({
+        strictManifestParsing: false, enableWorker: false,
+        maxBufferLength: 8, maxMaxBufferLength: 16,
+        manifestLoadingTimeOut: 8000, manifestLoadingMaxRetry: 2,
+      });
+      tileHls.loadSource(hlsUrl);
+      tileHls.attachMedia(video);
+      tileHls.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play().catch(() => {});
+        snap.classList.add('hidden');
+      });
+      tileHls.on(Hls.Events.ERROR, (_, data) => {
+        if (data.fatal) { tileHls && tileHls.destroy(); tileHls = null; }
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = hlsUrl;
+      video.play().catch(() => {});
+      video.addEventListener('loadeddata', () => snap.classList.add('hidden'), {once:true});
+    }
   }
+
+  function stopHls() {
+    if (tileHls) { tileHls.destroy(); tileHls = null; }
+    video.pause(); video.removeAttribute('src'); video.load();
+    snap.classList.remove('hidden');
+  }
+
+  tile.addEventListener('mouseenter', startHls);
+  tile.addEventListener('mouseleave', stopHls);
+  tile._hlsDestroy = stopHls;
 
   // TOP BAR
   const top = document.createElement('div'); top.className = 'tile-top';
   const topLeft = document.createElement('div'); topLeft.style.cssText = 'display:flex;gap:4px;align-items:center;pointer-events:none;';
-  if (m.isHd)      { const b = document.createElement('span'); b.className='badge-hd'; b.textContent='HD'; topLeft.appendChild(b); }
-  if (m.isLovense) { const b = document.createElement('span'); b.className='badge-hd'; b.style.background='#e91e8c'; b.textContent='LVS'; topLeft.appendChild(b); }
-  if (m.isNew)     { const b = document.createElement('span'); b.className='badge-hd'; b.style.background='#4caf50'; b.textContent='NEW'; topLeft.appendChild(b); }
+  if (m.isHd)      { const b=document.createElement('span'); b.className='badge-hd'; b.textContent='HD'; topLeft.appendChild(b); }
+  if (m.isLovense) { const b=document.createElement('span'); b.className='badge-hd'; b.style.background='#e91e8c'; b.textContent='LVS'; topLeft.appendChild(b); }
+  if (m.isNew)     { const b=document.createElement('span'); b.className='badge-hd'; b.style.background='#4caf50'; b.textContent='NEW'; topLeft.appendChild(b); }
   const topRight = document.createElement('div'); topRight.style.cssText = 'display:flex;gap:4px;align-items:center;pointer-events:none;';
   const srcBadge = document.createElement('span'); srcBadge.className='badge-source xh'; srcBadge.textContent='XH'; topRight.appendChild(srcBadge);
-  if (m.country) { const c = document.createElement('span'); c.className='badge-country'; c.textContent=m.country.toUpperCase(); topRight.appendChild(c); }
+  if (m.country) { const c=document.createElement('span'); c.className='badge-country'; c.textContent=m.country.toUpperCase(); topRight.appendChild(c); }
   top.appendChild(topLeft); top.appendChild(topRight);
 
   // BOTTOM BAR
   const bot = document.createElement('div'); bot.className = 'tile-bottom';
-  const nameEl = document.createElement('div'); nameEl.className = 'tile-username';
-  nameEl.textContent = m.username || '?';
-  const viewEl = document.createElement('div'); viewEl.className = 'tile-viewers';
-  viewEl.textContent = (m.viewersCount || 0).toLocaleString();
+  const nameEl = document.createElement('div'); nameEl.className = 'tile-username'; nameEl.textContent = m.username || '?';
+  const viewEl = document.createElement('div'); viewEl.className = 'tile-viewers'; viewEl.textContent = (m.viewersCount||0).toLocaleString();
   bot.appendChild(nameEl); bot.appendChild(viewEl);
 
-  tile.onclick = e => {
-    if (!e.target.closest('.tile-btn'))
-      window.open(XHL_ROOM + m.username, '_blank', 'noopener');
-  };
+  tile.onclick = e => { if (!e.target.closest('.tile-btn')) window.open(XHL_ROOM + m.username, '_blank', 'noopener'); };
   tile.style.cursor = 'pointer';
 
   tile.appendChild(snap); tile.appendChild(video); tile.appendChild(top); tile.appendChild(bot);
