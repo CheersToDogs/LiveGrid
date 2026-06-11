@@ -14583,7 +14583,9 @@ function _fsLoad() {
   const q=document.getElementById('qualitySelect').value;
 
 
-  const url=m.stream?.urls?.[q]||m.stream?.urls?.original||m.stream?.url;
+  // SC model has stream.urls; XH model has hlsPlaylist
+const xhUrl = m.hlsPlaylist ? m.hlsPlaylist.replace('edge-hls.doppiocdn.com','edge-hls.saawsedge.com') : null;
+const url = xhUrl || m.stream?.urls?.[q] || m.stream?.urls?.original || m.stream?.url;
 
 
   if(!url) return;
