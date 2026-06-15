@@ -14137,7 +14137,15 @@ async function loadCombined(reset = true) {
   const gridCount = parseInt(document.getElementById('gridSelect')?.value || '9') || 9;
   const firstBatch = merged.slice(0, gridCount);
   window._combinedOffset = firstBatch.length;
-  firstBatch.forEach(({el}) => grid.appendChild(el));
+  firstBatch.forEach(({el}) => {
+    grid.appendChild(el);
+    // Now tile is in DOM — safe to attachMedia (Chrome sourceopen requires DOM attachment)
+    if (el._pendingHls && el._pendingVideo) {
+      el._pendingHls.attachMedia(el._pendingVideo);
+      delete el._pendingHls;
+      delete el._pendingVideo;
+    }
+  });
   // Re-init viewport observer (destroyAll killed it) and observe ALL tiles
   if (typeof setupViewportObserver === 'function') setupViewportObserver();
   if (vpObserver) {
@@ -14287,7 +14295,9 @@ function buildXhlTile(m) {
       fragLoadingTimeOut: 20000, fragLoadingMaxRetry: 4,
     });
     hls.loadSource(hlsUrl);
-    hls.attachMedia(video);
+    // attachMedia deferred until tile is in DOM
+    tile._pendingHls = hls;
+    tile._pendingVideo = video;
     hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
     video.addEventListener('canplay', () => snap.classList.add('hidden'), {once: true});
     hls.on(Hls.Events.ERROR, (_, data) => {
