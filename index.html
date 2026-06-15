@@ -6416,6 +6416,9 @@ function setupViewportObserver() {
 
 
             if (tile.classList.contains('vp-paused')) return; // already paused
+            // Grace period: don't pause tiles < 8s old (still initializing HLS)
+            const _age = Date.now() - (parseInt(tile.dataset.created||'0')||Date.now());
+            if (_age < 8000) return;
 
 
 
@@ -10848,6 +10851,7 @@ function buildTile(model, quality) {
 
 
   tile.dataset.username = model.username;
+  tile.dataset.created = Date.now();
   tile.dataset.source = 'sc';
 
 
@@ -14217,6 +14221,7 @@ function buildXhlTile(m) {
   tile.className = 'tile';
   tile.dataset.source = 'xh';
   tile.dataset.username = m.username;
+  tile.dataset.created = Date.now();
 
   const snap = document.createElement('div');
   snap.className = 'tile-snapshot';
