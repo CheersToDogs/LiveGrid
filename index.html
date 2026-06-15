@@ -14130,7 +14130,14 @@ async function loadCombined(reset = true) {
     return;
   }
   empty.style.display='none';
-  merged.forEach(({el}) => grid.appendChild(el));
+  // Only render gridSelect count initially (Chrome MediaSource limit)
+  // Store full merged list for infinite scroll
+  window._combinedAll = merged;
+  window._combinedOffset = 0;
+  const gridCount = parseInt(document.getElementById('gridSelect')?.value || '9') || 9;
+  const firstBatch = merged.slice(0, gridCount);
+  window._combinedOffset = firstBatch.length;
+  firstBatch.forEach(({el}) => grid.appendChild(el));
   // Re-init viewport observer (destroyAll killed it) and observe ALL tiles
   if (typeof setupViewportObserver === 'function') setupViewportObserver();
   if (vpObserver) {
@@ -14177,7 +14184,7 @@ async function loadCombined(reset = true) {
   if (currentSourceFilter !== 'all') setSourceFilter(currentSourceFilter);
 
   const st = document.getElementById('statusText');
-  if (st) st.textContent = `${merged.length} streams (SC:${scModels.length} XH:${xhUniq.length}) \u00b7 ${new Date().toLocaleTimeString()}`;
+  if (st) st.textContent = `${merged.length} streams (SC:${scModels.length} XH:${xhUniq.length}) \u00b7 ${new Date().toLocaleTimeString()}  — showing ${firstBatch.length}`;
 
   if (scData.status==='rejected') console.warn('SC failed:', scData.reason);
   if (xhData.status==='rejected') console.warn('XH failed:', xhData.reason);
