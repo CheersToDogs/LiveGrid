@@ -14146,14 +14146,30 @@ async function loadCombined(reset = true) {
       let restarted = 0;
       hlsInstances.forEach((hls, username) => {
         if (hls.streamController?.state === 'IDLE') {
-          try { hls.startLoad(); } catch(e) {}
           const tile = document.querySelector(`.tile[data-username="${username}"]`);
           const video = tile?.querySelector('video');
-          if (video?.paused) video.play().catch(() => {});
+          const src   = hls.url;
+          if (!src || !video) return;
+          // Destroy stuck instance and recreate fresh
+          try { hls.destroy(); } catch(e) {}
+          const newHls = new Hls({ strictManifestParsing: false, enableWorker: true,
+            maxBufferLength: 8, maxMaxBufferLength: 16 });
+          newHls.loadSource(src);
+          newHls.attachMedia(video);
+          newHls.on(Hls.Events.MANIFEST_PARSED, () => {
+            video.play().catch(() => {});
+            const snap = tile.querySelector('.tile-snapshot');
+            video.addEventListener('canplay', () => snap && snap.classList.add('hidden'), {once:true});
+          });
+          newHls.on(Hls.Events.ERROR, (_, d) => {
+            if (d.fatal) { try { newHls.destroy(); } catch(e) {} hlsInstances.delete(username); }
+          });
+          video.addEventListener('waiting', () => { try { newHls.startLoad(); } catch(e) {} });
+          hlsInstances.set(username, newHls);
           restarted++;
         }
       });
-      if (restarted > 0) console.log('[LiveGrid] Autoplay unlock: restarted', restarted, 'streams');
+      if (restarted > 0) console.log('[LiveGrid] Autoplay unlock: recreated', restarted, 'streams');
     };
     document.addEventListener('click', _unlock, true);
     document.addEventListener('touchstart', _unlock, true);
