@@ -14126,9 +14126,10 @@ async function loadCombined(reset = true) {
   }
   empty.style.display='none';
   merged.forEach(({el}) => grid.appendChild(el));
-  // Wire viewport observer so XH tiles pause when off-screen (same as SC)
-  if (typeof vpObserver !== 'undefined' && vpObserver) {
-    grid.querySelectorAll('.tile[data-source="xh"]').forEach(t => vpObserver.observe(t));
+  // Re-init viewport observer (destroyAll killed it) and observe ALL tiles
+  if (typeof setupViewportObserver === 'function') setupViewportObserver();
+  if (vpObserver) {
+    grid.querySelectorAll('.tile').forEach(t => vpObserver.observe(t));
   }
   if (currentSourceFilter !== 'all') setSourceFilter(currentSourceFilter);
 
