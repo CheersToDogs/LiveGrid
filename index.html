@@ -11041,8 +11041,7 @@ function buildTile(model, quality) {
 
 
     hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(()=>{}); });
-    const _scSnapShow = () => { snap.classList.add('hidden'); hls.off(Hls.Events.FRAG_BUFFERED, _scSnapShow); };
-    hls.on(Hls.Events.FRAG_BUFFERED, _scSnapShow);
+    video.addEventListener('canplay', () => snap.classList.add('hidden'), {once: true});
 
 
 
@@ -11153,7 +11152,7 @@ function buildTile(model, quality) {
 
 
 
-    video.addEventListener('loadeddata', () => snap.classList.add('hidden'));
+    video.addEventListener('canplay', () => snap.classList.add('hidden'), {once: true});
 
 
 
@@ -14240,8 +14239,7 @@ function buildXhlTile(m) {
     hls.loadSource(hlsUrl);
     hls.attachMedia(video);
     hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
-    const _xhSnapShow = () => { snap.classList.add('hidden'); hls.off(Hls.Events.FRAG_BUFFERED, _xhSnapShow); };
-    hls.on(Hls.Events.FRAG_BUFFERED, _xhSnapShow);
+    video.addEventListener('canplay', () => snap.classList.add('hidden'), {once: true});
     hls.on(Hls.Events.ERROR, (_, data) => {
       if (!data.fatal) return;
       if (data.type === Hls.ErrorTypes.MEDIA_ERROR) { hls.recoverMediaError(); }
@@ -14251,7 +14249,7 @@ function buildXhlTile(m) {
     hlsInstances.set(m.username, hls);
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
     video.src = hlsUrl;
-    video.addEventListener('loadeddata', () => snap.classList.add('hidden'));
+    video.addEventListener('canplay', () => snap.classList.add('hidden'), {once: true});
   }
 
   // TOP BAR
