@@ -14136,6 +14136,28 @@ async function loadCombined(reset = true) {
   if (vpObserver) {
     grid.querySelectorAll('.tile').forEach(t => vpObserver.observe(t));
   }
+  // One-time interaction unlock for Chrome autoplay policy
+  // Chrome may block MediaSource until user gesture — restart IDLE instances on first click
+  if (!window._autoplayUnlocked) {
+    const _unlock = () => {
+      window._autoplayUnlocked = true;
+      document.removeEventListener('click', _unlock, true);
+      document.removeEventListener('touchstart', _unlock, true);
+      let restarted = 0;
+      hlsInstances.forEach((hls, username) => {
+        if (hls.streamController?.state === 'IDLE') {
+          try { hls.startLoad(); } catch(e) {}
+          const tile = document.querySelector(`.tile[data-username="${username}"]`);
+          const video = tile?.querySelector('video');
+          if (video?.paused) video.play().catch(() => {});
+          restarted++;
+        }
+      });
+      if (restarted > 0) console.log('[LiveGrid] Autoplay unlock: restarted', restarted, 'streams');
+    };
+    document.addEventListener('click', _unlock, true);
+    document.addEventListener('touchstart', _unlock, true);
+  }
   if (currentSourceFilter !== 'all') setSourceFilter(currentSourceFilter);
 
   const st = document.getElementById('statusText');
