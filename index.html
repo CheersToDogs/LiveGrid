@@ -3302,7 +3302,7 @@
 
 
 
-        <option value="4" selected>2�2</option>
+        <option value="4">2�2</option>
 
 
 
@@ -3311,7 +3311,7 @@
 
 
 
-        <option value="9">3�3</option>
+        <option value="9" selected>3�3</option>
 
 
 
@@ -14102,7 +14102,8 @@ function setSourceFilter(src) {
     const pool = src === 'all'
       ? window._combinedAll
       : window._combinedAll.filter(({el}) => el.dataset.source === src);
-    const toAdd = pool.slice(0, gridCount);
+    // Pull enough to fill the grid for this source
+    const toAdd = pool.slice(0, Math.max(gridCount, 9));
     toAdd.forEach(({el}) => {
       if (!grid.contains(el)) {
         grid.appendChild(el);
