@@ -14088,6 +14088,34 @@ function setSourceFilter(src) {
   currentSourceFilter = src;
   document.querySelectorAll('.source-pill').forEach(p =>
     p.classList.toggle('active', p.dataset.src === src));
+
+  // Check if we have tiles for this source in the DOM
+  const tiles = [...document.querySelectorAll('#grid .tile')];
+  const hasSrc = src === 'all'
+    ? tiles.length > 0
+    : tiles.some(t => t.dataset.source === src);
+
+  if (!hasSrc && window._combinedAll) {
+    // Pull matching tiles from _combinedAll and append them
+    const grid = document.getElementById('grid');
+    const gridCount = parseInt(document.getElementById('gridSelect')?.value || '9') || 9;
+    const pool = src === 'all'
+      ? window._combinedAll
+      : window._combinedAll.filter(({el}) => el.dataset.source === src);
+    const toAdd = pool.slice(0, gridCount);
+    toAdd.forEach(({el}) => {
+      if (!grid.contains(el)) {
+        grid.appendChild(el);
+        if (el._pendingHls && el._pendingVideo) {
+          el._pendingHls.attachMedia(el._pendingVideo);
+          delete el._pendingHls;
+          delete el._pendingVideo;
+        }
+      }
+    });
+  }
+
+  // Now show/hide
   document.querySelectorAll('#grid .tile').forEach(t => {
     t.style.display = (src === 'all' || t.dataset.source === src) ? '' : 'none';
   });
