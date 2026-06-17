@@ -10517,6 +10517,36 @@ function renderGrid() {
 
 
 
+function loadMoreCombined() {
+  if (!window._combinedAll || !window._combinedOffset) return;
+  const src = currentSourceFilter || 'all';
+  const grid = document.getElementById('grid');
+  const gridCount = parseInt(document.getElementById('gridSelect')?.value || '9') || 9;
+
+  // Get pool matching current filter
+  const pool = src === 'all'
+    ? window._combinedAll
+    : window._combinedAll.filter(({el}) => el.dataset.source === src);
+
+  // Find tiles not yet in DOM
+  const notInDom = pool.filter(({el}) => !grid.contains(el));
+  if (!notInDom.length) return;
+
+  // Add next batch
+  const batch = notInDom.slice(0, gridCount);
+  batch.forEach(({el}) => {
+    // Apply current filter visibility
+    el.style.display = (src === 'all' || el.dataset.source === src) ? '' : 'none';
+    grid.appendChild(el);
+    if (el._pendingHls && el._pendingVideo) {
+      el._pendingHls.attachMedia(el._pendingVideo);
+      delete el._pendingHls;
+      delete el._pendingVideo;
+    }
+  });
+  console.log('[LiveGrid] loadMoreCombined: added', batch.length, 'tiles, total in DOM:', grid.querySelectorAll('.tile').length);
+}
+
 function setupInfiniteScroll() {
 
 
@@ -10553,7 +10583,7 @@ function setupInfiniteScroll() {
 
 
 
-    if (entries[0].isIntersecting) { if (currentSource === 'cams') loadMoreCams(); else if (currentSource === 'xhl') loadMoreXhl(); else if (!isLoadingMore && hasMore) loadMoreTiles(); }
+    if (entries[0].isIntersecting) { loadMoreCombined(); }
 
 
 
