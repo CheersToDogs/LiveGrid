@@ -11035,7 +11035,12 @@ function buildTile(model, quality) {
 
 
 
-    hls.attachMedia(video);
+    // attachMedia deferred until tile is in DOM (Chrome needs DOM attachment for sourceopen)
+    tile._pendingHls = hls;
+    tile._pendingVideo = video;
+    hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+      if (hls.levels && hls.levels.length) video.play().catch(() => {});
+    });
 
 
 
