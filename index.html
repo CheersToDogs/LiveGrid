@@ -14687,8 +14687,8 @@ function closeFsOverlay() {
 
 
   const v=document.getElementById('fs-video');
-
-
+  const fsLoading=document.getElementById('fs-loading');
+  if(fsLoading) fsLoading.classList.remove('hidden');  // show spinner
   v.pause(); v.src=''; v.removeAttribute('src');
 
 
@@ -14767,11 +14767,13 @@ const url = xhUrl || m.stream?.urls?.[q] || m.stream?.urls?.original || m.stream
 
 
     _fsHls.on(Hls.Events.MANIFEST_PARSED,()=>{
-      v.play().then(()=>{ v.muted=_fsMuted; }).catch(()=>{});
+      v.addEventListener('canplay', ()=>{ if(fsLoading) fsLoading.classList.add('hidden'); },{once:true});
+    v.play().then(()=>{ v.muted=_fsMuted; }).catch(()=>{});
     });
     _fsHls.on(Hls.Events.ERROR, (_, d) => {
       if (d.fatal) {
         // Dead stream — auto-advance to next
+        if(fsLoading) fsLoading.classList.add('hidden');
         setTimeout(() => { _fsIdx = (_fsIdx + 1) % _fsList.length; _fsLoad(); }, 800);
       }
     });
@@ -14780,6 +14782,7 @@ const url = xhUrl || m.stream?.urls?.[q] || m.stream?.urls?.original || m.stream
   } else if(v.canPlayType('application/vnd.apple.mpegurl')){
 
 
+    v.addEventListener('canplay', ()=>{ if(fsLoading) fsLoading.classList.add('hidden'); },{once:true});
     v.src=url; v.play().then(()=>{ v.muted=_fsMuted; }).catch(()=>{});
 
 
