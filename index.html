@@ -8344,6 +8344,13 @@ async function loadStreams() {
 
 
 async function diffRefresh() {
+  // iOS decoder budget: building new grid <video>s while fullscreen is open evicts
+  // the fullscreen stream's decoder (~30s stop). Skip the cycle until overlay closes.
+  if (document.getElementById('fs-overlay')?.classList.contains('open')) {
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(diffRefresh, 15000);
+    return;
+  }
 
 
 
