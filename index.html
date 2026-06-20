@@ -10545,6 +10545,7 @@ function loadMoreCombined() {
     }
   });
   console.log('[LiveGrid] loadMoreCombined: added', batch.length, 'tiles, total in DOM:', grid.querySelectorAll('.tile').length);
+  if (infiniteObserver) { const _s = document.getElementById('scroll-sentinel'); if (_s) { infiniteObserver.unobserve(_s); infiniteObserver.observe(_s); } }
 }
 
 function setupInfiniteScroll() {
@@ -14169,15 +14170,37 @@ async function loadCombined(reset = true) {
   const sortRaw = document.getElementById('sortSelect')?.value    || 'viewersCount';
   const tag     = gender==='female'?'girls':gender==='male'?'men':gender==='couple'?'couples':'trans';
 
-  const [scData, xhData] = await Promise.allSettled([
-    fetch('https://go.stripchat.com/api/models?' + new URLSearchParams({
-      limit:50, offset:0, sortBy:sortRaw,
-      'filters[gender][0]': gender, 'filters[isBroadcasting]':'true',
-    }), { headers:{ Accept:'application/json' } }).then(r => r.ok ? r.json() : Promise.reject(r.status)),
-    fetch('/api/xhl/models?' + new URLSearchParams({
-      primaryTag:tag, online:'true', limit:50, offset:0,
-    }), { headers:{ Accept:'application/json' } }).then(r => r.ok ? r.json() : Promise.reject(r.status)),
-  ]);
+  // Multi-page fetch: SC 5 pages (200 each) + XH 6 pages (90 each) for 1000+ streams
+  const SC_PAGES = 5, XH_PAGES = 6;
+  const scFetches = [], xhFetches = [];
+  for (let pg = 0; pg < SC_PAGES; pg++) {
+    scFetches.push(
+      fetch('https://go.stripchat.com/api/models?' + new URLSearchParams({
+        limit:200, offset: pg*200, sortBy:sortRaw,
+        'filters[gender][0]': gender, 'filters[isBroadcasting]':'true',
+      }), { headers:{ Accept:'application/json' } }).then(r => r.ok ? r.json() : Promise.reject(r.status)).catch(()=>null)
+    );
+  }
+  for (let pg = 0; pg < XH_PAGES; pg++) {
+    xhFetches.push(
+      fetch('/api/xhl/models?' + new URLSearchParams({
+        primaryTag:tag, online:'true', limit:90, offset: pg*90,
+      }), { headers:{ Accept:'application/json' } }).then(r => r.ok ? r.json() : Promise.reject(r.status)).catch(()=>null)
+    );
+  }
+  const scPages = await Promise.all(scFetches);
+  const xhPages = await Promise.all(xhFetches);
+  // Merge pages, dedupe by username
+  const _scSeen = new Set(), _xhSeen = new Set();
+  const scMerged = [], xhMerged = [];
+  scPages.forEach(d => (d?.models || d?.data || []).forEach(m => {
+    if (m.username && !_scSeen.has(m.username)) { _scSeen.add(m.username); scMerged.push(m); }
+  }));
+  xhPages.forEach(d => (d?.models || d?.data || d?.list || []).forEach(m => {
+    if (m.username && !_xhSeen.has(m.username)) { _xhSeen.add(m.username); xhMerged.push(m); }
+  }));
+  const scData = { status:'fulfilled', value:{ models: scMerged } };
+  const xhData = { status:'fulfilled', value:{ models: xhMerged } };
 
   const scModels = scData.status==='fulfilled' ? (scData.value.models||[]) : [];
   const xhModels = xhData.status==='fulfilled' ? (xhData.value.models||[]) : [];
@@ -14201,7 +14224,17 @@ async function loadCombined(reset = true) {
   window._combinedAll = merged;
   window._combinedOffset = 0;
   const gridCount = parseInt(document.getElementById('gridSelect')?.value || '9') || 9;
-  const firstBatch = merged.slice(0, gridCount);
+  const _scPool = merged.filter(({el}) => el.dataset.source === 'sc');
+  const _xhPool = merged.filter(({el}) => el.dataset.source === 'xh');
+  const firstBatch = [];
+  let _si = 0, _xi = 0;
+  while (firstBatch.length < gridCount) {
+    const wantXh = _xhPool.length && (firstBatch.length % 3 === 2);
+    if (wantXh && _xi < _xhPool.length)   firstBatch.push(_xhPool[_xi++]);
+    else if (_si < _scPool.length)          firstBatch.push(_scPool[_si++]);
+    else if (_xi < _xhPool.length)          firstBatch.push(_xhPool[_xi++]);
+    else break;
+  }
   window._combinedOffset = firstBatch.length;
   firstBatch.forEach(({el}) => {
     grid.appendChild(el);
