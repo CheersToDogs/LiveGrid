@@ -11,6 +11,16 @@
 const log = document.getElementById('log');
 function L(msg, cls){ log.innerHTML += '<div class="'+(cls||'')+'">'+msg+'</div>'; }
 (async () => {
+  L('0. Probing CDN host reachability (no-cors)...');
+  for (const host of ['https://edge-hls.saawsedge.com/','https://media-hls.saawsedge.com/','https://edge-hls.doppiocdn.com/']) {
+    try {
+      const t0 = performance.now();
+      await fetch(host, {mode:'no-cors', cache:'no-store'});
+      L('   reachable: '+host+' ('+Math.round(performance.now()-t0)+'ms)','ok');
+    } catch(e) {
+      L('   BLOCKED/UNREACHABLE: '+host+' — '+e.message,'bad');
+    }
+  }
   L('1. Fetching live model list from Stripchat API...');
   let master, model;
   try {
