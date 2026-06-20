@@ -2533,7 +2533,7 @@
     .logo { flex-shrink: 0; font-size: 15px; }
 
 
-    #grid { grid-template-columns: repeat(2, 1fr) !important; }
+    #grid { grid-template-columns: repeat(2, 1fr); }
 
 
     .tile-btn { min-width: 40px !important; min-height: 40px !important; }
@@ -3104,7 +3104,7 @@
     .btn-mobile-filters { display: flex !important; margin-left: auto; }
 
 
-    #grid { grid-template-columns: repeat(2, 1fr) !important; }
+    #grid { grid-template-columns: repeat(2, 1fr); }
 
 
     .tile-btn { width: 40px !important; height: 40px !important; font-size: 16px !important; }
@@ -3131,7 +3131,7 @@
     header { padding: 4px 10px; }
 
 
-    #grid { grid-template-columns: repeat(2, 1fr) !important; }
+    #grid { grid-template-columns: repeat(2, 1fr); }
 
 
   }
@@ -3221,6 +3221,11 @@
     <button class="nav-pill source-pill active" data-src="all" onclick="setSourceFilter('all')">ALL</button>
     <button class="nav-pill source-pill" data-src="sc" onclick="setSourceFilter('sc')">SC</button>
     <button class="nav-pill source-pill" data-src="xh" onclick="setSourceFilter('xh')">XH</button>
+    <span class="colpill-group" style="display:inline-flex;gap:4px;margin-left:8px;">
+      <button class="nav-pill colpill" onclick="setMobileCols(1)">□1</button>
+      <button class="nav-pill colpill active" onclick="setMobileCols(2)">▣2</button>
+      <button class="nav-pill colpill" onclick="setMobileCols(3)">▦3</button>
+    </span>
 
 
     <button style="display:none;" class="nav-pill" onclick="switchSource('cams')">📷 Cams</button>
@@ -14693,7 +14698,7 @@ function getResponsiveCols() {
   const w = window.innerWidth;
 
 
-  if (w <= 600)  return Math.min(raw, 2);
+  if (w <= 600)  return Math.min(raw, 3);
 
 
   if (w <= 900)  return Math.min(raw, 3);
@@ -15038,6 +15043,12 @@ function fsMuteToggle() {
 
 
 
+function setMobileCols(n){
+  const gs=document.getElementById('gridSelect'); if(gs) gs.value=({1:'1',2:'4',3:'9'}[n]||'4');
+  const grid=document.getElementById('grid'); if(grid) grid.style.gridTemplateColumns='repeat('+n+',1fr)';
+  document.querySelectorAll('.colpill').forEach(b=>b.classList.toggle('active', b.textContent.slice(-1)===String(n)));
+}
+
 // Touch swipe handler
 
 
@@ -15059,7 +15070,7 @@ function fsMuteToggle() {
     const dx=e.changedTouches[0].clientX-_fsTx, dy=e.changedTouches[0].clientY-_fsTy;
 
 
-    if(Math.abs(dy)>80&&Math.abs(dy)>Math.abs(dx)){closeFsOverlay();return;}
+    if(Math.abs(dy)>50&&Math.abs(dy)>Math.abs(dx)){_fsNav(dy<0?1:-1);return;} // up=next, down=prev
 
 
     if(Math.abs(dx)<40)return;
