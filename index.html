@@ -11567,7 +11567,8 @@ function buildTile(model, quality) {
     e.stopPropagation();
 
 
-    openFsOverlay(model, currentFiltered, false);
+    const _fl = window._combinedAll ? window._combinedAll.map(({el}) => el._model || el._xhModel).filter(Boolean) : currentFiltered;
+      openFsOverlay(model, _fl, false);
 
 
   };
@@ -14396,6 +14397,15 @@ function buildXhlTile(m) {
   const viewEl = document.createElement('div'); viewEl.className = 'tile-viewers'; viewEl.textContent = (m.viewersCount||0).toLocaleString();
   bot.appendChild(nameEl); bot.appendChild(viewEl);
 
+  const xhFsBtn = document.createElement('button');
+  xhFsBtn.className = 'tile-btn'; xhFsBtn.textContent = '\u26F6'; xhFsBtn.title = 'Fullscreen';
+  xhFsBtn.onclick = e => {
+    e.stopPropagation();
+    const _fl = window._combinedAll ? window._combinedAll.map(({el}) => el._model || el._xhModel).filter(Boolean) : [m];
+    openFsOverlay(m, _fl, false);
+  };
+  top.appendChild(xhFsBtn);
+
   tile._xhModel = m;
   let _xhTap = 0, _xhTimer;
   tile.addEventListener('click', e => {
@@ -14897,7 +14907,8 @@ buildTile = function(model, quality) {
     if (e.target.closest('.tile-btn, .cta-link')) return;
 
 
-    openFsOverlay(model, currentFiltered, false);
+    const _fl = window._combinedAll ? window._combinedAll.map(({el}) => el._model || el._xhModel).filter(Boolean) : currentFiltered;
+      openFsOverlay(model, _fl, false);
 
 
   });
