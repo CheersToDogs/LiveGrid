@@ -3191,11 +3191,11 @@
     <div class="source-tabs">
 
 
-      <button class="source-tab active" id="tabStreams" onclick="switchSource('streams')">STREAMS</button>
+      <button class="source-tab active" id="tabStreams" onclick="switchSource('streams')" style="display:none;">STREAMS</button>
 
 
-      <button class="source-tab" id="tabCams" onclick="switchSource('cams')">CAMS</button>
-      <div style="width:1px;background:var(--border);margin:2px 6px;align-self:stretch;opacity:.5;"></div>
+      <button class="source-tab" id="tabCams" onclick="switchSource('cams')" style="display:none;">CAMS</button>
+      <div style="display:none;width:1px;background:var(--border);margin:2px 6px;align-self:stretch;opacity:.5;"></div>
       <button class="source-pill active" data-src="all" onclick="setSourceFilter('all')" style="padding:3px 9px;font-size:10px;">ALL</button>
       <button class="source-pill" data-src="sc" onclick="setSourceFilter('sc')" style="padding:3px 9px;font-size:10px;">&#9654; SC</button>
       <button class="source-pill" data-src="xh" onclick="setSourceFilter('xh')" style="padding:3px 9px;font-size:10px;">&#128308; XH</button>
@@ -3217,23 +3217,23 @@
   <div class="header-nav-row" id="mobileNavRow" style="display:none">
 
 
-    <button class="nav-pill active" onclick="switchSource('streams')">🎥 Streams</button>
+    <button style="display:none;" class="nav-pill active" onclick="switchSource('streams')">🎥 Streams</button>
     <button class="nav-pill source-pill active" data-src="all" onclick="setSourceFilter('all')">ALL</button>
     <button class="nav-pill source-pill" data-src="sc" onclick="setSourceFilter('sc')">SC</button>
     <button class="nav-pill source-pill" data-src="xh" onclick="setSourceFilter('xh')">XH</button>
 
 
-    <button class="nav-pill" onclick="switchSource('cams')">📷 Cams</button>
+    <button style="display:none;" class="nav-pill" onclick="switchSource('cams')">📷 Cams</button>
 
 
 
     <button class="nav-pill" onclick="loadStreams()">↻ Refresh</button>
 
 
-    <button class="nav-pill" onclick="loadAll()">▶ Load All</button>
+    <button style="display:none;" class="nav-pill" onclick="loadAll()">▶ Load All</button>
 
 
-    <button class="nav-pill" onclick="togglePauseAll()">▮▮ Pause</button>
+    <button style="display:none;" class="nav-pill" onclick="togglePauseAll()">▮▮ Pause</button>
 
 
     <button class="nav-pill" onclick="muteAll()">🔇 Mute</button>
@@ -3245,7 +3245,7 @@
     <button style="display:none;" class="nav-pill" onclick="openStats()">📊 Stats</button>
 
 
-    <button class="nav-pill" onclick="openMobileFilters()">⚙ Filters</button>
+    <button style="display:none;" class="nav-pill" onclick="openMobileFilters()">⚙ Filters</button>
 
 
   </div>
