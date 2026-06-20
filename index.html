@@ -14396,7 +14396,24 @@ function buildXhlTile(m) {
   const viewEl = document.createElement('div'); viewEl.className = 'tile-viewers'; viewEl.textContent = (m.viewersCount||0).toLocaleString();
   bot.appendChild(nameEl); bot.appendChild(viewEl);
 
-  tile.onclick = e => { if (!e.target.closest('.tile-btn')) window.open(XHL_ROOM + m.username, '_blank', 'noopener'); };
+  tile._xhModel = m;
+  let _xhTap = 0, _xhTimer;
+  tile.addEventListener('click', e => {
+    if (e.target.closest('.tile-btn')) return;
+    _xhTap++;
+    if (_xhTap === 1) {
+      _xhTimer = setTimeout(() => {
+        _xhTap = 0;
+        window.open(XHL_ROOM + m.username, '_blank', 'noopener');
+      }, 260);
+    } else if (_xhTap === 2) {
+      clearTimeout(_xhTimer); _xhTap = 0;
+      const fsList = window._combinedAll
+        ? window._combinedAll.map(({el}) => el._model || el._xhModel).filter(Boolean)
+        : [m];
+      openFsOverlay(m, fsList, false);
+    }
+  });
   tile.style.cursor = 'pointer';
 
   tile.appendChild(snap); tile.appendChild(video); tile.appendChild(top); tile.appendChild(bot);
@@ -14958,7 +14975,10 @@ buildTile = function(model, quality) {
         clearTimeout(tapTimer); tapCount = 0;
 
 
-        openFsOverlay(model, currentFiltered, false);
+        const fsList = window._combinedAll
+          ? window._combinedAll.map(({el}) => el._model || el._xhModel).filter(Boolean)
+          : currentFiltered;
+        openFsOverlay(model, fsList, false);
 
 
       }
@@ -14970,6 +14990,7 @@ buildTile = function(model, quality) {
   }
 
 
+  tile._model = model;
   return tile;
 
 
