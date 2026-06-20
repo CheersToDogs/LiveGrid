@@ -10517,6 +10517,29 @@ function renderGrid() {
 
 
 
+// Free HLS decoders for tiles scrolled far above viewport (caps concurrent decodes).
+// Keeps the element + shows snapshot (no DOM removal = no scroll jump). item.el retained.
+const LIVE_TILE_CAP = 27;
+function _freeOldTiles() {
+  const grid = document.getElementById('grid');
+  const tiles = [...grid.querySelectorAll('.tile')].filter(t => !t._freed);
+  if (tiles.length <= LIVE_TILE_CAP) return;
+  const toFree = tiles.slice(0, tiles.length - LIVE_TILE_CAP);
+  let freed = 0;
+  toFree.forEach(t => {
+    const u = t.dataset.username;
+    const hls = hlsInstances.get(u);
+    if (hls) { try { hls.destroy(); } catch(e){} hlsInstances.delete(u); }
+    const v = t.querySelector('video');
+    if (v) { try { v.pause(); v.removeAttribute('src'); v.load(); } catch(e){} }
+    const snap = t.querySelector('.tile-snapshot');
+    if (snap) snap.classList.remove('hidden');  // show still again
+    t._freed = true;
+    freed++;
+  });
+  if (freed) console.log('[LiveGrid] freed', freed, 'offscreen decoders, live cap', LIVE_TILE_CAP);
+}
+
 // Prefetch next batch: build tiles + load manifests (no attachMedia = no decode) so scroll is instant
 function prefetchNextBatch() {
   if (!window._combinedAll) return;
@@ -10558,6 +10581,7 @@ function loadMoreCombined() {
     if (vpObserver) vpObserver.observe(el);
   });
   console.log('[LiveGrid] loadMoreCombined: added', batch.length, 'tiles, total in DOM:', grid.querySelectorAll('.tile').length);
+  _freeOldTiles();
   if (infiniteObserver) { const _s = document.getElementById('scroll-sentinel'); if (_s) { infiniteObserver.unobserve(_s); infiniteObserver.observe(_s); } }
   setTimeout(prefetchNextBatch, 1500);
 }
@@ -14284,12 +14308,17 @@ async function loadCombined(reset = true) {
       document.removeEventListener('click', _unlock, true);
       document.removeEventListener('touchstart', _unlock, true);
       let restarted = 0;
+      const _vh = window.innerHeight || 800;
       hlsInstances.forEach((hls, username) => {
+        if (restarted >= 9) return;  // cap — avoid thundering herd
         if (hls.streamController?.state === 'IDLE') {
           const tile = document.querySelector(`.tile[data-username="${username}"]`);
           const video = tile?.querySelector('video');
           const src   = hls.url;
           if (!src || !video) return;
+          // Only restart tiles actually in/near the viewport
+          const r = tile.getBoundingClientRect();
+          if (r.bottom < -200 || r.top > _vh + 200) return;
           // Destroy stuck instance and recreate fresh
           try { hls.destroy(); } catch(e) {}
           const newHls = new Hls({ strictManifestParsing: false, enableWorker: true,
