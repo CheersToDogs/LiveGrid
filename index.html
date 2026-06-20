@@ -14215,6 +14215,9 @@ async function loadCombined(reset = true) {
   if (vpObserver) {
     grid.querySelectorAll('.tile').forEach(t => vpObserver.observe(t));
   }
+  // Re-init infinite scroll observer (grid was rebuilt)
+  setupInfiniteScroll();
+
   // One-time interaction unlock for Chrome autoplay policy
   // Chrome may block MediaSource until user gesture — restart IDLE instances on first click
   if (!window._autoplayUnlocked) {
