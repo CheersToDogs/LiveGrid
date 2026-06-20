@@ -15003,6 +15003,9 @@ function fsMuteToggle() {
   const ov=document.getElementById('fs-overlay');
 
 
+  if(!ov) return;
+
+
   ov.addEventListener('touchstart',e=>{_fsTx=e.touches[0].clientX;_fsTy=e.touches[0].clientY;},{passive:true});
 
 
