@@ -6236,6 +6236,7 @@ function setupViewportObserver() {
 
 
       if (entry.isIntersecting) {
+        if (tile._freed) _reviveTile(tile);
 
 
 
@@ -10517,6 +10518,36 @@ function renderGrid() {
 
 
 
+// Rebuild HLS for a freed tile when it scrolls back into view
+function _reviveTile(tile) {
+  if (!tile || !tile._freed) return;
+  const username = tile.dataset.username;
+  const video = tile.querySelector('video');
+  if (!video) return;
+  const isSc = tile.dataset.source === 'sc';
+  const m = isSc ? tile._model : tile._xhModel;
+  if (!m) return;
+  let url;
+  if (isSc) url = m.stream?.urls?.['240p'] || m.stream?.urls?.['original'] || m.stream?.url;
+  else      url = (m.hlsPlaylist || '').replace('edge-hls.doppiocdn.com', 'edge-hls.saawsedge.com');
+  if (!url) return;
+  try {
+    const hls = new Hls({ strictManifestParsing:false, enableWorker:true, maxBufferLength:8, maxMaxBufferLength:16,
+      manifestLoadingTimeOut:10000, manifestLoadingMaxRetry:4, fragLoadingTimeOut:20000, fragLoadingMaxRetry:6 });
+    hls.loadSource(url);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MEDIA_ATTACHED, () => { if (hls.levels && hls.levels.length) video.play().catch(()=>{}); });
+    hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(()=>{}));
+    const snap = tile.querySelector('.tile-snapshot');
+    video.addEventListener('canplay', () => snap && snap.classList.add('hidden'), {once:true});
+    hls.on(Hls.Events.ERROR, (_, d) => { if (d.fatal) { try { hls.destroy(); } catch(e){} hlsInstances.delete(username); } });
+    video.addEventListener('waiting', () => { try { hls.startLoad(); } catch(e){} });
+    hlsInstances.set(username, hls);
+    tile.dataset.created = Date.now();
+    tile._freed = false;
+  } catch(e) {}
+}
+
 // Free HLS decoders for tiles scrolled far above viewport (caps concurrent decodes).
 // Keeps the element + shows snapshot (no DOM removal = no scroll jump). item.el retained.
 const LIVE_TILE_CAP = 27;
@@ -10641,6 +10672,15 @@ function setupInfiniteScroll() {
 
 
   infiniteObserver.observe(sentinel);
+  const _wrap = document.getElementById('grid-wrapper');
+  if (_wrap && !_wrap._scrollCapBound) {
+    _wrap._scrollCapBound = true;
+    let _st;
+    _wrap.addEventListener('scroll', () => {
+      clearTimeout(_st);
+      _st = setTimeout(() => { try { _freeOldTiles(); } catch(e){} }, 400);
+    }, { passive: true });
+  }
 
 
 
@@ -14498,22 +14538,10 @@ function buildXhlTile(m) {
   top.appendChild(xhFsBtn);
 
   tile._xhModel = m;
-  let _xhTap = 0, _xhTimer;
   tile.addEventListener('click', e => {
-    if (e.target.closest('.tile-btn')) return;
-    _xhTap++;
-    if (_xhTap === 1) {
-      _xhTimer = setTimeout(() => {
-        _xhTap = 0;
-        window.open(XHL_ROOM + m.username, '_blank', 'noopener');
-      }, 260);
-    } else if (_xhTap === 2) {
-      clearTimeout(_xhTimer); _xhTap = 0;
-      const fsList = window._combinedAll
-        ? window._combinedAll.map(it => it.model).filter(Boolean)
-        : [m];
-      openFsOverlay(m, fsList, false);
-    }
+    if (e.target.closest('.tile-btn, .cta-link, a')) return;
+    const fsList = window._combinedAll ? window._combinedAll.map(it => it.model).filter(Boolean) : [m];
+    openFsOverlay(m, fsList, false);
   });
   tile.style.cursor = 'pointer';
 
@@ -15017,80 +15045,11 @@ buildTile = function(model, quality) {
 
 
     tile.addEventListener('click', e => {
-
-
-      if (e.target.closest('.tile-btn, .cta-link')) return;
-
-
-      tapCount++;
-
-
-      if (tapCount === 1) {
-
-
-        tapTimer = setTimeout(() => {
-
-
-          tapCount = 0;
-
-
-          const existing = tile.querySelector('.mobile-meta-badge');
-
-
-          if (existing) { existing.remove(); return; }
-
-
-          document.querySelectorAll('.mobile-meta-badge').forEach(b => b.remove());
-
-
-          const badge = document.createElement('div');
-
-
-          badge.className = 'mobile-meta-badge';
-
-
-          const viewers = model.viewersCount ? fmtViewers(model.viewersCount) : '';
-
-
-          const flag = model.country ? getCountryFlag(model.country) : '';
-
-
-          const ctry = model.country ? model.country.toUpperCase() : '';
-
-
-          badge.innerHTML = '<span class="mmb-name">' + model.username + '</span>' +
-
-
-            (viewers ? '<span class="mmb-viewers">👁 ' + viewers + '</span>' : '') +
-
-
-            (flag    ? '<span class="mmb-country">' + flag + ' ' + ctry + '</span>' : '');
-
-
-          tile.appendChild(badge);
-
-
-          setTimeout(() => badge.remove(), 3000);
-
-
-        }, 260);
-
-
-      } else if (tapCount === 2) {
-
-
-        clearTimeout(tapTimer); tapCount = 0;
-
-
-        const fsList = window._combinedAll
-          ? window._combinedAll.map(it => it.model).filter(Boolean)
-          : currentFiltered;
-        openFsOverlay(model, fsList, false);
-
-
-      }
-
-
+      if (e.target.closest('.tile-btn, .cta-link, a')) return;
+      const fsList = window._combinedAll
+        ? window._combinedAll.map(it => it.model).filter(Boolean)
+        : currentFiltered;
+      openFsOverlay(model, fsList, false);
     });
 
 
