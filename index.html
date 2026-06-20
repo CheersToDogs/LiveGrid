@@ -10518,31 +10518,31 @@ function renderGrid() {
 
 
 function loadMoreCombined() {
-  if (!window._combinedAll || !window._combinedOffset) return;
+  if (!window._combinedAll) return;
   const src = currentSourceFilter || 'all';
   const grid = document.getElementById('grid');
   const gridCount = parseInt(document.getElementById('gridSelect')?.value || '9') || 9;
 
-  // Get pool matching current filter
+  // Pool matching current filter (raw items, not built)
   const pool = src === 'all'
     ? window._combinedAll
-    : window._combinedAll.filter(({el}) => el.dataset.source === src);
+    : window._combinedAll.filter(it => it.source === src);
 
-  // Find tiles not yet in DOM
-  const notInDom = pool.filter(({el}) => !grid.contains(el));
+  // Items whose tile isn't in the DOM yet
+  const notInDom = pool.filter(it => !it.el || !grid.contains(it.el));
   if (!notInDom.length) return;
 
-  // Add next batch
   const batch = notInDom.slice(0, gridCount);
-  batch.forEach(({el}) => {
-    // Apply current filter visibility
-    el.style.display = (src === 'all' || el.dataset.source === src) ? '' : 'none';
+  batch.forEach(item => {
+    const el = _ensureTile(item);  // build now
+    el.style.display = (src === 'all' || item.source === src) ? '' : 'none';
     grid.appendChild(el);
     if (el._pendingHls && el._pendingVideo) {
       el._pendingHls.attachMedia(el._pendingVideo);
       delete el._pendingHls;
       delete el._pendingVideo;
     }
+    if (vpObserver) vpObserver.observe(el);
   });
   console.log('[LiveGrid] loadMoreCombined: added', batch.length, 'tiles, total in DOM:', grid.querySelectorAll('.tile').length);
   if (infiniteObserver) { const _s = document.getElementById('scroll-sentinel'); if (_s) { infiniteObserver.unobserve(_s); infiniteObserver.observe(_s); } }
@@ -11569,7 +11569,7 @@ function buildTile(model, quality) {
     e.stopPropagation();
 
 
-    const _fl = window._combinedAll ? window._combinedAll.map(({el}) => el._model || el._xhModel).filter(Boolean) : currentFiltered;
+    const _fl = window._combinedAll ? window._combinedAll.map(it => it.model).filter(Boolean) : currentFiltered;
       openFsOverlay(model, _fl, false);
 
 
@@ -14122,22 +14122,21 @@ function setSourceFilter(src) {
   document.querySelectorAll('.source-pill').forEach(p =>
     p.classList.toggle('active', p.dataset.src === src));
 
-  // Check if we have tiles for this source in the DOM
-  const tiles = [...document.querySelectorAll('#grid .tile')];
+  const grid = document.getElementById('grid');
+  const gridCount = parseInt(document.getElementById('gridSelect')?.value || '9') || 9;
+
+  // Does the DOM have any tiles for this source?
+  const domTiles = [...grid.querySelectorAll('.tile')];
   const hasSrc = src === 'all'
-    ? tiles.length > 0
-    : tiles.some(t => t.dataset.source === src);
+    ? domTiles.length > 0
+    : domTiles.some(t => t.dataset.source === src);
 
   if (!hasSrc && window._combinedAll) {
-    // Pull matching tiles from _combinedAll and append them
-    const grid = document.getElementById('grid');
-    const gridCount = parseInt(document.getElementById('gridSelect')?.value || '9') || 9;
     const pool = src === 'all'
       ? window._combinedAll
-      : window._combinedAll.filter(({el}) => el.dataset.source === src);
-    // Pull enough to fill the grid for this source
-    const toAdd = pool.slice(0, Math.max(gridCount, 9));
-    toAdd.forEach(({el}) => {
+      : window._combinedAll.filter(it => it.source === src);
+    pool.slice(0, Math.max(gridCount, 9)).forEach(item => {
+      const el = _ensureTile(item);
       if (!grid.contains(el)) {
         grid.appendChild(el);
         if (el._pendingHls && el._pendingVideo) {
@@ -14145,14 +14144,22 @@ function setSourceFilter(src) {
           delete el._pendingHls;
           delete el._pendingVideo;
         }
+        if (vpObserver) vpObserver.observe(el);
       }
     });
   }
 
-  // Now show/hide
-  document.querySelectorAll('#grid .tile').forEach(t => {
+  // Show/hide existing tiles by source
+  grid.querySelectorAll('.tile').forEach(t => {
     t.style.display = (src === 'all' || t.dataset.source === src) ? '' : 'none';
   });
+}
+
+// Lazily build a tile element from a _combinedAll item (defers hls.loadSource until render)
+function _ensureTile(item) {
+  if (item.el) return item.el;
+  item.el = item.source === 'sc' ? buildTile(item.model, 'auto') : buildXhlTile(item.model);
+  return item.el;
 }
 
 async function loadCombined(reset = true) {
@@ -14209,8 +14216,8 @@ async function loadCombined(reset = true) {
   const scUsernames = new Set(scModels.map(m => m.username.toLowerCase()));
   const xhUniq = xhModels.filter(m => !scUsernames.has(m.username.toLowerCase()));
   const merged = [
-    ...scModels.map(m => ({ viewers: m.viewersCount||0, el: buildTile(m,'auto') })),
-    ...xhUniq.map(m  => ({ viewers: m.viewersCount||0, el: buildXhlTile(m) })),
+    ...scModels.map(m => ({ viewers: m.viewersCount||0, model: m, source: 'sc', el: null })),
+    ...xhUniq.map(m  => ({ viewers: m.viewersCount||0, model: m, source: 'xh', el: null })),
   ].sort((a,b) => b.viewers - a.viewers);
 
   if (reset && !merged.length) {
@@ -14224,8 +14231,8 @@ async function loadCombined(reset = true) {
   window._combinedAll = merged;
   window._combinedOffset = 0;
   const gridCount = parseInt(document.getElementById('gridSelect')?.value || '9') || 9;
-  const _scPool = merged.filter(({el}) => el.dataset.source === 'sc');
-  const _xhPool = merged.filter(({el}) => el.dataset.source === 'xh');
+  const _scPool = merged.filter(it => it.source === 'sc');
+  const _xhPool = merged.filter(it => it.source === 'xh');
   const firstBatch = [];
   let _si = 0, _xi = 0;
   while (firstBatch.length < gridCount) {
@@ -14236,9 +14243,9 @@ async function loadCombined(reset = true) {
     else break;
   }
   window._combinedOffset = firstBatch.length;
-  firstBatch.forEach(({el}) => {
+  firstBatch.forEach(item => {
+    const el = _ensureTile(item);  // build tile NOW (fires hls.loadSource for just this tile)
     grid.appendChild(el);
-    // Now tile is in DOM — safe to attachMedia (Chrome sourceopen requires DOM attachment)
     if (el._pendingHls && el._pendingVideo) {
       el._pendingHls.attachMedia(el._pendingVideo);
       delete el._pendingHls;
@@ -14440,7 +14447,7 @@ function buildXhlTile(m) {
   xhFsBtn.className = 'tile-btn'; xhFsBtn.textContent = '\u26F6'; xhFsBtn.title = 'Fullscreen';
   xhFsBtn.onclick = e => {
     e.stopPropagation();
-    const _fl = window._combinedAll ? window._combinedAll.map(({el}) => el._model || el._xhModel).filter(Boolean) : [m];
+    const _fl = window._combinedAll ? window._combinedAll.map(it => it.model).filter(Boolean) : [m];
     openFsOverlay(m, _fl, false);
   };
   top.appendChild(xhFsBtn);
@@ -14458,7 +14465,7 @@ function buildXhlTile(m) {
     } else if (_xhTap === 2) {
       clearTimeout(_xhTimer); _xhTap = 0;
       const fsList = window._combinedAll
-        ? window._combinedAll.map(({el}) => el._model || el._xhModel).filter(Boolean)
+        ? window._combinedAll.map(it => it.model).filter(Boolean)
         : [m];
       openFsOverlay(m, fsList, false);
     }
@@ -14951,7 +14958,7 @@ buildTile = function(model, quality) {
     if (e.target.closest('.tile-btn, .cta-link')) return;
 
 
-    const _fl = window._combinedAll ? window._combinedAll.map(({el}) => el._model || el._xhModel).filter(Boolean) : currentFiltered;
+    const _fl = window._combinedAll ? window._combinedAll.map(it => it.model).filter(Boolean) : currentFiltered;
       openFsOverlay(model, _fl, false);
 
 
@@ -15031,7 +15038,7 @@ buildTile = function(model, quality) {
 
 
         const fsList = window._combinedAll
-          ? window._combinedAll.map(({el}) => el._model || el._xhModel).filter(Boolean)
+          ? window._combinedAll.map(it => it.model).filter(Boolean)
           : currentFiltered;
         openFsOverlay(model, fsList, false);
 
