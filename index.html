@@ -10883,6 +10883,7 @@ function buildTile(model, quality) {
   tile.dataset.username = model.username;
   tile.dataset.created = Date.now();
   tile.dataset.source = 'sc';
+  tile._model = model;  // store for fullscreen
 
 
 
