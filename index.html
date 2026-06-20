@@ -10517,6 +10517,19 @@ function renderGrid() {
 
 
 
+// Prefetch next batch: build tiles + load manifests (no attachMedia = no decode) so scroll is instant
+function prefetchNextBatch() {
+  if (!window._combinedAll) return;
+  const grid = document.getElementById('grid');
+  const src = currentSourceFilter || 'all';
+  const gridCount = parseInt(document.getElementById('gridSelect')?.value || '9') || 9;
+  const pool = src === 'all' ? window._combinedAll : window._combinedAll.filter(it => it.source === src);
+  // Next unbuilt items beyond what's in DOM
+  const notBuilt = pool.filter(it => !it.el).slice(0, gridCount);
+  notBuilt.forEach(item => { try { _ensureTile(item); } catch(e){} });
+  if (notBuilt.length) console.log('[LiveGrid] prefetched', notBuilt.length, 'tiles (manifest only)');
+}
+
 function loadMoreCombined() {
   if (!window._combinedAll) return;
   const src = currentSourceFilter || 'all';
@@ -10546,6 +10559,7 @@ function loadMoreCombined() {
   });
   console.log('[LiveGrid] loadMoreCombined: added', batch.length, 'tiles, total in DOM:', grid.querySelectorAll('.tile').length);
   if (infiniteObserver) { const _s = document.getElementById('scroll-sentinel'); if (_s) { infiniteObserver.unobserve(_s); infiniteObserver.observe(_s); } }
+  setTimeout(prefetchNextBatch, 1500);
 }
 
 function setupInfiniteScroll() {
@@ -14158,7 +14172,7 @@ function setSourceFilter(src) {
 // Lazily build a tile element from a _combinedAll item (defers hls.loadSource until render)
 function _ensureTile(item) {
   if (item.el) return item.el;
-  item.el = item.source === 'sc' ? buildTile(item.model, 'auto') : buildXhlTile(item.model);
+  item.el = item.source === 'sc' ? buildTile(item.model, '240p') : buildXhlTile(item.model);
   return item.el;
 }
 
@@ -14259,6 +14273,8 @@ async function loadCombined(reset = true) {
   }
   // Re-init infinite scroll observer (grid was rebuilt)
   setupInfiniteScroll();
+  // Prefetch next batch's manifests after visible tiles settle (instant scroll)
+  setTimeout(prefetchNextBatch, 2500);
 
   // One-time interaction unlock for Chrome autoplay policy
   // Chrome may block MediaSource until user gesture — restart IDLE instances on first click
