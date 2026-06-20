@@ -10567,24 +10567,30 @@ function _reviveTile(tile) {
 // Free HLS decoders for tiles scrolled far above viewport (caps concurrent decodes).
 // Keeps the element + shows snapshot (no DOM removal = no scroll jump). item.el retained.
 const LIVE_TILE_CAP = 27;
+function _freeOneTile(t) {
+  const u = t.dataset.username;
+  const hls = hlsInstances.get(u);
+  if (hls) { try { hls.destroy(); } catch(e){} hlsInstances.delete(u); }
+  const v = t.querySelector('video');
+  if (v) { try { v.pause(); v.removeAttribute('src'); v.load(); } catch(e){} }
+  const snap = t.querySelector('.tile-snapshot');
+  if (snap) snap.classList.remove('hidden');
+  t._freed = true;
+}
 function _freeOldTiles() {
   const grid = document.getElementById('grid');
-  const tiles = [...grid.querySelectorAll('.tile')].filter(t => !t._freed);
-  if (tiles.length <= LIVE_TILE_CAP) return;
-  const toFree = tiles.slice(0, tiles.length - LIVE_TILE_CAP);
-  let freed = 0;
-  toFree.forEach(t => {
-    const u = t.dataset.username;
-    const hls = hlsInstances.get(u);
-    if (hls) { try { hls.destroy(); } catch(e){} hlsInstances.delete(u); }
-    const v = t.querySelector('video');
-    if (v) { try { v.pause(); v.removeAttribute('src'); v.load(); } catch(e){} }
-    const snap = t.querySelector('.tile-snapshot');
-    if (snap) snap.classList.remove('hidden');  // show still again
-    t._freed = true;
-    freed++;
-  });
-  if (freed) console.log('[LiveGrid] freed', freed, 'offscreen decoders, live cap', LIVE_TILE_CAP);
+  const wrap = document.getElementById('grid-wrapper');
+  const live = [...grid.querySelectorAll('.tile')].filter(t => !t._freed);
+  if (live.length <= LIVE_TILE_CAP) return;
+  const wr = wrap.getBoundingClientRect();
+  const wc = (wr.top + wr.bottom) / 2;
+  const scored = live.map(t => {
+    const r = t.getBoundingClientRect();
+    return { t, d: Math.abs((r.top + r.bottom) / 2 - wc) };
+  }).sort((a,b) => a.d - b.d);
+  const toFree = scored.slice(LIVE_TILE_CAP);
+  toFree.forEach(({t}) => _freeOneTile(t));
+  if (toFree.length) console.log('[LiveGrid] freed', toFree.length, 'far decoders; live cap', LIVE_TILE_CAP);
 }
 
 // Prefetch next batch: build tiles + load manifests (no attachMedia = no decode) so scroll is instant
