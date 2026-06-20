@@ -14738,7 +14738,7 @@ window.addEventListener('resize', () => {
 // ── FULLSCREEN SWIPE MODE ─────────────────────────────────────────────────────
 
 
-let _fsHls=null, _fsList=[], _fsIdx=0, _fsFavMode=false, _fsMuted=false;
+let _fsHls=null, _fsList=[], _fsIdx=0, _fsFavMode=false, _fsMuted=false; let _fsAdoptedTile=null, _fsAdoptedVideo=null;
 
 
 let _fsTx=0, _fsTy=0, _fsSwiping=false;
@@ -14780,7 +14780,7 @@ function openFsOverlay(usernameOrModel, list, favMode) {
   document.getElementById('grid-wrapper').classList.remove('has-active-audio');
 
 
-  hlsInstances.forEach(h => { try { h.stopLoad(); } catch(e){} });
+  /* keep grid streams alive — fullscreen adopts the live tile, no teardown */
 
 
   _fsMuted = false;
@@ -14798,7 +14798,7 @@ function openFsOverlay(usernameOrModel, list, favMode) {
   setTimeout(() => { if (document.activeElement) document.activeElement.blur(); ov.focus(); }, 0);
 
 
-  _fsLoad();
+  _fsShow();
 
 
 }
@@ -14821,35 +14821,68 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 function closeFsOverlay() {
-
-
   document.getElementById('fs-overlay').classList.remove('open');
-
-
+  _fsReturnAdopted();   // move the adopted video back into its tile (keeps playing)
   if (_fsHls) { try{_fsHls.destroy();}catch(e){} _fsHls=null; }
-
-
   const v=document.getElementById('fs-video');
   const fsLoading=document.getElementById('fs-loading');
-  if(fsLoading) fsLoading.classList.remove('hidden');  // show spinner
+  if(fsLoading) fsLoading.classList.remove('hidden');
   v.pause(); v.src=''; v.removeAttribute('src');
-
-
-  // Resume grid: stopLoad'd live streams go stale, so rebuild VISIBLE tiles fresh (live edge)
-  const _grid = document.getElementById('grid');
-  const _wrap = document.getElementById('grid-wrapper');
-  if (_grid && _wrap) {
-    const wr = _wrap.getBoundingClientRect();
-    _grid.querySelectorAll('.tile').forEach(t => {
-      const r = t.getBoundingClientRect();
-      const visible = r.bottom >= wr.top - 300 && r.top <= wr.bottom + 300;
-      if (!visible) return;            // offscreen tiles stay stopped (will revive on scroll)
-      _freeOneTile(t);                 // tear down stale stream
-      _reviveTile(t);                  // rebuild fresh at live edge
-    });
-  }
+  // Grid streams were only paused (never stopLoad'd), so just resume them — no rebuild needed
+  document.querySelectorAll('#grid video').forEach(vid => { try { vid.play().catch(()=>{}); } catch(e){} });
 }
 
+function _fsTryAdopt(model){
+  const uname = model && model.username; if(!uname) return false;
+  const sel = '.tile[data-username="' + ((window.CSS && CSS.escape) ? CSS.escape(uname) : uname) + '"]';
+  const tile = document.querySelector(sel);
+  if(!tile || tile._freed) return false;
+  const v = tile.querySelector('video');
+  if(!v || v.readyState < 2) return false;   // only adopt a genuinely-playing stream
+  const wrap = document.getElementById('fs-video-wrap');
+  const fsv  = document.getElementById('fs-video');
+  const fsLoading = document.getElementById('fs-loading');
+  if(fsLoading) fsLoading.classList.add('hidden');
+  if(fsv) fsv.style.display = 'none';        // hide the static fs video
+  _fsAdoptedTile = tile; _fsAdoptedVideo = v;
+  v._origNextSib = v.nextSibling;
+  v._gridStyle = v.getAttribute('style') || '';
+  const snap = tile.querySelector('.tile-snapshot'); if(snap) snap.classList.remove('hidden');
+  v.setAttribute('style','width:100%;height:100%;object-fit:contain;display:block;');
+  wrap.insertBefore(v, wrap.firstChild);     // reparent — keeps playing, no reload
+  v.muted = _fsMuted;
+  v.play().catch(()=>{});
+  return true;
+}
+
+function _fsReturnAdopted(){
+  if(!_fsAdoptedVideo) return;
+  const v=_fsAdoptedVideo, tile=_fsAdoptedTile;
+  v.muted = true;
+  if(v._gridStyle !== undefined) v.setAttribute('style', v._gridStyle);
+  if(tile && tile.isConnected){
+    if(v._origNextSib && v._origNextSib.parentNode===tile) tile.insertBefore(v, v._origNextSib);
+    else tile.insertBefore(v, tile.firstChild);
+    const snap=tile.querySelector('.tile-snapshot'); if(snap) snap.classList.add('hidden');
+    v.play().catch(()=>{});
+  } else { try{ v.remove(); }catch(e){} }   // tile gone — drop the element
+  const fsv=document.getElementById('fs-video'); if(fsv) fsv.style.display='';
+  _fsAdoptedVideo=null; _fsAdoptedTile=null;
+}
+
+function _fsShow(){
+  const m=_fsList[_fsIdx]; if(!m) return;
+  document.getElementById('fs-counter').textContent = (_fsIdx+1)+' / '+_fsList.length;
+  document.getElementById('fs-username').textContent = m.username;
+  const vw=m.viewersCount?('\uD83D\uDC41 '+fmtViewers(m.viewersCount)):'';
+  const co=m.country?('  '+getCountryFlag(m.country)+' '+m.country.toUpperCase()):'';
+  document.getElementById('fs-meta').textContent = vw+co;
+  const favOn=isFav(m.username); const fb=document.getElementById('fs-fav-btn');
+  fb.textContent=favOn?'\u2665':'\u2661'; fb.classList.toggle('fav-on',favOn);
+  document.getElementById('fs-mute-btn').textContent=_fsMuted?'\uD83D\uDD07':'\uD83D\uDD0A';
+  if(_fsTryAdopt(m)) return;   // INSTANT: continue the existing grid stream
+  _fsLoad();                    // fallback: fresh load (tile not live / offscreen)
+}
 
 function _fsLoad() {
 
@@ -14960,7 +14993,7 @@ function _fsNav(dir) {
   w.classList.add(cls);
 
 
-  setTimeout(()=>{ w.classList.remove(cls); _fsIdx=ni; _fsLoad(); }, 200);
+  setTimeout(()=>{ w.classList.remove(cls); _fsReturnAdopted(); _fsIdx=ni; _fsShow(); }, 200);
 
 
 }
