@@ -3257,39 +3257,732 @@
 
 
 
-    <div class="stream-controls" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
-      <!-- GRID SIZE -->
-      <div style="display:flex;align-items:center;gap:5px;">
-        <label>Grid</label>
-        <select id="gridSelect" onchange="renderGrid()">
-          <option value="1">1&times;1</option>
-          <option value="4">2&times;2</option>
-          <option value="9" selected>3&times;3</option>
-          <option value="16">4&times;4</option>
-          <option value="25">5&times;5</option>
-          <option value="36">6&times;6</option>
-        </select>
+    <div class="stream-controls" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1;">
+
+
+
+
+
+
+
+
+    <div style="display:flex;align-items:center;gap:5px;">
+
+
+
+
+
+
+
+
+      <label>Grid</label>
+
+
+
+
+
+
+
+
+      <select id="gridSelect">
+
+
+
+
+
+
+
+
+        <option value="1">1�1</option>
+
+
+
+
+
+
+
+
+        <option value="4">2�2</option>
+
+
+
+
+
+
+
+
+        <option value="9" selected>3�3</option>
+
+
+
+
+
+
+
+
+        <option value="16">4�4</option>
+
+
+
+
+
+
+
+
+        <option value="25">5�5</option>
+
+
+
+
+
+
+
+
+        <option value="36">6�6</option>
+
+
+
+
+
+
+
+
+      </select>
+
+
+
+
+
+
+
+
+    </div>
+
+
+
+
+
+
+
+
+    <div style="display:flex;align-items:center;gap:5px;">
+
+
+
+
+
+
+
+
+      <label>Gender</label>
+
+
+
+
+
+
+
+
+      <select id="genderSelect">
+
+
+
+
+
+
+
+
+        <option value="">All</option>
+
+
+
+
+
+
+
+
+        <option value="female" selected>Female</option>
+
+
+
+
+
+
+
+
+        <option value="male">Male</option>
+
+
+
+
+
+
+
+
+        <option value="couple">Couple</option>
+
+
+
+
+
+
+
+
+        <option value="trans">Trans</option>
+
+
+
+
+
+
+
+
+      </select>
+
+
+
+
+
+
+
+
+    </div>
+
+
+
+
+
+
+
+
+    <div style="display:flex;align-items:center;gap:5px;">
+
+
+
+
+
+
+
+
+      <label>Sort</label>
+
+
+
+
+
+
+
+
+      <select id="sortSelect">
+
+
+
+
+
+
+
+
+        <option value="viewersCount" selected>Most Viewers</option>
+
+
+
+
+
+
+
+
+        <option value="viewersCountAsc">Least Viewers</option>
+
+
+
+
+
+
+
+
+        <option value="onlineTime">Longest Online</option>
+
+
+
+
+
+
+
+
+        <option value="new">Newest</option>
+
+
+
+
+
+
+
+
+      </select>
+
+
+
+
+
+
+
+
+    </div>
+
+
+
+
+
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+
+
+      <label>Status</label>
+
+
+      <label class="status-cb"><input type="checkbox" name="statusFilter" value="public" checked> Public</label>
+
+
+      <label class="status-cb"><input type="checkbox" name="statusFilter" value="private"> Private</label>
+
+
+      <label class="status-cb"><input type="checkbox" name="statusFilter" value="groupShow"> Group</label>
+
+
+      <label class="status-cb"><input type="checkbox" name="statusFilter" value="p2p"> Cam2Cam</label>
+
+
+    </div>
+
+
+
+
+
+
+
+
+    <div style="display:flex;align-items:center;gap:5px;">
+
+
+
+
+
+
+
+
+      <label>Tag</label>
+
+
+
+
+
+
+
+
+      <input type="text" id="tagInput" placeholder="latina, bbw�">
+
+
+
+
+
+
+
+
+    </div>
+
+
+
+
+
+
+
+
+    <div style="display:flex;align-items:center;gap:5px;">
+
+
+
+
+
+
+
+
+      <label>Country</label>
+
+
+
+
+
+
+
+
+      <select id="countrySelect"><option value="">All</option></select>
+
+
+
+
+
+
+
+
+    </div>
+
+
+
+
+
+
+
+
+    <div style="display:flex;align-items:center;gap:5px;">
+
+
+
+
+
+
+
+
+      <label>Quality</label>
+
+
+
+
+
+
+
+
+      <select id="qualitySelect">
+
+
+
+
+
+
+
+
+        <option value="original">Original (Max)</option>
+
+
+
+
+
+
+
+
+        <option value="720p">720p</option>
+
+
+
+
+
+
+
+
+        <option value="480p">480p</option>
+
+
+
+
+
+
+
+
+        <option value="240p">240p</option>
+
+
+
+
+
+
+
+
+        <option value="160p">160p</option>
+
+
+
+
+
+
+
+
+      </select>
+
+
+
+
+
+
+
+
+    </div>
+
+
+
+
+
+
+
+
+    <div style="display:flex;align-items:center;gap:5px;">
+
+
+
+
+
+
+
+
+      <label>Aff.</label>
+
+
+
+
+
+
+
+
+      <input type="text" id="affId" class="aff-input" placeholder="campaign-id">
+
+
+
+
+
+
+
+
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- D-PAD NAVIGATOR -->
+
+
+
+
+
+
+
+
+    <div class="dpad-container" style="display:flex;align-items:center;gap:5px;">
+
+
+
+
+
+
+
+
+      <label>Nav</label>
+
+
+
+
+
+
+
+
+      <div class="dpad">
+
+
+
+
+
+
+
+
+        <div style="display:grid;grid-template-columns:repeat(3,24px);grid-template-rows:repeat(3,24px);gap:2px;">
+
+
+
+
+
+
+
+
+          <div></div>
+
+
+
+
+
+
+
+
+          <button class="dpad-btn" id="dpad-up" title="Up (↑)">▲</button>
+
+
+
+
+
+
+
+
+          <div></div>
+
+
+
+
+
+
+
+
+          <button class="dpad-btn" id="dpad-left" title="Left (←)">◀</button>
+
+
+
+
+
+
+
+
+          <div class="dpad-center" title="Current position" id="dpad-pos">�</div>
+
+
+
+
+
+
+
+
+          <button class="dpad-btn" id="dpad-right" title="Right (→)">▶</button>
+
+
+
+
+
+
+
+
+          <div></div>
+
+
+
+
+
+
+
+
+          <button class="dpad-btn" id="dpad-down" title="Down (↓)">▼</button>
+
+
+
+
+
+
+
+
+          <div></div>
+
+
+
+
+
+
+
+
+        </div>
+
+
+
+
+
+
+
+
       </div>
-      <!-- GENDER -->
-      <div style="display:flex;align-items:center;gap:5px;">
-        <label>Gender</label>
-        <select id="genderSelect" onchange="loadStreams()">
-          <option value="female">Female</option>
-          <option value="male">Male</option>
-          <option value="couple">Couple</option>
-          <option value="trans">Trans</option>
-        </select>
-      </div>
-      <button class="btn btn-primary" onclick="loadStreams()">&#x21BA; Refresh</button>
-      <button class="btn btn-danger" onclick="muteAll()">&#x1F507; Mute All</button>
-      <button class="btn btn-fav" onclick="toggleFavPanel()">&#x2661; Favs</button>
+
+
+
+
+
+
+
+
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <button class="btn btn-primary" onclick="loadStreams()">⟳ Refresh</button>
+
+
+
+
+
+
+
+
+    <button class="btn btn-loadall" id="loadAllBtn" onclick="loadAll()">▶ Load All</button>
+
+
+
+
+
+
+
+
+    <button class="btn btn-pause" id="pauseAllBtn" onclick="togglePauseAll()">▮▮ Pause All</button>
+
+
+
+
+
+
+
+
+    <button class="btn btn-danger" onclick="muteAll()">🔇 Mute All</button>
+
+
+
+
+
+
+
+
+    <button class="btn btn-fav" onclick="toggleFavPanel()">♡ Favs</button>
+
+
+
+
+
+
+
+
+    <button class="btn btn-stats" style="border-color:#a78bfa;color:#a78bfa;" onclick="openWRScanner()">&#9889; WebRTC</button>
+    <button class="btn btn-stats" onclick="openStats()">📊 Stats</button>
     </div><!-- /stream-controls -->
 
 
 
 
 
-    <div class="cam-controls" style="display:none;">
+    <div class="cam-controls">
 
 
 
@@ -3345,7 +4038,7 @@
 
     </div>
 
-    <div class="xhl-controls" style="display:none;">
+    <div class="xhl-controls">
       <label>Category</label>
       <select id="xhlTagSelect">
         <option value="girls">Girls</option>
