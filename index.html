@@ -3242,7 +3242,7 @@
     <button class="nav-pill" onclick="toggleFavPanel()">♡ Favs</button>
 
 
-    <button style="" class="nav-pill" onclick="openStats()">📊 Stats</button>
+    <button style="display:none;" class="nav-pill" onclick="openStats()">📊 Stats</button>
 
 
     <button style="display:none;" class="nav-pill" onclick="openMobileFilters()">⚙ Filters</button>
@@ -5659,19 +5659,16 @@ function renderFavPanel() {
 
 
 
-    if (online) {
-      const liveBtn = document.createElement('button');
-      liveBtn.className = 'btn btn-primary'; liveBtn.style.cssText = 'font-size:10px;padding:3px 8px;';
-      liveBtn.textContent = '▶ Live';
-      liveBtn.onclick = e => {
-        e.stopPropagation(); closeFavPanel();
-        const m = (window._combinedAll||[]).map(({el})=>el._model||el._xhModel).filter(Boolean).find(x=>x.username===username) || (allModels||[]).find(x=>x.username===username);
-        if (m) { const fl=(window._combinedAll||[]).map(({el})=>el._model||el._xhModel).filter(Boolean); openFsOverlay(m,fl.length?fl:[m],false); }
-        else window.open(buildAffUrl(username),'_blank','noopener');
-      };
-      item.appendChild(liveBtn);
-    }
-    item.onclick = e => { if (!e.target.closest('button')) window.open(buildAffUrl(username), '_blank', 'noopener'); };
+    // Click → open room
+
+
+
+
+
+
+
+
+    item.onclick = () => window.open(buildAffUrl(username), '_blank', 'noopener');
 
 
 
@@ -10548,7 +10545,6 @@ function loadMoreCombined() {
     }
   });
   console.log('[LiveGrid] loadMoreCombined: added', batch.length, 'tiles, total in DOM:', grid.querySelectorAll('.tile').length);
-  if (infiniteObserver) { const _s = document.getElementById('scroll-sentinel'); if (_s) { infiniteObserver.unobserve(_s); infiniteObserver.observe(_s); } }
 }
 
 function setupInfiniteScroll() {
@@ -12564,43 +12560,887 @@ document.getElementById('stats-modal').addEventListener('click', e => { if (e.ta
 
 
 function renderStats() {
+
+
+
+
+
+
+
+
   const body = document.getElementById('stats-body');
-  body.innerHTML = '';
-  const scModels = (window._combinedAll||[]).filter(({el})=>el.dataset.source==='sc').map(({el})=>el._model).filter(Boolean);
-  const xhModels = (window._combinedAll||[]).filter(({el})=>el.dataset.source==='xh').map(({el})=>el._xhModel).filter(Boolean);
-  const sc = scModels.length ? scModels : (allModels||[]);
-  const xh = xhModels;
-  const all = [...sc, ...xh];
-  if (!all.length) { body.innerHTML = '<div style="color:var(--muted);font-size:12px;">No data.</div>'; return; }
-  function sect(title, models, color) {
-    if (!models.length) return null;
-    const tv = models.reduce((s,m)=>s+(m.viewersCount||0),0);
-    const gC={}, cC={}, tC={};
-    models.forEach(m=>{
-      const g=m.gender||'female'; gC[g]=(gC[g]||0)+1;
-      if(m.country) cC[m.country]=(cC[m.country]||0)+1;
-      (m.tags||m.categories||[]).forEach(t=>{const s=typeof t==='string'?t:(t.tag||t.name||'');if(s)tC[s]=(tC[s]||0)+1;});
+
+
+
+
+
+
+
+
+  const models = allModels;
+
+
+
+
+
+
+
+
+  if (!models.length) { body.innerHTML = '<div style="color:var(--muted);font-family:\'Space Mono\',monospace;font-size:12px;">No data � load streams first.</div>'; return; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const totalViewers = models.reduce((s, m) => s + (m.viewersCount || 0), 0);
+
+
+
+
+
+
+
+
+  const hdCount = models.filter(m => m.broadcastHD).length;
+
+
+
+
+
+
+
+
+  const countries = new Set(models.map(m => m.country).filter(Boolean)).size;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const genderCounts = {};
+
+
+
+
+
+
+
+
+  models.forEach(m => { if (m.gender) genderCounts[m.gender] = (genderCounts[m.gender]||0)+1; });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const countryCounts = {};
+
+
+
+
+
+
+
+
+  models.forEach(m => { if (m.country) countryCounts[m.country] = (countryCounts[m.country]||0)+1; });
+
+
+
+
+
+
+
+
+  const topCountries = Object.entries(countryCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const tagCounts = {};
+
+
+
+
+
+
+
+
+  models.forEach(m => {
+
+
+
+
+
+
+
+
+    const tags = m.tags || m.categories || [];
+
+
+
+
+
+
+
+
+    tags.forEach(t => {
+
+
+
+
+
+
+
+
+      const str = typeof t === 'string' ? t : (t.tag || t.name || String(t));
+
+
+
+
+
+
+
+
+      if (str) tagCounts[str] = (tagCounts[str]||0)+1;
+
+
+
+
+
+
+
+
     });
-    const topC=Object.entries(cC).sort((a,b)=>b[1]-a[1]).slice(0,8);
-    const topT=Object.entries(tC).sort((a,b)=>b[1]-a[1]).slice(0,25);
-    const d=document.createElement('div'); d.style.marginBottom='16px';
-    d.innerHTML=`<div class="stats-section-title" style="color:${color};border-color:${color}44;">${title}</div>
-      <div class="stats-kpis">
-        <div class="kpi"><div class="kpi-val">${fmtNum(models.length)}</div><div class="kpi-label">Streams</div></div>
-        <div class="kpi"><div class="kpi-val">${fmtNum(tv)}</div><div class="kpi-label">Viewers</div></div>
-        <div class="kpi"><div class="kpi-val">${fmtNum(Math.round(tv/models.length))}</div><div class="kpi-label">Avg</div></div>
-        <div class="kpi"><div class="kpi-val">${new Set(models.map(m=>m.country).filter(Boolean)).size}</div><div class="kpi-label">Countries</div></div>
-      </div>
-      ${Object.keys(gC).length?`<div style="display:flex;gap:5px;flex-wrap:wrap;margin:4px 0 8px;">${Object.entries(gC).sort((a,b)=>b[1]-a[1]).map(([g,n])=>`<span style="font-size:11px;background:var(--tile-bg);border-radius:4px;padding:2px 8px;">${g} ${n}</span>`).join('')}</div>`:''}
-      ${topC.length?`<div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin:4px 0 3px;">COUNTRIES</div><div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;">${topC.map(([c,n])=>`<span style="font-size:11px;background:var(--tile-bg);border-radius:4px;padding:2px 7px;">${getCountryFlag(c)} ${c.toUpperCase()} ${n}</span>`).join('')}</div>`:''}
-      ${topT.length?`<div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin:4px 0 3px;">TOP TAGS</div><div class="stats-tag-cloud">${topT.map(([t,n])=>`<div class="stats-tag">${t} <span class="tag-count">${n}</span></div>`).join('')}</div>`:''}`;
-    return d;
+
+
+
+
+
+
+
+
+  });
+
+
+
+
+
+
+
+
+  const topTags = Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]).slice(0,40);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const qualCounts = {};
+
+
+
+
+
+
+
+
+  models.forEach(m => {
+
+
+
+
+
+
+
+
+    Object.keys(m.stream?.urls || {}).forEach(q => { if (m.stream.urls[q]) qualCounts[q] = (qualCounts[q]||0)+1; });
+
+
+
+
+
+
+
+
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  body.innerHTML = '';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const kpis = document.createElement('div'); kpis.className='stats-kpis';
+
+
+
+
+
+
+
+
+  [
+
+
+
+
+
+
+
+
+    { val: fmtNum(models.length), label: 'Live Streams' },
+
+
+
+
+
+
+
+
+    { val: fmtNum(totalViewers), label: 'Total Viewers' },
+
+
+
+
+
+
+
+
+    { val: countries, label: 'Countries' },
+
+
+
+
+
+
+
+
+    { val: hdCount, label: 'HD Streams' },
+
+
+
+
+
+
+
+
+    { val: Math.round(totalViewers/Math.max(models.length,1)), label: 'Avg Viewers' },
+
+
+
+
+
+
+
+
+    { val: Object.keys(tagCounts).length, label: 'Unique Tags' },
+
+
+
+
+
+
+
+
+  ].forEach(k => { kpis.innerHTML += `<div class="kpi"><div class="kpi-val">${k.val}</div><div class="kpi-label">${k.label}</div></div>`; });
+
+
+
+
+
+
+
+
+  body.appendChild(kpis);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const gSection = document.createElement('div');
+
+
+
+
+
+
+
+
+  gSection.innerHTML = `<div class="stats-section-title">Gender Breakdown</div>`;
+
+
+
+
+
+
+
+
+  const gList = document.createElement('div'); gList.className='stats-bar-list';
+
+
+
+
+
+
+
+
+  const gMax = Math.max(...Object.values(genderCounts), 1);
+
+
+
+
+
+
+
+
+  const gColors = { female: '', male: 'pink', couple: 'purple', trans: 'purple' };
+
+
+
+
+
+
+
+
+  Object.entries(genderCounts).sort((a,b)=>b[1]-a[1]).forEach(([g,cnt]) => {
+
+
+
+
+
+
+
+
+    const row = document.createElement('div'); row.className='stats-bar-row';
+
+
+
+
+
+
+
+
+    row.innerHTML = `<div class="stats-bar-label">${g}</div><div class="stats-bar-track"><div class="stats-bar-fill ${gColors[g]||''}" style="width:${Math.round(cnt/gMax*100)}%"></div></div><div class="stats-bar-count">${cnt}</div>`;
+
+
+
+
+
+
+
+
+    gList.appendChild(row);
+
+
+
+
+
+
+
+
+  });
+
+
+
+
+
+
+
+
+  gSection.appendChild(gList); body.appendChild(gSection);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const cSection = document.createElement('div');
+
+
+
+
+
+
+
+
+  cSection.innerHTML = `<div class="stats-section-title">Top Countries</div>`;
+
+
+
+
+
+
+
+
+  const cList = document.createElement('div'); cList.className='stats-bar-list';
+
+
+
+
+
+
+
+
+  const cMax = topCountries[0]?.[1] || 1;
+
+
+
+
+
+
+
+
+  topCountries.forEach(([code, cnt]) => {
+
+
+
+
+
+
+
+
+    const row = document.createElement('div'); row.className='stats-bar-row';
+
+
+
+
+
+
+
+
+    const label = document.createElement('div'); label.className='stats-bar-label';
+
+
+
+
+
+
+
+
+    label.textContent = `${getCountryFlag(code)} ${code.toUpperCase()}`;
+
+
+
+
+
+
+
+
+    label.onclick = () => { document.getElementById('countrySelect').value = code; renderGrid(); closeStats(); };
+
+
+
+
+
+
+
+
+    row.appendChild(label);
+
+
+
+
+
+
+
+
+    row.innerHTML += `<div class="stats-bar-track"><div class="stats-bar-fill" style="width:${Math.round(cnt/cMax*100)}%"></div></div><div class="stats-bar-count">${cnt}</div>`;
+
+
+
+
+
+
+
+
+    cList.appendChild(row);
+
+
+
+
+
+
+
+
+  });
+
+
+
+
+
+
+
+
+  cSection.appendChild(cList); body.appendChild(cSection);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const qSection = document.createElement('div');
+
+
+
+
+
+
+
+
+  qSection.innerHTML = `<div class="stats-section-title">Available Stream Qualities</div>`;
+
+
+
+
+
+
+
+
+  const qList = document.createElement('div'); qList.className='stats-bar-list';
+
+
+
+
+
+
+
+
+  const qMax = Math.max(...Object.values(qualCounts), 1);
+
+
+
+
+
+
+
+
+  Object.entries(qualCounts).sort((a,b)=>b[1]-a[1]).forEach(([q, cnt]) => {
+
+
+
+
+
+
+
+
+    const row = document.createElement('div'); row.className='stats-bar-row';
+
+
+
+
+
+
+
+
+    row.innerHTML = `<div class="stats-bar-label">${q==='original'?'MAX':q}</div><div class="stats-bar-track"><div class="stats-bar-fill purple" style="width:${Math.round(cnt/qMax*100)}%"></div></div><div class="stats-bar-count">${cnt}</div>`;
+
+
+
+
+
+
+
+
+    qList.appendChild(row);
+
+
+
+
+
+
+
+
+  });
+
+
+
+
+
+
+
+
+  qSection.appendChild(qList); body.appendChild(qSection);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  if (topTags.length) {
+
+
+
+
+
+
+
+
+    const tSection = document.createElement('div');
+
+
+
+
+
+
+
+
+    tSection.innerHTML = `<div class="stats-section-title">Live Tag Cloud (click to filter)</div>`;
+
+
+
+
+
+
+
+
+    const cloud = document.createElement('div'); cloud.className='stats-tag-cloud';
+
+
+
+
+
+
+
+
+    topTags.forEach(([tag, cnt]) => {
+
+
+
+
+
+
+
+
+      const el = document.createElement('div'); el.className='stats-tag';
+
+
+
+
+
+
+
+
+      el.innerHTML = `${tag} <span class="tag-count">${cnt}</span>`;
+
+
+
+
+
+
+
+
+      el.onclick = () => { setTagFilter(tag); closeStats(); };
+
+
+
+
+
+
+
+
+      cloud.appendChild(el);
+
+
+
+
+
+
+
+
+    });
+
+
+
+
+
+
+
+
+    tSection.appendChild(cloud); body.appendChild(tSection);
+
+
+
+
+
+
+
+
   }
-  const s1=sect(`COMBINED — ${all.length} streams`,all,'var(--accent)'); if(s1) body.appendChild(s1);
-  body.appendChild(Object.assign(document.createElement('div'),{style:'border-top:1px solid var(--border);margin:10px 0;'}));
-  const s2=sect(`▶ STRIPCHAT — ${sc.length} streams`,sc,'#00e5ff'); if(s2) body.appendChild(s2);
-  const s3=sect(`🔴 XHAMSTERLIVE — ${xh.length} streams`,xh,'#ff4444'); if(s3) body.appendChild(s3);
-  const u=document.createElement('div'); u.className='stats-updated'; u.textContent=`Updated ${new Date().toLocaleTimeString()}`; body.appendChild(u);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const updated = document.createElement('div'); updated.className='stats-updated';
+
+
+
+
+
+
+
+
+  updated.textContent = `Updated ${new Date().toLocaleTimeString()}`;
+
+
+
+
+
+
+
+
+  body.appendChild(updated);
+
+
+
+
+
+
+
+
 }
 
 
@@ -13331,11 +14171,11 @@ async function loadCombined(reset = true) {
 
   const [scData, xhData] = await Promise.allSettled([
     fetch('https://go.stripchat.com/api/models?' + new URLSearchParams({
-      limit:200, offset:0, sortBy:sortRaw,
+      limit:50, offset:0, sortBy:sortRaw,
       'filters[gender][0]': gender, 'filters[isBroadcasting]':'true',
     }), { headers:{ Accept:'application/json' } }).then(r => r.ok ? r.json() : Promise.reject(r.status)),
     fetch('/api/xhl/models?' + new URLSearchParams({
-      primaryTag:tag, online:'true', limit:90, offset:0,
+      primaryTag:tag, online:'true', limit:50, offset:0,
     }), { headers:{ Accept:'application/json' } }).then(r => r.ok ? r.json() : Promise.reject(r.status)),
   ]);
 
@@ -13361,17 +14201,7 @@ async function loadCombined(reset = true) {
   window._combinedAll = merged;
   window._combinedOffset = 0;
   const gridCount = parseInt(document.getElementById('gridSelect')?.value || '9') || 9;
-  const _scPool = merged.filter(({el}) => el.dataset.source === 'sc');
-  const _xhPool = merged.filter(({el}) => el.dataset.source === 'xh');
-  const firstBatch = [];
-  let _si = 0, _xi = 0;
-  while (firstBatch.length < gridCount) {
-    const wantXh = _xhPool.length && (firstBatch.length % 3 === 2);
-    if (wantXh && _xi < _xhPool.length)   firstBatch.push(_xhPool[_xi++]);
-    else if (_si < _scPool.length)          firstBatch.push(_scPool[_si++]);
-    else if (_xi < _xhPool.length)          firstBatch.push(_xhPool[_xi++]);
-    else break;
-  }
+  const firstBatch = merged.slice(0, gridCount);
   window._combinedOffset = firstBatch.length;
   firstBatch.forEach(({el}) => {
     grid.appendChild(el);
@@ -13577,7 +14407,6 @@ function buildXhlTile(m) {
   xhFsBtn.className = 'tile-btn'; xhFsBtn.textContent = '\u26F6'; xhFsBtn.title = 'Fullscreen';
   xhFsBtn.onclick = e => {
     e.stopPropagation();
-    clearTimeout(_xhTimer); _xhTap = 0;
     const _fl = window._combinedAll ? window._combinedAll.map(({el}) => el._model || el._xhModel).filter(Boolean) : [m];
     openFsOverlay(m, _fl, false);
   };
