@@ -10518,6 +10518,22 @@ function renderGrid() {
 
 
 
+// Revive freed tiles that are currently in/near the viewport (deterministic, not observer-dependent)
+function _reviveVisible() {
+  const grid = document.getElementById('grid');
+  const wrap = document.getElementById('grid-wrapper');
+  if (!grid || !wrap) return;
+  const vpTop = wrap.scrollTop - 300;
+  const vpBot = wrap.scrollTop + wrap.clientHeight + 300;
+  let revived = 0;
+  grid.querySelectorAll('.tile').forEach(t => {
+    if (!t._freed) return;
+    const top = t.offsetTop, bot = t.offsetTop + t.offsetHeight;
+    if (bot >= vpTop && top <= vpBot) { _reviveTile(t); revived++; }
+  });
+  if (revived) console.log('[LiveGrid] revived', revived, 'tiles back in view');
+}
+
 // Rebuild HLS for a freed tile when it scrolls back into view
 function _reviveTile(tile) {
   if (!tile || !tile._freed) return;
@@ -10678,7 +10694,7 @@ function setupInfiniteScroll() {
     let _st;
     _wrap.addEventListener('scroll', () => {
       clearTimeout(_st);
-      _st = setTimeout(() => { try { _freeOldTiles(); } catch(e){} }, 400);
+      _st = setTimeout(() => { try { _reviveVisible(); _freeOldTiles(); } catch(e){} }, 250);
     }, { passive: true });
   }
 
