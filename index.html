@@ -13575,6 +13575,9 @@ function renderStats() {
 
 // ── BOOT ──────────────────────────────────────────────────────────────────
 
+// Mobile: default to 2 columns (user can switch 1/2/3 via col pills)
+if (window.innerWidth <= 600) { const _gs=document.getElementById('gridSelect'); if(_gs) _gs.value='4'; document.querySelectorAll('.colpill').forEach(b=>b.classList.toggle('active', b.textContent.slice(-1)==='2')); }
+
 
 
 
