@@ -14828,15 +14828,19 @@ function closeFsOverlay() {
   v.pause(); v.src=''; v.removeAttribute('src');
 
 
-  // Resume grid HLS loads and video playback (muted)
-
-
-  hlsInstances.forEach(h => { try { h.startLoad(); } catch(e){} });
-
-
-  document.querySelectorAll('#grid video').forEach(v => { try { v.play().catch(()=>{}); } catch(e){} });
-
-
+  // Resume grid: stopLoad'd live streams go stale, so rebuild VISIBLE tiles fresh (live edge)
+  const _grid = document.getElementById('grid');
+  const _wrap = document.getElementById('grid-wrapper');
+  if (_grid && _wrap) {
+    const wr = _wrap.getBoundingClientRect();
+    _grid.querySelectorAll('.tile').forEach(t => {
+      const r = t.getBoundingClientRect();
+      const visible = r.bottom >= wr.top - 300 && r.top <= wr.bottom + 300;
+      if (!visible) return;            // offscreen tiles stay stopped (will revive on scroll)
+      _freeOneTile(t);                 // tear down stale stream
+      _reviveTile(t);                  // rebuild fresh at live edge
+    });
+  }
 }
 
 
