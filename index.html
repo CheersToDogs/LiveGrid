@@ -1647,6 +1647,10 @@
 
 
   .stats-close:hover { border-color: var(--accent2); color: var(--accent2); }
+  .stats-src-pills { display:flex; gap:3px; align-items:center; }
+  .stats-src-pill { font-family:'Space Mono',monospace; font-size:10px; font-weight:700; letter-spacing:.5px; padding:3px 9px; border-radius:4px; border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; transition:all .15s; text-transform:uppercase; }
+  .stats-src-pill.active { background:var(--accent); color:#000; border-color:var(--accent); }
+  .stats-src-pill:not(.active):hover { color:var(--text); border-color:var(--text); }
 
 
 
@@ -4404,6 +4408,11 @@
 
 
 
+      <div class="stats-src-pills">
+        <button class="stats-src-pill active" data-ssrc="all" onclick="setStatsSrc('all')">ALL</button>
+        <button class="stats-src-pill" data-ssrc="sc"  onclick="setStatsSrc('sc')">▶ SC</button>
+        <button class="stats-src-pill" data-ssrc="xh"  onclick="setStatsSrc('xh')">🔴 XH</button>
+      </div>
       <button class="stats-close" onclick="closeStats()">✕</button>
 
 
@@ -12673,6 +12682,15 @@ document.getElementById('stats-modal').addEventListener('click', e => { if (e.ta
 
 
 
+let statsSourceFilter = 'all';
+
+function setStatsSrc(src) {
+  statsSourceFilter = src;
+  document.querySelectorAll('.stats-src-pill').forEach(p =>
+    p.classList.toggle('active', p.dataset.ssrc === src));
+  renderStats();
+}
+
 function renderStats() {
 
 
@@ -12691,7 +12709,10 @@ function renderStats() {
 
 
 
-  const models = window._combinedAll ? window._combinedAll.map(it => it.model).filter(Boolean) : allModels;
+  const _allModels = window._combinedAll ? window._combinedAll.map(it => it.model).filter(Boolean) : allModels;
+  const _srcMap = window._combinedAll ? new Map(window._combinedAll.map(it => [it.model?.username, it.source])) : new Map();
+  const models = statsSourceFilter === 'all' ? _allModels
+    : _allModels.filter(m => (_srcMap.get(m.username) || 'sc') === statsSourceFilter);
 
 
 
