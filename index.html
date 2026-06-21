@@ -12691,7 +12691,7 @@ function renderStats() {
 
 
 
-  const models = allModels;
+  const models = window._combinedAll ? window._combinedAll.map(it => it.model).filter(Boolean) : allModels;
 
 
 
