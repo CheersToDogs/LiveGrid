@@ -3660,6 +3660,7 @@
 
 
       <select id="qualitySelect">
+        <option value="auto">Auto (data saver)</option>
 
 
 
@@ -7379,6 +7380,18 @@ function getVisibleTiles() { return [...document.querySelectorAll('#grid .tile')
 
 
 function getCols() { return parseInt(Math.sqrt(parseInt(document.getElementById('gridSelect').value))); }
+function effQuality(){
+  const sel=document.getElementById('qualitySelect'); const raw=sel?sel.value:'original';
+  if(raw && raw!=='auto') return raw;
+  const cols=getCols()||2, w=window.innerWidth/cols;
+  if(w<300) return '240p';
+  if(w<560) return '480p';
+  return 'original';
+}
+function fsQuality(){
+  const sel=document.getElementById('qualitySelect'); const raw=sel?sel.value:'original';
+  return (!raw||raw==='auto')?'original':raw;
+}
 
 
 
@@ -8403,7 +8416,7 @@ async function diffRefresh() {
 
 
 
-  const quality = document.getElementById('qualitySelect').value;
+  const quality = effQuality();
 
 
 
@@ -9486,7 +9499,7 @@ async function loadAll() {
 
 
 
-  const quality = document.getElementById('qualitySelect').value;
+  const quality = effQuality();
 
 
 
@@ -10224,7 +10237,7 @@ function renderGrid() {
 
 
 
-  const quality = document.getElementById('qualitySelect').value;
+  const quality = effQuality();
 
 
 
@@ -10569,7 +10582,7 @@ function _reviveTile(tile) {
   else      url = (m.hlsPlaylist || '').replace('edge-hls.doppiocdn.com', 'edge-hls.saawsedge.com');
   if (!url) return;
   try {
-    const hls = new Hls({ strictManifestParsing:false, enableWorker:true, maxBufferLength:8, maxMaxBufferLength:16,
+    const hls = new Hls({ strictManifestParsing:false, enableWorker:true, maxBufferLength:8, maxMaxBufferLength:16, backBufferLength:0,
       manifestLoadingTimeOut:10000, manifestLoadingMaxRetry:4, fragLoadingTimeOut:20000, fragLoadingMaxRetry:6 });
     hls.loadSource(url);
     hls.attachMedia(video);
@@ -10814,7 +10827,7 @@ async function loadMoreTiles() {
 
 
 
-  const quality = document.getElementById('qualitySelect').value;
+  const quality = effQuality();
 
 
 
@@ -11126,7 +11139,7 @@ function buildTile(model, quality) {
 
 
 
-      maxBufferLength: isMobileDevice ? 8 : 30, maxMaxBufferLength: isMobileDevice ? 16 : 60, enableWorker: true,
+      maxBufferLength: isMobileDevice ? 8 : 30, maxMaxBufferLength: isMobileDevice ? 16 : 60, backBufferLength: 0, enableWorker: true,
 
 
 
@@ -13597,7 +13610,7 @@ function renderStats() {
 // ── BOOT ──────────────────────────────────────────────────────────────────
 
 // Mobile: default to 2 columns (user can switch 1/2/3 via col pills)
-if (window.innerWidth <= 600) { const _gs=document.getElementById('gridSelect'); if(_gs) _gs.value='4'; document.querySelectorAll('.colpill').forEach(b=>b.classList.toggle('active', b.textContent.slice(-1)==='2')); }
+if (window.innerWidth <= 600) { const _gs=document.getElementById('gridSelect'); if(_gs) _gs.value='4'; document.querySelectorAll('.colpill').forEach(b=>b.classList.toggle('active', b.textContent.slice(-1)==='2')); const _q1=document.getElementById('qualitySelect'); if(_q1)_q1.value='auto'; const _q2=document.getElementById('qualitySelectM'); if(_q2)_q2.value='auto'; }
 
 
 
@@ -14952,7 +14965,7 @@ function _fsLoad() {
   v.pause(); v.src=''; v.removeAttribute('src');
 
 
-  const q=document.getElementById('qualitySelect').value;
+  const q=fsQuality();
 
 
   // SC model has stream.urls; XH model has hlsPlaylist
@@ -15073,42 +15086,21 @@ function setMobileCols(n){
   document.querySelectorAll('.colpill').forEach(b=>b.classList.toggle('active', b.textContent.slice(-1)===String(n)));
 }
 
-// Touch swipe handler
-
-
+// Touch swipe handler - bind after DOM ready (#fs-overlay is defined later in source)
 (function(){
-
-
-  const ov=document.getElementById('fs-overlay');
-
-
-  if(!ov) return;
-
-
-  ov.addEventListener('touchstart',e=>{_fsTx=e.touches[0].clientX;_fsTy=e.touches[0].clientY;},{passive:true});
-
-
-  ov.addEventListener('touchend',e=>{
-
-
-    const dx=e.changedTouches[0].clientX-_fsTx, dy=e.changedTouches[0].clientY-_fsTy;
-
-
-    if(Math.abs(dy)>50&&Math.abs(dy)>Math.abs(dx)){_fsNav(dy<0?1:-1);return;} // up=next, down=prev
-
-
-    if(Math.abs(dx)<40)return;
-
-
-    _fsNav(dx<0?1:-1);
-
-
-  },{passive:true});
-
-
-  // keydown handled by main document listener
-
-
+  function _bindFsSwipe(){
+    const ov=document.getElementById('fs-overlay');
+    if(!ov) return;
+    ov.addEventListener('touchstart',e=>{_fsTx=e.touches[0].clientX;_fsTy=e.touches[0].clientY;},{passive:true});
+    ov.addEventListener('touchend',e=>{
+      const dx=e.changedTouches[0].clientX-_fsTx, dy=e.changedTouches[0].clientY-_fsTy;
+      if(Math.abs(dy)>50&&Math.abs(dy)>Math.abs(dx)){_fsNav(dy<0?1:-1);return;}
+      if(Math.abs(dx)<40)return;
+      _fsNav(dx<0?1:-1);
+    },{passive:true});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',_bindFsSwipe);
+  else _bindFsSwipe();
 })();
 
 
@@ -15354,6 +15346,7 @@ renderFavPanel = function() {
 
 
       <select id="qualitySelectM">
+        <option value="auto">Auto (data saver)</option>
 
 
         <option value="original">Original (Max)</option>
